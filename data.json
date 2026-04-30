@@ -1,0 +1,47 @@
+{
+  "works": [
+    {
+      "cat": "Branding",
+      "items": [
+        {
+          "id": "sotoya-rebrand",
+          "tag": "Branding",
+          "title": "SOTOYA リブランディング CI 開発",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "lead": "コンテンツこの文章はダミーです。詳細ページの本文用テキスト。",
+          "meta": {
+            "client": "SOTOYA",
+            "year": "2024",
+            "artDirection": "SHOTA INOUE",
+            "design": "SHOTA INOUE",
+            "direction": "SHOTA INOUE",
+            "tools": "Illustrator / Photoshop / Indesign"
+          },
+          "images": []
+        }
+      ]
+    },
+    {
+      "cat": "Web",
+      "items": [
+        {
+          "id": "nasta-hp",
+          "tag": "Web",
+          "title": "Nasta HP",
+          "desc": "コンテンツこの文章はダミーです。",
+          "lead": "コンテンツこの文章はダミーです。詳細ページ用本文。",
+          "meta": {
+            "client": "Nasta",
+            "year": "2024",
+            "design": "SHOTA INOUE",
+            "tools": "Figma / Photoshop"
+          },
+          "images": []
+        }
+      ]
+    }
+  ],
+  "profile": {
+    "images": []
+  }
+}
