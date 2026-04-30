@@ -309,7 +309,7 @@ body{padding-bottom:6rem}
     <button class="btn btn-primary" id="exportZipBtn">Export ZIP</button>
     <button class="btn btn-ghost" id="importBtn">Import</button>
     <input type="file" id="importFile" accept="application/json,application/zip,.zip,.json" style="display:none">
-    <a class="btn" href="index.html" target="_blank">Preview</a>
+    <a class="btn" href="index.html?preview=1" target="_blank" id="previewBtn">Preview</a>
   </div>
 </header>
 
@@ -319,6 +319,11 @@ body{padding-bottom:6rem}
     <div class="sidebar-section">
       <h3>Pages</h3>
       <ul class="cat-list">
+        <li class="cat-row">
+          <button class="cat-item" id="logoPageBtn">
+            Logo <span class="count" id="logoStatus">—</span>
+          </button>
+        </li>
         <li class="cat-row">
           <button class="cat-item" id="profilePageBtn">
             Profile <span class="count" id="profileImgCount">0</span>
@@ -396,11 +401,13 @@ WORKS_DATA: [
 
 const STORAGE_KEY = 'worksData';
 const PROFILE_KEY = 'profileData';
+const LOGO_KEY = 'logoData';
 let DATA = [];
 let PROFILE = { images: [] };
-let currentCat = null;     // category name
-let currentItem = null;    // { catName, item, idx }
-let currentPage = null;    // 'profile' or null
+let LOGO = { src: '' };
+let currentCat = null;
+let currentItem = null;
+let currentPage = null;    // 'profile' | 'logo' | null
 
 /* ─── UTIL ─── */
 function uid(){
@@ -434,16 +441,23 @@ function load(){
       PROFILE = JSON.parse(pRaw);
       if(!PROFILE.images) PROFILE.images = [];
     }
+    const lRaw = localStorage.getItem(LOGO_KEY);
+    if(lRaw){
+      LOGO = JSON.parse(lRaw);
+      if(!LOGO.src) LOGO.src = '';
+    }
   } catch(e){
     console.error(e);
     DATA = getDefaultData();
     PROFILE = { images: [] };
+    LOGO = { src: '' };
   }
 }
 function save(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE));
+    localStorage.setItem(LOGO_KEY, JSON.stringify(LOGO));
   } catch(e){
     toast('保存に失敗しました（容量超過の可能性）', 'error');
   }
@@ -452,10 +466,30 @@ function save(){
 function getDefaultData(){
   return [
     { cat:'Branding', items:[
-      {id:'sotoya-rebrand', tag:'Branding', title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。', lead:'コンテンツこの文章はダミーです。', meta:{client:'SOTOYA',year:'2024',artDirection:'SHOTA INOUE',design:'SHOTA INOUE',direction:'SHOTA INOUE',tools:'Illustrator / Photoshop'}, images:[]}
+      {id:'sotoya-rebrand', tag:'Branding',       title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'SOTOYA',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'sotoya-logo',    tag:'Branding',       title:'SOTOYA LOGO',                    desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'SOTOYA',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'sotoya-web',     tag:'Branding / Web', title:'SOTOYA WEB SITE',                desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'SOTOYA',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'sotoya-tools',   tag:'Branding',       title:'SOTOYA コーポレートツール',       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'SOTOYA',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'ec-flame',       tag:'Branding / EC',  title:'EC SITE flame',                  desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]}
     ]},
     { cat:'Web', items:[
-      {id:'nasta-hp', tag:'Web', title:'Nasta HP', desc:'コンテンツこの文章はダミーです。', lead:'', meta:{client:'Nasta',year:'2024',artDirection:'',design:'SHOTA INOUE',direction:'',tools:'Figma / Photoshop'}, images:[]}
+      {id:'nasta-hp',       tag:'Web',         title:'Nasta HP',                       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'nasta-post',     tag:'Web',         title:'Nasta Box +POST WEB SITE',       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'nasta-light',    tag:'Web',         title:'Nasta Box LIGHT WEB SITE',       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'nasta-amazon',   tag:'Web / EC',    title:'Nasta Interphone 2 Amazon page', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'nasta-sns',      tag:'SNS',         title:'Nasta SNS クリエイティブ',         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]}
+    ]},
+    { cat:'POP / Print media', items:[
+      {id:'pamphlet',       tag:'Print',       title:'カテゴリ別 製品一覧パンフレット', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'flyer-poster',   tag:'Print',       title:'各種販促チラシ・ポスター',         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]}
+    ]},
+    { cat:'UI / UX', items:[
+      {id:'box-admin',      tag:'UI/UX',       title:'宅配ボックス管理者用 WEB システム', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'nasta-app',      tag:'UI/UX',       title:'Nasta Box APP',                   desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]}
+    ]},
+    { cat:'Other', items:[
+      {id:'nasta-mvv',      tag:'Project',     title:'Nasta MVV Project',               desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'Nasta',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]},
+      {id:'illusts',        tag:'Illustration',title:'ILLUSTs',                         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。', lead:'', meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''}, images:[]}
     ]}
   ];
 }
@@ -602,6 +636,70 @@ function renderWorks(){
   });
 }
 
+/* ─── LOGO ページ ─── */
+function renderLogoContent(root){
+  const hasLogo = !!LOGO.src;
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-title">Site Logo</div>
+      <div class="help-text" style="margin-bottom:1rem">
+        ・オープニングアニメーション・ナビ・フッター・ファビコン全てに使用されます<br>
+        ・正方形のPNG / SVG（背景透過）推奨<br>
+        ・1枚のみ登録可能（再アップロードで上書き）
+      </div>
+      <div class="images-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+        ${hasLogo ? `
+          <div class="img-card" style="background:#3a3b3b">
+            <img src="${LOGO.src}" alt="" style="object-fit:contain;padding:1rem">
+            <div class="img-actions">
+              <button data-action="logo-del">×</button>
+            </div>
+          </div>
+        ` : ''}
+        <label class="img-upload">
+          ＋ ${hasLogo ? 'Replace' : 'Upload'}
+          <input type="file" accept="image/*" id="logoUpload" style="display:none">
+        </label>
+      </div>
+    </div>
+  `;
+
+  const upInput = document.getElementById('logoUpload');
+  if(upInput){
+    upInput.addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if(!f) return;
+      try {
+        // ロゴはサイズ小さめでOK
+        const dataUrl = await readImageAsResizedDataURL(f, 512, 0.92);
+        LOGO.src = dataUrl;
+        save();
+        renderLogoContent(root);
+        updateLogoStatus();
+        toast('ロゴをアップロードしました');
+      } catch(err){
+        toast('読み込み失敗','error');
+      }
+    });
+  }
+
+  const delBtn = root.querySelector('[data-action="logo-del"]');
+  if(delBtn){
+    delBtn.addEventListener('click', () => {
+      LOGO.src = '';
+      save();
+      renderLogoContent(root);
+      updateLogoStatus();
+      toast('ロゴを削除しました');
+    });
+  }
+}
+
+function updateLogoStatus(){
+  const el = document.getElementById('logoStatus');
+  if(el) el.textContent = LOGO.src ? '✓' : '—';
+}
+
 /* ─── PROFILE ページ ─── */
 function renderProfileContent(root){
   root.innerHTML = `
@@ -707,6 +805,10 @@ function renderContent(){
   const root = document.getElementById('content');
   if(currentPage === 'profile'){
     renderProfileContent(root);
+    return;
+  }
+  if(currentPage === 'logo'){
+    renderLogoContent(root);
     return;
   }
   if(!currentItem){
@@ -956,7 +1058,7 @@ function addWork(){
 
 /* ─── Export / Import ─── */
 function exportData(){
-  const exportObj = { works: DATA, profile: PROFILE };
+  const exportObj = { works: DATA, profile: PROFILE, logo: LOGO };
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -980,18 +1082,17 @@ async function exportZip(){
   /* ディープコピーしてパス書き換え用に */
   const works = JSON.parse(JSON.stringify(DATA));
   const profile = JSON.parse(JSON.stringify(PROFILE));
+  const logo = JSON.parse(JSON.stringify(LOGO));
 
   let imgCounter = 0;
   function processImageEntry(entry, prefix){
     if(!entry.src) return;
-    /* 既にパス形式（images/xxx.jpg）ならそのまま */
     if(!entry.src.startsWith('data:')) return;
-    /* Base64 → Blob */
     const m = entry.src.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
     if(!m) return;
     const mime = m[1];
     const b64 = m[2];
-    const ext = mime.split('/')[1].replace('jpeg','jpg');
+    const ext = mime.split('/')[1].replace('jpeg','jpg').replace('svg+xml','svg');
     imgCounter++;
     const fileName = `${prefix}-${imgCounter}.${ext}`;
     imgFolder.file(fileName, b64, {base64: true});
@@ -1008,9 +1109,11 @@ async function exportZip(){
   if(profile.images){
     profile.images.forEach(img => processImageEntry(img, 'profile'));
   }
+  if(logo.src){
+    processImageEntry(logo, 'logo');
+  }
 
-  /* data.json を含める */
-  zip.file('data.json', JSON.stringify({works, profile}, null, 2));
+  zip.file('data.json', JSON.stringify({works, profile, logo}, null, 2));
 
   const blob = await zip.generateAsync({type:'blob'});
   const url = URL.createObjectURL(blob);
@@ -1039,6 +1142,7 @@ async function importData(file){
       const data = JSON.parse(dataText);
       const newData = data.works || [];
       const newProfile = data.profile || { images: [] };
+      const newLogo = data.logo || { src: '' };
 
       /* images/ フォルダの画像をBase64に戻す（編集中はBase64で扱う） */
       async function pathToBase64(entry){
@@ -1048,7 +1152,7 @@ async function importData(file){
         if(!f) return;
         const b64 = await f.async('base64');
         const ext = path.split('.').pop().toLowerCase();
-        const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+        const mime = ext === 'jpg' ? 'image/jpeg' : (ext === 'svg' ? 'image/svg+xml' : `image/${ext}`);
         entry.src = `data:${mime};base64,${b64}`;
       }
       for(const g of newData){
@@ -1061,13 +1165,18 @@ async function importData(file){
       if(newProfile.images){
         for(const img of newProfile.images) await pathToBase64(img);
       }
+      if(newLogo.src){
+        await pathToBase64(newLogo);
+      }
 
       confirmAction('現在のデータを上書きします。よろしいですか？', () => {
         DATA = newData;
         PROFILE = newProfile;
+        LOGO = newLogo;
         currentCat = null; currentItem = null; currentPage = null;
         save();
         updateProfileCount();
+        updateLogoStatus();
         renderCategories();
         renderWorks();
         renderContent();
@@ -1085,22 +1194,26 @@ async function importData(file){
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      let newData, newProfile;
+      let newData, newProfile, newLogo;
       if(Array.isArray(data)){
         newData = data;
         newProfile = PROFILE;
+        newLogo = LOGO;
       } else if(data.works){
         newData = data.works;
         newProfile = data.profile || { images: [] };
+        newLogo = data.logo || { src: '' };
       } else {
         throw new Error('Invalid');
       }
       confirmAction('現在のデータを上書きします。よろしいですか？', () => {
         DATA = newData;
         PROFILE = newProfile;
+        LOGO = newLogo;
         currentCat = null; currentItem = null; currentPage = null;
         save();
         updateProfileCount();
+        updateLogoStatus();
         renderCategories();
         renderWorks();
         renderContent();
@@ -1120,9 +1233,21 @@ function escapeAttr(s){ return escapeHtml(s); }
 /* ─── INIT ─── */
 load();
 updateProfileCount();
+updateLogoStatus();
 renderCategories();
 renderWorks();
 renderContent();
+
+/* Logo ページ選択 */
+document.getElementById('logoPageBtn').addEventListener('click', () => {
+  currentPage = 'logo';
+  currentCat = null;
+  currentItem = null;
+  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('logoPageBtn').classList.add('active');
+  renderWorks();
+  renderContent();
+});
 
 /* Profile ページ選択 */
 document.getElementById('profilePageBtn').addEventListener('click', () => {

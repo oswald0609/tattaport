@@ -90,6 +90,10 @@ section{height:100vh;position:relative;overflow:hidden;z-index:1;background:tran
 #loader.done{pointer-events:none;animation:ldOut .45s var(--eio) forwards}
 @keyframes ldOut{to{opacity:0}}
 
+.ld-logo-box.has-logo::after,
+.nav-logo.has-logo::after,
+.footer-logo.has-logo::after{display:none}
+
 /* 背景ドットキャンバス */
 #dotsCanvas{
   position:fixed;inset:0;
@@ -1618,25 +1622,72 @@ const DEFAULT_WORKS_DATA = [
 
 let WORKS_DATA = DEFAULT_WORKS_DATA;
 let SITE_PROFILE = { images: [] };
+let SITE_LOGO = { src: '' };
 
 async function loadSiteData(){
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+
+  /* プレビューモード: localStorage を優先（CMS編集中の最新を反映） */
+  if(isPreview){
+    try {
+      const raw = localStorage.getItem('worksData');
+      if(raw){ WORKS_DATA = JSON.parse(raw); }
+      const pRaw = localStorage.getItem('profileData');
+      if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
+      const lRaw = localStorage.getItem('logoData');
+      if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
+    } catch(e){}
+    applyLogo();
+    return;
+  }
+
+  /* 通常: data.json を優先 */
   try {
     const res = await fetch('data.json', { cache: 'no-cache' });
     if(res.ok){
       const json = await res.json();
       if(json.works) WORKS_DATA = json.works;
       if(json.profile) SITE_PROFILE = json.profile;
+      if(json.logo) SITE_LOGO = json.logo;
+      applyLogo();
       return;
     }
-  } catch(e){
-    /* data.json が無い、または読み込みエラー → localStorage にフォールバック */
-  }
+  } catch(e){}
+  /* data.json 失敗時のフォールバック */
   try {
     const raw = localStorage.getItem('worksData');
     if(raw){ WORKS_DATA = JSON.parse(raw); }
     const pRaw = localStorage.getItem('profileData');
     if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
+    const lRaw = localStorage.getItem('logoData');
+    if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
   } catch(e){}
+  applyLogo();
+}
+
+/* ロゴ適用: ナビ/フッター/ローダー/ファビコン */
+function applyLogo(){
+  if(!SITE_LOGO || !SITE_LOGO.src) return;
+  const src = SITE_LOGO.src;
+
+  /* ロゴ要素にbackground-image適用 + テキストを消す */
+  document.querySelectorAll('.nav-logo, .footer-logo, .ld-logo-box').forEach(el => {
+    el.style.backgroundImage = `url("${src}")`;
+    el.style.backgroundSize = 'contain';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    el.style.backgroundColor = 'transparent';
+    el.classList.add('has-logo');
+  });
+
+  /* ファビコン */
+  let link = document.querySelector('link[rel="icon"]');
+  if(!link){
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = src;
 }
 
 function renderWorksList(){

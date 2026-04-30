@@ -38,6 +38,9 @@ body{background:transparent;color:var(--text);font-family:var(--ff-jp);min-heigh
 /* DOTS BACKGROUND */
 #dotsCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
+.nav-logo.has-logo::after,
+.footer-logo.has-logo::after{display:none}
+
 /* PAGE */
 .page{position:relative;z-index:1}
 
@@ -175,6 +178,7 @@ body{background:transparent;color:var(--text);font-family:var(--ff-jp);min-heigh
 .img-row{
   display:grid;
   gap:1rem;
+  align-items:start;
 }
 .img-row.cols-1{grid-template-columns:1fr}
 .img-row.cols-2{grid-template-columns:1fr 1fr}
@@ -413,19 +417,54 @@ const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 
 async function loadAndRender(){
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
   let WORKS_DATA = [];
-  try {
-    const res = await fetch('data.json', { cache: 'no-cache' });
-    if(res.ok){
-      const json = await res.json();
-      if(json.works) WORKS_DATA = json.works;
-    }
-  } catch(e){}
-  if(WORKS_DATA.length === 0){
+  let SITE_LOGO = { src: '' };
+
+  if(isPreview){
     try {
-      const stored = localStorage.getItem('worksData');
-      if(stored) WORKS_DATA = JSON.parse(stored);
+      const raw = localStorage.getItem('worksData');
+      if(raw) WORKS_DATA = JSON.parse(raw);
+      const lRaw = localStorage.getItem('logoData');
+      if(lRaw) SITE_LOGO = JSON.parse(lRaw);
     } catch(e){}
+  } else {
+    try {
+      const res = await fetch('data.json', { cache: 'no-cache' });
+      if(res.ok){
+        const json = await res.json();
+        if(json.works) WORKS_DATA = json.works;
+        if(json.logo) SITE_LOGO = json.logo;
+      }
+    } catch(e){}
+    if(WORKS_DATA.length === 0){
+      try {
+        const stored = localStorage.getItem('worksData');
+        if(stored) WORKS_DATA = JSON.parse(stored);
+        const lRaw = localStorage.getItem('logoData');
+        if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+      } catch(e){}
+    }
+  }
+
+  /* ロゴ適用 */
+  if(SITE_LOGO && SITE_LOGO.src){
+    const src = SITE_LOGO.src;
+    document.querySelectorAll('.nav-logo, .footer-logo').forEach(el => {
+      el.style.backgroundImage = `url("${src}")`;
+      el.style.backgroundSize = 'contain';
+      el.style.backgroundPosition = 'center';
+      el.style.backgroundRepeat = 'no-repeat';
+      el.style.backgroundColor = 'transparent';
+      el.classList.add('has-logo');
+    });
+    let link = document.querySelector('link[rel="icon"]');
+    if(!link){
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = src;
   }
 
   const flatList = [];
@@ -476,12 +515,10 @@ async function loadAndRender(){
       const im = document.createElement('img');
       im.src = img.src;
       im.alt = '';
-      im.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-      cell.style.cssText = 'position:relative;overflow:hidden';
+      im.style.cssText = 'width:100%;height:auto;display:block';
+      cell.style.cssText = 'position:relative';
       cell.appendChild(im);
       row.appendChild(cell);
-      /* aspect-ratio はCSSの .img-row .ph と同じく適用 */
-      cell.style.aspectRatio = cols === 1 ? '16/9' : (cols === 2 ? '4/3' : '1/1');
     });
     /* 新規ロード分のスクロールリビールを再観測 */
     document.querySelectorAll('.images .rv').forEach(el => rvObs.observe(el));
