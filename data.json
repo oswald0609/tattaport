@@ -7,17 +7,42 @@
           "id": "sotoya-rebrand",
           "tag": "Branding",
           "title": "SOTOYA リブランディング CI 開発",
-          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
-          "lead": "コンテンツこの文章はダミーです。詳細ページの本文用テキスト。",
+          "desc": "コンテンツこの文章はダミーです。",
+          "lead": "コンテンツこの文章はダミーです。",
           "meta": {
             "client": "SOTOYA",
             "year": "2024",
             "artDirection": "SHOTA INOUE",
             "design": "SHOTA INOUE",
             "direction": "SHOTA INOUE",
-            "tools": "Illustrator / Photoshop / Indesign"
+            "tools": "Illustrator / Photoshop"
           },
-          "images": []
+          "images": [
+            {
+              "src": "images/work-sotoya-rebrand-1.jpg",
+              "cols": 1
+            },
+            {
+              "src": "images/work-sotoya-rebrand-2.jpg",
+              "cols": 3
+            },
+            {
+              "src": "images/work-sotoya-rebrand-3.jpg",
+              "cols": 3
+            },
+            {
+              "src": "images/work-sotoya-rebrand-4.jpg",
+              "cols": 2
+            },
+            {
+              "src": "images/work-sotoya-rebrand-5.jpg",
+              "cols": 2
+            },
+            {
+              "src": "images/work-sotoya-rebrand-6.jpg",
+              "cols": 1
+            }
+          ]
         }
       ]
     },
@@ -29,11 +54,13 @@
           "tag": "Web",
           "title": "Nasta HP",
           "desc": "コンテンツこの文章はダミーです。",
-          "lead": "コンテンツこの文章はダミーです。詳細ページ用本文。",
+          "lead": "",
           "meta": {
             "client": "Nasta",
             "year": "2024",
+            "artDirection": "",
             "design": "SHOTA INOUE",
+            "direction": "",
             "tools": "Figma / Photoshop"
           },
           "images": []
@@ -42,6 +69,19 @@
     }
   ],
   "profile": {
-    "images": []
+    "images": [
+      {
+        "src": "images/profile-7.jpg"
+      },
+      {
+        "src": "images/profile-8.jpg"
+      },
+      {
+        "src": "images/profile-9.jpg"
+      },
+      {
+        "src": "images/profile-10.jpg"
+      }
+    ]
   }
 }
