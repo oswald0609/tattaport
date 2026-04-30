@@ -81,7 +81,13 @@
       },
       {
         "src": "images/profile-10.jpg"
+      },
+      {
+        "src": "images/profile-11.jpg"
       }
     ]
+  },
+  "logo": {
+    "src": "images/logo-12.jpg"
   }
 }
