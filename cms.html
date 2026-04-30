@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CMS — SHOTA INOUE Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@200;300;400;500&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1d1e1e;
+  --panel:#2a2b2b;
+  --panel-2:#323333;
+  --accent:#50F0D2;
+  --accent-2:#3bcfb3;
+  --danger:#f04650;
+  --text:#E1E2E2;
+  --text-mid:rgba(225,226,226,.68);
+  --text-dim:rgba(225,226,226,.42);
+  --border:rgba(225,226,226,.12);
+  --ff-disp:'MuseoModerno',sans-serif;
+  --ff-sm:'Bricolage Grotesque',sans-serif;
+  --ff-jp:'Noto Sans JP',sans-serif;
+  --eoe:cubic-bezier(0.16,1,0.3,1);
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--ff-jp);min-height:100vh}
+body{padding-bottom:6rem}
+
+/* HEADER */
+.cms-header{
+  background:var(--panel);
+  padding:1.4rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.cms-title{
+  font-family:var(--ff-disp);font-weight:300;
+  font-size:1.4rem;letter-spacing:.18em;
+  color:var(--accent);text-transform:uppercase;
+}
+.header-actions{display:flex;gap:.7rem;align-items:center}
+
+/* LAYOUT */
+.cms-body{
+  max-width:1200px;margin:2rem auto;
+  padding:0 2rem;
+  display:grid;grid-template-columns:280px 1fr;gap:2rem;
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--panel);
+  border-radius:8px;padding:1.2rem;
+  position:sticky;top:6rem;
+  height:fit-content;max-height:calc(100vh - 8rem);
+  overflow-y:auto;
+}
+.sidebar h3{
+  font-family:var(--ff-sm);font-weight:500;font-size:11px;
+  letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;
+  margin-bottom:.8rem;padding-left:.4rem;
+}
+.cat-list{list-style:none;display:flex;flex-direction:column;gap:.2rem;margin-bottom:.5rem}
+.cat-row{
+  display:flex;align-items:center;gap:.4rem;
+}
+.cat-item{
+  flex:1;
+  background:none;border:none;
+  padding:.6rem .7rem;text-align:left;
+  font-family:var(--ff-jp);font-size:13px;color:var(--text);
+  border-radius:4px;cursor:pointer;
+  transition:background .15s;
+  display:flex;align-items:center;gap:.5rem;
+}
+.cat-item:hover{background:var(--panel-2)}
+.cat-item.active{background:var(--panel-2);color:var(--accent);font-weight:500}
+.cat-item .count{
+  font-family:var(--ff-sm);font-size:10px;color:var(--text-dim);
+  margin-left:auto;
+}
+.cat-icon-btn{
+  background:none;border:none;color:var(--text-dim);
+  font-size:13px;width:22px;height:22px;
+  cursor:pointer;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;
+}
+.cat-icon-btn:hover{background:var(--panel-2);color:var(--accent)}
+.cat-icon-btn.danger:hover{color:var(--danger)}
+
+.sidebar-section{margin-bottom:1.5rem}
+
+.work-list{list-style:none;display:flex;flex-direction:column;gap:.15rem}
+.work-list-item{
+  display:flex;align-items:center;gap:.4rem;
+}
+.work-btn{
+  flex:1;
+  background:none;border:1px solid transparent;
+  padding:.55rem .7rem;text-align:left;
+  font-family:var(--ff-jp);font-size:12px;color:var(--text-mid);
+  border-radius:4px;cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.work-btn:hover{background:var(--panel-2);color:var(--text)}
+.work-btn.active{
+  background:var(--panel-2);color:var(--accent);
+  border-color:var(--accent);
+}
+
+/* CONTENT */
+.content{
+  background:var(--panel);
+  border-radius:8px;
+  padding:2rem;
+}
+.content-empty{
+  text-align:center;padding:5rem 2rem;
+  color:var(--text-dim);font-size:13px;
+}
+
+.section{margin-bottom:2.4rem}
+.section-title{
+  font-family:var(--ff-sm);font-weight:500;font-size:11px;
+  letter-spacing:.18em;color:var(--accent);text-transform:uppercase;
+  margin-bottom:1rem;padding-bottom:.5rem;
+  border-bottom:1px solid var(--border);
+}
+
+/* FORM */
+.field{margin-bottom:1rem}
+.field-label{
+  display:block;
+  font-family:var(--ff-sm);font-size:11px;
+  letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;
+  margin-bottom:.4rem;
+}
+.field input,.field textarea,.field select{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:.65rem .8rem;border-radius:4px;
+  font-family:var(--ff-jp);font-size:13px;
+  transition:border-color .15s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:var(--accent);
+}
+.field textarea{min-height:90px;resize:vertical;line-height:1.7}
+
+.field-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--ff-sm);font-weight:500;font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:.65rem 1.2rem;border-radius:4px;
+  cursor:pointer;border:1px solid transparent;
+  transition:all .2s;
+  background:var(--panel-2);color:var(--text);
+}
+.btn:hover{background:#3a3b3b}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent-2)}
+.btn-ghost{background:none;border-color:var(--border);color:var(--text-mid)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);background:none}
+.btn-danger{background:var(--danger);color:var(--text)}
+.btn-danger:hover{background:#c8323c}
+.btn-sm{padding:.4rem .8rem;font-size:10px}
+
+/* IMAGES */
+.images-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:.8rem;
+  margin-top:1rem;
+}
+.img-card{
+  position:relative;
+  aspect-ratio:1/1;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  cursor:grab;
+}
+.img-card.dragging{opacity:.4}
+.img-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.img-card img{
+  width:100%;height:100%;object-fit:cover;
+  pointer-events:none;
+}
+.img-card .img-actions{
+  position:absolute;top:6px;right:6px;
+  display:flex;gap:4px;opacity:0;
+  transition:opacity .2s;
+}
+.img-card:hover .img-actions{opacity:1}
+.img-card .img-actions button{
+  background:rgba(0,0,0,.7);color:var(--text);
+  border:none;width:26px;height:26px;border-radius:3px;
+  cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.img-card .img-actions button:hover{background:rgba(240,70,80,.85)}
+.img-card .img-thumb-badge{
+  position:absolute;bottom:6px;left:6px;
+  background:var(--accent);color:var(--bg);
+  font-family:var(--ff-sm);font-size:9px;font-weight:600;
+  letter-spacing:.1em;padding:3px 7px;border-radius:2px;
+  text-transform:uppercase;
+}
+.img-card .img-cols-select{
+  position:absolute;bottom:6px;right:6px;
+  background:rgba(0,0,0,.7);color:var(--text);
+  border:1px solid var(--border);
+  font-size:10px;padding:2px 4px;border-radius:3px;
+  font-family:var(--ff-sm);
+  cursor:pointer;
+}
+
+.img-upload{
+  display:flex;align-items:center;justify-content:center;
+  aspect-ratio:1/1;
+  background:var(--bg);
+  border:2px dashed var(--border);
+  border-radius:4px;
+  cursor:pointer;
+  font-family:var(--ff-sm);font-size:11px;letter-spacing:.1em;
+  color:var(--text-dim);text-transform:uppercase;
+  transition:all .2s;
+}
+.img-upload:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:rgba(80,240,210,.05);
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:2rem;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--accent);color:var(--bg);
+  padding:.8rem 1.4rem;border-radius:4px;
+  font-family:var(--ff-sm);font-weight:500;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;
+  z-index:1000;
+  transition:transform .35s var(--eoe);
+  pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:var(--danger);color:var(--text)}
+
+/* MODAL */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:200;display:none;align-items:center;justify-content:center;
+  padding:2rem;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--panel);border-radius:8px;
+  padding:2rem;max-width:420px;width:100%;
+}
+.modal h3{
+  font-family:var(--ff-disp);font-weight:300;font-size:1.1rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  margin-bottom:1.2rem;
+}
+.modal .field-row{margin-top:.5rem}
+.modal-actions{
+  display:flex;gap:.6rem;justify-content:flex-end;
+  margin-top:1.5rem;
+}
+
+/* Help */
+.help-text{
+  font-size:11px;color:var(--text-dim);
+  line-height:1.6;margin-top:.4rem;
+}
+
+/* RESPONSIVE */
+@media(max-width:880px){
+  .cms-body{grid-template-columns:1fr;padding:0 1rem}
+  .sidebar{position:static;max-height:none}
+  .field-row{grid-template-columns:1fr}
+  .cms-header{padding:1.2rem 1rem}
+  .header-actions{gap:.4rem}
+  .btn{padding:.55rem .9rem}
+}
+</style>
+</head>
+<body>
+
+<header class="cms-header">
+  <h1 class="cms-title">CMS — Portfolio</h1>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="exportBtn">Export</button>
+    <button class="btn btn-ghost" id="importBtn">Import</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+    <a class="btn" href="index.html" target="_blank">Preview</a>
+  </div>
+</header>
+
+<div class="cms-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3>Pages</h3>
+      <ul class="cat-list">
+        <li class="cat-row">
+          <button class="cat-item" id="profilePageBtn">
+            Profile <span class="count" id="profileImgCount">0</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Categories</h3>
+      <ul class="cat-list" id="catList"></ul>
+      <button class="btn btn-sm btn-ghost" id="addCatBtn" style="width:100%;margin-top:.4rem;justify-content:center">+ Add Category</button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3 id="worksHeader">Works</h3>
+      <ul class="work-list" id="workList"></ul>
+      <button class="btn btn-sm btn-ghost" id="addWorkBtn" style="width:100%;margin-top:.6rem;justify-content:center">+ Add Work</button>
+    </div>
+  </aside>
+
+  <main class="content" id="content">
+    <div class="content-empty">作品を選択するか、新規作成してください。</div>
+  </main>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: Add Category -->
+<div class="modal-bg" id="catModal">
+  <div class="modal">
+    <h3 id="catModalTitle">New Category</h3>
+    <div class="field">
+      <label class="field-label">Category Name</label>
+      <input type="text" id="catName" placeholder="例: Branding">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="catCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="catSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirm Delete -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <h3>Confirm Delete</h3>
+    <p id="confirmText" style="color:var(--text-mid);font-size:13px;line-height:1.7"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── データ構造 ──────────────────────────
+WORKS_DATA: [
+  { cat: 'Branding', items: [
+    {
+      id: 'sotoya-rebrand',
+      tag: 'Branding',
+      title: 'タイトル',
+      desc: '説明文',
+      lead: 'リード文(詳細ページ)',
+      meta: { client, year, artDirection, design, direction, tools },
+      images: [ { src: 'data:image/...', cols: 1 }, ... ]
+    }
+  ]},
+  ...
+]
+*/
+
+const STORAGE_KEY = 'worksData';
+const PROFILE_KEY = 'profileData';
+let DATA = [];
+let PROFILE = { images: [] };
+let currentCat = null;     // category name
+let currentItem = null;    // { catName, item, idx }
+let currentPage = null;    // 'profile' or null
+
+/* ─── UTIL ─── */
+function uid(){
+  return 'w_' + Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-4);
+}
+function toast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', type === 'error');
+  t.classList.add('show');
+  clearTimeout(toast._tid);
+  toast._tid = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ─── ストレージ ─── */
+function load(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      DATA = JSON.parse(raw);
+      DATA.forEach(g => g.items.forEach(it => {
+        if(!it.images) it.images = [];
+        if(!it.meta) it.meta = {};
+        if(!('lead' in it)) it.lead = it.desc || '';
+      }));
+    } else {
+      DATA = getDefaultData();
+    }
+    const pRaw = localStorage.getItem(PROFILE_KEY);
+    if(pRaw){
+      PROFILE = JSON.parse(pRaw);
+      if(!PROFILE.images) PROFILE.images = [];
+    }
+  } catch(e){
+    console.error(e);
+    DATA = getDefaultData();
+    PROFILE = { images: [] };
+  }
+}
+function save(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE));
+  } catch(e){
+    toast('保存に失敗しました（容量超過の可能性）', 'error');
+  }
+}
+
+function getDefaultData(){
+  return [
+    { cat:'Branding', items:[
+      {id:'sotoya-rebrand', tag:'Branding', title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。', lead:'コンテンツこの文章はダミーです。', meta:{client:'SOTOYA',year:'2024',artDirection:'SHOTA INOUE',design:'SHOTA INOUE',direction:'SHOTA INOUE',tools:'Illustrator / Photoshop'}, images:[]}
+    ]},
+    { cat:'Web', items:[
+      {id:'nasta-hp', tag:'Web', title:'Nasta HP', desc:'コンテンツこの文章はダミーです。', lead:'', meta:{client:'Nasta',year:'2024',artDirection:'',design:'SHOTA INOUE',direction:'',tools:'Figma / Photoshop'}, images:[]}
+    ]}
+  ];
+}
+
+/* ─── カテゴリ ─── */
+function renderCategories(){
+  const list = document.getElementById('catList');
+  list.innerHTML = '';
+  DATA.forEach(group => {
+    const li = document.createElement('li');
+    li.className = 'cat-row';
+    li.innerHTML = `
+      <button class="cat-item ${group.cat === currentCat ? 'active' : ''}" data-cat="${escapeAttr(group.cat)}">
+        ${escapeHtml(group.cat)} <span class="count">${group.items.length}</span>
+      </button>
+      <button class="cat-icon-btn" data-action="rename-cat" data-cat="${escapeAttr(group.cat)}" title="Rename">✎</button>
+      <button class="cat-icon-btn danger" data-action="delete-cat" data-cat="${escapeAttr(group.cat)}" title="Delete">×</button>
+    `;
+    list.appendChild(li);
+  });
+
+  list.querySelectorAll('.cat-item').forEach(b => {
+    b.addEventListener('click', () => {
+      currentCat = b.dataset.cat;
+      currentItem = null;
+      renderCategories();
+      renderWorks();
+      renderContent();
+    });
+  });
+  list.querySelectorAll('[data-action="rename-cat"]').forEach(b => {
+    b.addEventListener('click', () => openCatModal(b.dataset.cat));
+  });
+  list.querySelectorAll('[data-action="delete-cat"]').forEach(b => {
+    b.addEventListener('click', () => deleteCategory(b.dataset.cat));
+  });
+}
+
+function openCatModal(catName){
+  const modal = document.getElementById('catModal');
+  const title = document.getElementById('catModalTitle');
+  const input = document.getElementById('catName');
+  if(catName){
+    title.textContent = 'Rename Category';
+    input.value = catName;
+    input.dataset.original = catName;
+  } else {
+    title.textContent = 'New Category';
+    input.value = '';
+    delete input.dataset.original;
+  }
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 50);
+}
+function closeCatModal(){
+  document.getElementById('catModal').classList.remove('open');
+}
+function saveCatModal(){
+  const input = document.getElementById('catName');
+  const name = input.value.trim();
+  if(!name){ toast('名前を入力してください','error'); return; }
+  const original = input.dataset.original;
+  if(original){
+    // rename
+    if(name !== original && DATA.find(g => g.cat === name)){
+      toast('同名のカテゴリが既に存在します','error'); return;
+    }
+    const g = DATA.find(g => g.cat === original);
+    g.cat = name;
+    if(currentCat === original) currentCat = name;
+    g.items.forEach(it => { if(it.tag === original) it.tag = name; });
+  } else {
+    // create
+    if(DATA.find(g => g.cat === name)){
+      toast('同名のカテゴリが既に存在します','error'); return;
+    }
+    DATA.push({cat:name, items:[]});
+    currentCat = name;
+  }
+  save();
+  closeCatModal();
+  renderCategories();
+  renderWorks();
+  renderContent();
+  toast('保存しました');
+}
+function deleteCategory(catName){
+  const g = DATA.find(g => g.cat === catName);
+  confirmAction(`カテゴリ「${catName}」と${g.items.length}件の作品を削除します。よろしいですか？`, () => {
+    DATA = DATA.filter(g => g.cat !== catName);
+    if(currentCat === catName){ currentCat = null; currentItem = null; }
+    save();
+    renderCategories();
+    renderWorks();
+    renderContent();
+    toast('削除しました');
+  });
+}
+
+/* ─── 作品リスト ─── */
+function renderWorks(){
+  const list = document.getElementById('workList');
+  const header = document.getElementById('worksHeader');
+  list.innerHTML = '';
+  if(!currentCat){
+    header.textContent = 'Works';
+    return;
+  }
+  header.textContent = `Works — ${currentCat}`;
+  const group = DATA.find(g => g.cat === currentCat);
+  group.items.forEach((item, idx) => {
+    const li = document.createElement('li');
+    li.className = 'work-list-item';
+    li.innerHTML = `
+      <button class="work-btn ${currentItem && currentItem.item === item ? 'active' : ''}" data-idx="${idx}">
+        ${escapeHtml(item.title || '(無題)')}
+      </button>
+      <button class="cat-icon-btn danger" data-action="delete-work" data-idx="${idx}" title="Delete">×</button>
+    `;
+    list.appendChild(li);
+  });
+  list.querySelectorAll('.work-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const idx = parseInt(b.dataset.idx);
+      currentItem = { catName: currentCat, item: group.items[idx], idx };
+      renderWorks();
+      renderContent();
+    });
+  });
+  list.querySelectorAll('[data-action="delete-work"]').forEach(b => {
+    b.addEventListener('click', () => {
+      const idx = parseInt(b.dataset.idx);
+      const item = group.items[idx];
+      confirmAction(`作品「${item.title}」を削除します。よろしいですか？`, () => {
+        group.items.splice(idx, 1);
+        if(currentItem && currentItem.item === item){ currentItem = null; }
+        save();
+        renderCategories();
+        renderWorks();
+        renderContent();
+        toast('削除しました');
+      });
+    });
+  });
+}
+
+/* ─── PROFILE ページ ─── */
+function renderProfileContent(root){
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-title">Profile Images</div>
+      <div class="help-text" style="margin-bottom:.6rem">
+        ・複数枚アップロードすると、PROFILE画像が6秒ごとに切り替わるスライドショーになります<br>
+        ・1枚のみの場合は静止画として表示されます<br>
+        ・ドラッグ＆ドロップで表示順を変更できます
+      </div>
+      <div class="images-grid" id="profileImagesGrid"></div>
+    </div>
+  `;
+  renderProfileImages();
+}
+
+function renderProfileImages(){
+  const grid = document.getElementById('profileImagesGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(!PROFILE.images) PROFILE.images = [];
+
+  PROFILE.images.forEach((img, idx) => {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <img src="${img.src}" alt="">
+      <div class="img-actions">
+        <button data-action="del">×</button>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    card.querySelector('[data-action="del"]').addEventListener('click', e => {
+      e.stopPropagation();
+      PROFILE.images.splice(idx, 1);
+      save();
+      renderProfileImages();
+      updateProfileCount();
+    });
+
+    // DnD
+    card.addEventListener('dragstart', () => {
+      card.classList.add('dragging');
+      window._draggingProfileIdx = idx;
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.img-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const fromIdx = window._draggingProfileIdx;
+      if(fromIdx === idx) return;
+      const moved = PROFILE.images.splice(fromIdx, 1)[0];
+      PROFILE.images.splice(idx, 0, moved);
+      save();
+      renderProfileImages();
+    });
+  });
+
+  // アップロード枠
+  const up = document.createElement('label');
+  up.className = 'img-upload';
+  up.innerHTML = '＋ Upload';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+  up.appendChild(input);
+  grid.appendChild(up);
+
+  input.addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []);
+    for(const file of files){
+      try {
+        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        PROFILE.images.push({src: dataUrl});
+      } catch(err){
+        toast(`${file.name}の読み込み失敗`,'error');
+      }
+    }
+    save();
+    renderProfileImages();
+    updateProfileCount();
+    toast(`${files.length}枚追加しました`);
+  });
+}
+
+function updateProfileCount(){
+  const el = document.getElementById('profileImgCount');
+  if(el) el.textContent = (PROFILE.images || []).length;
+}
+
+/* ─── コンテンツエリア ─── */
+function renderContent(){
+  const root = document.getElementById('content');
+  if(currentPage === 'profile'){
+    renderProfileContent(root);
+    return;
+  }
+  if(!currentItem){
+    root.innerHTML = '<div class="content-empty">作品を選択するか、新規作成してください。</div>';
+    return;
+  }
+  const it = currentItem.item;
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-title">Basic Info</div>
+      <div class="field">
+        <label class="field-label">Title — タイトル</label>
+        <input type="text" data-bind="title" value="${escapeAttr(it.title || '')}">
+      </div>
+      <div class="field">
+        <label class="field-label">Lead — 一覧用 短い説明文</label>
+        <textarea data-bind="desc" rows="2">${escapeHtml(it.desc || '')}</textarea>
+        <div class="help-text">WORKS一覧のホバー時に表示される短い説明文</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Body — 詳細ページ本文</label>
+        <textarea data-bind="lead" rows="4">${escapeHtml(it.lead || '')}</textarea>
+        <div class="help-text">詳細ページの説明文</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Data</div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Client</label>
+          <input type="text" data-meta="client" value="${escapeAttr((it.meta && it.meta.client) || '')}">
+        </div>
+        <div class="field">
+          <label class="field-label">Year</label>
+          <input type="text" data-meta="year" value="${escapeAttr((it.meta && it.meta.year) || '')}">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Art Direction</label>
+          <input type="text" data-meta="artDirection" value="${escapeAttr((it.meta && it.meta.artDirection) || '')}">
+        </div>
+        <div class="field">
+          <label class="field-label">Design</label>
+          <input type="text" data-meta="design" value="${escapeAttr((it.meta && it.meta.design) || '')}">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Direction</label>
+          <input type="text" data-meta="direction" value="${escapeAttr((it.meta && it.meta.direction) || '')}">
+        </div>
+        <div class="field">
+          <label class="field-label">Tools</label>
+          <input type="text" data-meta="tools" value="${escapeAttr((it.meta && it.meta.tools) || '')}">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Images</div>
+      <div class="help-text" style="margin-bottom:.6rem">
+        ・1枚目はWORKS一覧のサムネイル / HOMEのスライド画像になります<br>
+        ・各画像の右下のセレクトで「1列/2列/3列」(詳細ページの表示列数)を切替<br>
+        ・ドラッグ＆ドロップで並び替え可能
+      </div>
+      <div class="images-grid" id="imagesGrid"></div>
+    </div>
+
+    <div class="section" style="display:flex;gap:.6rem">
+      <button class="btn btn-primary" id="saveBtn">Save Changes</button>
+    </div>
+  `;
+
+  // バインド
+  root.querySelectorAll('[data-bind]').forEach(el => {
+    el.addEventListener('input', () => {
+      it[el.dataset.bind] = el.value;
+    });
+  });
+  root.querySelectorAll('[data-meta]').forEach(el => {
+    el.addEventListener('input', () => {
+      if(!it.meta) it.meta = {};
+      it.meta[el.dataset.meta] = el.value;
+    });
+  });
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    save();
+    renderWorks();
+    toast('保存しました');
+  });
+
+  renderImages();
+}
+
+/* ─── 画像 ─── */
+function renderImages(){
+  const grid = document.getElementById('imagesGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  const it = currentItem.item;
+  if(!it.images) it.images = [];
+
+  it.images.forEach((img, idx) => {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <img src="${img.src}" alt="">
+      ${idx === 0 ? '<div class="img-thumb-badge">Thumb</div>' : ''}
+      <div class="img-actions">
+        <button data-action="del">×</button>
+      </div>
+      <select class="img-cols-select" data-action="cols">
+        <option value="1" ${img.cols === 1 ? 'selected' : ''}>1col</option>
+        <option value="2" ${img.cols === 2 ? 'selected' : ''}>2col</option>
+        <option value="3" ${img.cols === 3 ? 'selected' : ''}>3col</option>
+      </select>
+    `;
+    grid.appendChild(card);
+
+    card.querySelector('[data-action="del"]').addEventListener('click', e => {
+      e.stopPropagation();
+      it.images.splice(idx, 1);
+      save();
+      renderImages();
+    });
+    card.querySelector('[data-action="cols"]').addEventListener('change', e => {
+      img.cols = parseInt(e.target.value);
+      save();
+    });
+    card.querySelector('[data-action="cols"]').addEventListener('click', e => e.stopPropagation());
+
+    // DnD
+    card.addEventListener('dragstart', () => {
+      card.classList.add('dragging');
+      window._draggingIdx = idx;
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.img-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const fromIdx = window._draggingIdx;
+      const toIdx = idx;
+      if(fromIdx === toIdx) return;
+      const moved = it.images.splice(fromIdx, 1)[0];
+      it.images.splice(toIdx, 0, moved);
+      save();
+      renderImages();
+    });
+  });
+
+  // アップロード枠
+  const up = document.createElement('label');
+  up.className = 'img-upload';
+  up.innerHTML = '＋ Upload';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+  up.appendChild(input);
+  grid.appendChild(up);
+
+  input.addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []);
+    for(const file of files){
+      try {
+        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        it.images.push({src: dataUrl, cols: 1});
+      } catch(err){
+        toast(`${file.name}の読み込み失敗`,'error');
+      }
+    }
+    save();
+    renderImages();
+    toast(`${files.length}枚追加しました`);
+  });
+}
+
+/* 画像をリサイズしてBase64で保存 */
+function readImageAsResizedDataURL(file, maxW, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = img.width > maxW ? maxW / img.width : 1;
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ─── 確認モーダル ─── */
+function confirmAction(text, ok){
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmText').textContent = text;
+  modal.classList.add('open');
+  const okBtn = document.getElementById('confirmOkBtn');
+  const cancelBtn = document.getElementById('confirmCancelBtn');
+  const close = () => { modal.classList.remove('open'); okBtn.replaceWith(okBtn.cloneNode(true)); };
+  document.getElementById('confirmOkBtn').onclick = () => { close(); ok(); };
+  cancelBtn.onclick = close;
+}
+
+/* ─── 新規作品 ─── */
+function addWork(){
+  if(!currentCat){ toast('先にカテゴリを選択してください','error'); return; }
+  const group = DATA.find(g => g.cat === currentCat);
+  const newItem = {
+    id: uid(),
+    tag: currentCat,
+    title: '新規作品',
+    desc: '',
+    lead: '',
+    meta:{client:'',year:'',artDirection:'',design:'',direction:'',tools:''},
+    images: []
+  };
+  group.items.push(newItem);
+  currentItem = { catName: currentCat, item: newItem, idx: group.items.length - 1 };
+  save();
+  renderCategories();
+  renderWorks();
+  renderContent();
+}
+
+/* ─── Export / Import ─── */
+function exportData(){
+  const exportObj = { works: DATA, profile: PROFILE };
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `portfolio-data-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let newData, newProfile;
+      if(Array.isArray(data)){
+        // 旧形式：worksのみ
+        newData = data;
+        newProfile = PROFILE;
+      } else if(data.works){
+        newData = data.works;
+        newProfile = data.profile || { images: [] };
+      } else {
+        throw new Error('Invalid');
+      }
+      confirmAction('現在のデータを上書きします。よろしいですか？', () => {
+        DATA = newData;
+        PROFILE = newProfile;
+        currentCat = null; currentItem = null; currentPage = null;
+        save();
+        updateProfileCount();
+        renderCategories();
+        renderWorks();
+        renderContent();
+        toast('インポート完了');
+      });
+    } catch(err){
+      toast('JSONの読み込みに失敗','error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ─── ESCAPE ─── */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+/* ─── INIT ─── */
+load();
+updateProfileCount();
+renderCategories();
+renderWorks();
+renderContent();
+
+/* Profile ページ選択 */
+document.getElementById('profilePageBtn').addEventListener('click', () => {
+  currentPage = 'profile';
+  currentCat = null;
+  currentItem = null;
+  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('profilePageBtn').classList.add('active');
+  renderWorks();
+  renderContent();
+});
+
+/* カテゴリ選択時にPROFILEモードを解除（renderCategories内のクリックを上書き） */
+const _origRenderCategories = renderCategories;
+renderCategories = function(){
+  _origRenderCategories();
+  // クリックでprofileBtn を非active化
+  document.querySelectorAll('.cat-item[data-cat]').forEach(b => {
+    b.addEventListener('click', () => {
+      currentPage = null;
+      const pBtn = document.getElementById('profilePageBtn');
+      if(pBtn) pBtn.classList.remove('active');
+    });
+  });
+};
+renderCategories();
+
+document.getElementById('addCatBtn').addEventListener('click', () => openCatModal());
+document.getElementById('catCancelBtn').addEventListener('click', closeCatModal);
+document.getElementById('catSaveBtn').addEventListener('click', saveCatModal);
+document.getElementById('catName').addEventListener('keydown', e => { if(e.key === 'Enter') saveCatModal(); });
+document.getElementById('addWorkBtn').addEventListener('click', addWork);
+document.getElementById('exportBtn').addEventListener('click', exportData);
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e => {
+  if(e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = '';
+});
+</script>
+</body>
+</html>

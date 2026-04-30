@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Work — SHOTA INOUE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@200;300;400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#2D2E2E;
+  --bg2:#252626;
+  --accent:#50F0D2;
+  --text:#E1E2E2;
+  --text-dim:rgba(225,226,226,.42);
+  --text-mid:rgba(225,226,226,.68);
+  --border:rgba(225,226,226,.1);
+  --ff-disp:'MuseoModerno',sans-serif;
+  --ff-sm:'Bricolage Grotesque',sans-serif;
+  --ff-jp:'Noto Sans JP',sans-serif;
+  --eoe:cubic-bezier(0.16,1,0.3,1);
+  --ph:linear-gradient(135deg,#3a3b3b 0%,#2a2b2b 40%,#323333 100%);
+  --safe-x:calc((3.5rem + 48px) * 1.5);
+}
+html{scroll-behavior:smooth}
+body{background:transparent;color:var(--text);font-family:var(--ff-jp);min-height:100vh;position:relative;cursor:none}
+
+/* PHOTO PLACEHOLDER */
+.ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
+.ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
+
+/* CURSOR */
+.cursor{position:fixed;width:10px;height:10px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s var(--eoe),height .2s var(--eoe),background .2s,opacity .2s}
+.cursor.expanded{width:36px;height:36px;background:rgba(255,255,255,.15)}
+@media(hover:none){.cursor{display:none}body{cursor:auto}}
+
+/* DOTS BACKGROUND */
+#dotsCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* PAGE */
+.page{position:relative;z-index:1}
+
+/* ─── NAV ─── */
+/* PC: ロゴとハンバーガーを左右セーフエリア中央に */
+.nav-logo{
+  position:fixed;
+  left:calc(var(--safe-x) / 2);top:50%;
+  transform:translate(-50%,-50%);
+  z-index:401;
+  width:48px;height:48px;
+  background:#3a3b3b;
+  overflow:hidden;cursor:pointer;
+  pointer-events:auto;
+  transition:transform .3s var(--eoe);
+}
+.nav-logo::after{
+  content:'LOGO';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-sm);font-size:8.5px;font-weight:400;
+  letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;
+}
+.nav-logo:hover{transform:translate(-50%,-50%) scale(1.05)}
+
+.hamburger{
+  position:fixed;
+  right:calc(var(--safe-x) / 2);top:50%;
+  transform:translate(50%,-50%);
+  z-index:401;
+  cursor:pointer;background:none;border:none;padding:0;
+  width:48px;height:48px;
+  pointer-events:auto;
+}
+.hamburger span{
+  display:block;width:34px;height:1.8px;background:var(--text);
+  position:absolute;left:7px;
+  transition:transform .3s ease,opacity .2s ease,top .28s ease,background .25s;
+}
+.hamburger span:nth-child(1){top:17px}
+.hamburger span:nth-child(2){top:24px}
+.hamburger span:nth-child(3){top:31px}
+.hamburger.open span:nth-child(1){top:24px;transform:rotate(45deg);background:var(--accent)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){top:24px;transform:rotate(-45deg);background:var(--accent)}
+
+/* MOBILE MENU */
+.mob-menu{
+  display:flex;
+  position:fixed;inset:0;
+  background:rgba(35,36,36,.97);
+  backdrop-filter:blur(12px);
+  z-index:400;
+  flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;
+  opacity:0;visibility:hidden;
+  transition:opacity .45s var(--eoe),visibility .45s;
+}
+.mob-menu.open{opacity:1;visibility:visible}
+.mob-menu a{
+  font-family:var(--ff-disp);font-size:2rem;font-weight:300;
+  letter-spacing:.14em;color:var(--text);text-decoration:none;text-transform:uppercase;
+  opacity:0;transform:translateY(28px);
+  transition:opacity .5s var(--eoe),transform .5s var(--eoe),color .25s,letter-spacing .3s;
+}
+.mob-menu.open a{opacity:1;transform:translateY(0)}
+.mob-menu.open a:nth-child(1){transition-delay:.18s}
+.mob-menu.open a:nth-child(2){transition-delay:.26s}
+.mob-menu.open a:nth-child(3){transition-delay:.34s}
+.mob-menu.open a:nth-child(4){transition-delay:.42s}
+.mob-menu.open a:nth-child(5){transition-delay:.5s}
+.mob-menu a:hover{color:var(--accent);letter-spacing:.22em}
+
+/* ─── BACK LINK ─── */
+.back-link{
+  position:fixed;
+  top:1.6rem;left:var(--safe-x);
+  z-index:50;
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-family:var(--ff-disp);font-weight:400;
+  font-size:13px;letter-spacing:.16em;
+  color:var(--text-dim);text-decoration:none;
+  transition:color .25s,gap .3s var(--eoe);
+}
+.back-link:hover{color:var(--accent);gap:.9rem}
+.back-link::before{
+  content:'';
+  width:8px;height:8px;
+  border-left:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg);
+  transition:border-color .25s;
+}
+
+/* ─── HERO ─── */
+.hero{
+  padding:8rem var(--safe-x) 4rem;
+  max-width:1400px;
+  margin:0 auto;
+}
+.hero-title{
+  font-family:var(--ff-jp);font-weight:300;
+  font-size:clamp(1.4rem,2.4vw,2.1rem);
+  letter-spacing:.02em;line-height:1.45;
+  color:var(--text);margin-bottom:1.6rem;
+}
+.hero-lead{
+  font-family:var(--ff-jp);font-size:14px;line-height:2;
+  color:var(--text);max-width:680px;
+}
+
+/* ─── DATA SECTION ─── */
+.data-section{
+  padding:0 var(--safe-x) 4rem;
+  max-width:1400px;
+  margin:0 auto;
+}
+.data-list{
+  font-family:var(--ff-jp);font-size:13.5px;font-weight:300;
+  color:var(--text);line-height:1.7;
+}
+.data-list .lbl{
+  font-family:var(--ff-sm);font-weight:400;
+  font-size:11px;letter-spacing:.04em;
+  color:var(--text);text-transform:uppercase;
+  margin-right:.7rem;
+}
+
+/* ─── IMAGES ─── */
+.images{
+  padding:0 var(--safe-x) 5rem;
+  max-width:1400px;
+  margin:0 auto;
+  display:flex;flex-direction:column;
+  gap:1rem;
+}
+.img-row{
+  display:grid;
+  gap:1rem;
+}
+.img-row.cols-1{grid-template-columns:1fr}
+.img-row.cols-2{grid-template-columns:1fr 1fr}
+.img-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+
+.img-row .ph{aspect-ratio:16/9}
+.img-row.cols-2 .ph{aspect-ratio:4/3}
+.img-row.cols-3 .ph{aspect-ratio:1/1}
+
+/* ─── FOOTER ─── */
+.contact-footer{
+  position:relative;z-index:1;
+  background:var(--bg2);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.4rem var(--safe-x);
+}
+.cf-links{display:flex;gap:3rem}
+.cf-links a{
+  font-family:var(--ff-disp);font-weight:400;
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text);text-decoration:none;transition:color .2s;
+}
+.cf-links a:hover{color:var(--accent)}
+.footer-logo{
+  width:34px;height:34px;background:#3a3b3b;position:relative;overflow:hidden;
+}
+.footer-logo::after{
+  content:'LOGO';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-sm);font-size:7px;font-weight:400;
+  letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;
+}
+
+/* ─── SCROLL REVEAL ─── */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .9s var(--eoe)}
+.rv.vis{opacity:1;transform:translateY(0)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  /* SP nav reset */
+  .nav-logo,.hamburger{
+    all:unset;
+    position:fixed;
+    z-index:401;
+    cursor:pointer;
+    pointer-events:auto;
+  }
+  .nav-logo{
+    top:1.2rem;left:1.5rem;
+    width:32px;height:32px;
+    background:#3a3b3b;
+    overflow:hidden;
+  }
+  .nav-logo::after{
+    content:'LOGO';position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--ff-sm);font-size:7px;font-weight:400;
+    letter-spacing:.18em;color:rgba(225,226,226,.25);text-transform:uppercase;
+  }
+  .hamburger{
+    top:1.2rem;right:1.5rem;
+    width:32px;height:32px;
+  }
+  .hamburger span{
+    display:block;
+    position:absolute;
+    background:var(--text);
+    transition:transform .3s ease,opacity .2s ease,top .28s ease,background .25s;
+    width:20px;height:1.5px;left:5px;
+  }
+  .hamburger span:nth-child(1){top:10px}
+  .hamburger span:nth-child(2){top:16px}
+  .hamburger span:nth-child(3){top:22px}
+  .hamburger.open span:nth-child(1){top:16px;transform:rotate(45deg);background:var(--accent)}
+  .hamburger.open span:nth-child(2){opacity:0}
+  .hamburger.open span:nth-child(3){top:16px;transform:rotate(-45deg);background:var(--accent)}
+
+  .back-link{
+    top:auto;bottom:auto;left:6vw;
+    position:absolute;top:5rem;
+  }
+
+  .hero{padding:9.5rem 6vw 3rem}
+  .hero-title{font-size:clamp(1.5rem,6vw,2.2rem)}
+  .hero-lead{font-size:13px}
+
+  .data-section{padding:0 6vw 3rem}
+  .data-list{font-size:12px;line-height:2}
+  .data-list .lbl{font-size:10px}
+
+  .images{padding:0 6vw 4rem;gap:.5rem}
+  .img-row{gap:.5rem}
+  /* SPはワイドいっぱい・マージンあり、1〜3列対応 */
+  .img-row.cols-2{grid-template-columns:1fr 1fr;gap:.4rem}
+  .img-row.cols-3{grid-template-columns:1fr 1fr 1fr;gap:.3rem}
+
+  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
+  .cf-links{gap:2rem}
+  .cf-links a{font-size:10px;letter-spacing:.14em}
+  .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
+  .footer-logo::after{font-size:5.5px}
+}
+@media(max-width:520px){
+  .cf-links{gap:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND DOTS -->
+<canvas id="dotsCanvas"></canvas>
+
+<!-- CURSOR -->
+<div class="cursor" id="cur"></div>
+
+<!-- NAV -->
+<a href="index.html" class="nav-logo" id="navLogoBtn"></a>
+<button class="hamburger" id="ham" aria-label="menu">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mobMenu">
+  <a href="index.html#top">Home</a>
+  <a href="index.html#works">Works</a>
+  <a href="index.html#profile">Profile</a>
+  <a href="index.html#skill">Skill</a>
+  <a href="index.html#contact">Contact</a>
+</div>
+
+<div class="page">
+
+  <!-- BACK LINK: WORKS一覧ページに戻る -->
+  <a href="index.html?works=1" class="back-link" id="backLink">Back to WORKS</a>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title rv" id="heroTitle">Work Title</h1>
+    <p class="hero-lead rv" id="heroLead">コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。</p>
+  </section>
+
+  <!-- DATA -->
+  <section class="data-section">
+    <div class="data-list rv">
+      <div><span class="lbl">Client</span>SOTOYA</div>
+      <div><span class="lbl">Year</span>2024</div>
+      <div><span class="lbl">Art Direction</span>SHOTA INOUE</div>
+      <div><span class="lbl">Design</span>SHOTA INOUE</div>
+      <div><span class="lbl">Direction</span>SHOTA INOUE</div>
+      <div><span class="lbl">Tools</span>Illustrator / Photoshop / Indesign</div>
+    </div>
+  </section>
+
+  <!-- IMAGES -->
+  <section class="images">
+    <!-- 1列フルワイド -->
+    <div class="img-row cols-1 rv">
+      <div class="ph"></div>
+    </div>
+    <!-- 2列 -->
+    <div class="img-row cols-2 rv">
+      <div class="ph"></div>
+      <div class="ph"></div>
+    </div>
+    <!-- 1列フルワイド -->
+    <div class="img-row cols-1 rv">
+      <div class="ph"></div>
+    </div>
+    <!-- 3列 -->
+    <div class="img-row cols-3 rv">
+      <div class="ph"></div>
+      <div class="ph"></div>
+      <div class="ph"></div>
+    </div>
+    <!-- 2列 -->
+    <div class="img-row cols-2 rv">
+      <div class="ph"></div>
+      <div class="ph"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="contact-footer">
+    <div class="cf-links">
+      <a href="index.html#top">HOME</a>
+      <a href="index.html#works">WORKS</a>
+      <a href="index.html#profile">PROFILE</a>
+      <a href="index.html#skill">SKILL</a>
+      <a href="index.html#contact">CONTACT</a>
+    </div>
+    <div class="footer-logo"></div>
+  </footer>
+
+</div>
+
+<script>
+/* CURSOR */
+const cur = document.getElementById('cur');
+let mx=0,my=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+document.querySelectorAll('a,button,.nav-logo').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('expanded'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
+});
+
+/* MOBILE MENU */
+const ham = document.getElementById('ham');
+const mob = document.getElementById('mobMenu');
+ham.addEventListener('click', () => {
+  const o = mob.classList.toggle('open');
+  ham.classList.toggle('open', o);
+});
+document.querySelectorAll('.mob-menu a').forEach(a => {
+  a.addEventListener('click', () => {
+    mob.classList.remove('open');
+    ham.classList.remove('open');
+  });
+});
+
+/* SCROLL REVEAL */
+const rvObs = new IntersectionObserver((entries, obs) => {
+  entries.forEach((e, i) => {
+    if(e.isIntersecting){
+      setTimeout(() => e.target.classList.add('vis'), i * 80);
+      obs.unobserve(e.target);
+    }
+  });
+}, {threshold:.15});
+document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
+
+/* URLパラメータ + データ取得 */
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+
+let WORKS_DATA = [];
+try {
+  const stored = localStorage.getItem('worksData');
+  if(stored) WORKS_DATA = JSON.parse(stored);
+} catch(e){}
+
+const flatList = [];
+WORKS_DATA.forEach(g => g.items.forEach(it => flatList.push(it)));
+const item = flatList.find(it => it.id === id);
+
+if(item){
+  document.getElementById('heroTitle').textContent = item.title;
+  document.getElementById('heroLead').textContent = item.desc;
+  document.title = `${item.title} — SHOTA INOUE`;
+}
+
+/* ─── 背景ドットエフェクト ─── */
+(() => {
+  const canvas = document.getElementById('dotsCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  const SPACING = 14;
+  const BASE_RADIUS = 0.9;
+  const MAX_RADIUS = 5.0;
+  const INFLUENCE = 120;
+  const EASE = 0.12;
+  const IDLE_DECAY = 0.85;
+  const STOP_DELAY = 750;
+
+  const BG_COLOR = '#2D2E2E';
+  const DOT_COLOR = '#3a3b3b';
+  const ACCENT_COLOR = '#4a4b4b';
+
+  let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  let W = 0, H = 0;
+  let stopTimer = null;
+
+  const pointer = { x:-9999, y:-9999, tx:-9999, ty:-9999, strength:0, targetStrength:0 };
+
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function resetStopTimer(){
+    pointer.targetStrength = 1;
+    clearTimeout(stopTimer);
+    stopTimer = setTimeout(() => { pointer.targetStrength = 0; }, STOP_DELAY);
+  }
+
+  window.addEventListener('mousemove', e => {
+    pointer.tx = e.clientX; pointer.ty = e.clientY;
+    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+    resetStopTimer();
+  });
+  window.addEventListener('mouseleave', () => {
+    pointer.targetStrength = 0;
+    clearTimeout(stopTimer);
+  });
+  window.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    pointer.tx = t.clientX; pointer.ty = t.clientY;
+    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+    resetStopTimer();
+  }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    pointer.tx = t.clientX; pointer.ty = t.clientY;
+    resetStopTimer();
+  }, { passive: true });
+  window.addEventListener('touchend', () => {
+    pointer.targetStrength = 0;
+    clearTimeout(stopTimer);
+  });
+
+  let isTouchDev = window.matchMedia('(hover:none)').matches;
+  window.addEventListener('resize', () => {
+    isTouchDev = window.matchMedia('(hover:none)').matches;
+  });
+
+  function frame(){
+    if(pointer.tx > -9000){
+      if(isTouchDev){
+        pointer.x = pointer.tx;
+        pointer.y = pointer.ty;
+      } else {
+        pointer.x += (pointer.tx - pointer.x) * EASE;
+        pointer.y += (pointer.ty - pointer.y) * EASE;
+      }
+    }
+    if(pointer.targetStrength > pointer.strength){
+      pointer.strength += (pointer.targetStrength - pointer.strength) * 0.1;
+    }else{
+      pointer.strength *= IDLE_DECAY;
+      if(pointer.strength < 0.001) pointer.strength = 0;
+    }
+
+    ctx.fillStyle = BG_COLOR;
+    ctx.fillRect(0, 0, W, H);
+
+    const px = pointer.x, py = pointer.y;
+    const s = pointer.strength;
+    const inflSq = INFLUENCE * INFLUENCE;
+
+    ctx.fillStyle = DOT_COLOR;
+    ctx.beginPath();
+    let row = 0;
+    for(let y = SPACING/2; y < H; y += SPACING){
+      const offset = (row % 2) ? SPACING/2 : 0;
+      for(let x = SPACING/2 + offset; x < W; x += SPACING){
+        const dx = x - px, dy = y - py;
+        if(s > 0.01 && (dx*dx + dy*dy) < inflSq) continue;
+        ctx.moveTo(x + BASE_RADIUS, y);
+        ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
+      }
+      row++;
+    }
+    ctx.fill();
+
+    if(s > 0.01){
+      let row2 = 0;
+      for(let y = SPACING/2; y < H; y += SPACING){
+        const offset = (row2 % 2) ? SPACING/2 : 0;
+        for(let x = SPACING/2 + offset; x < W; x += SPACING){
+          const dx = x - px, dy = y - py;
+          const distSq = dx*dx + dy*dy;
+          if(distSq >= inflSq) continue;
+          const dist = Math.sqrt(distSq);
+          let t = 1 - dist / INFLUENCE;
+          t = t * t * (3 - 2 * t) * s;
+          const r = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * t;
+          ctx.fillStyle = (t > 0.6) ? ACCENT_COLOR : DOT_COLOR;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        row2++;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
