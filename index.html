@@ -32,29 +32,44 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
 .ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
 
-/* MESH GRADIENT — アニメーションを削除し静止画化 */
-.mesh-container{
-  position:absolute;inset:0;
-  overflow:hidden;
-  filter:blur(10px); /* 重い場合はここを 60px 程度に下げるとより軽くなります */
-  pointer-events:none;
-  z-index:0;
-  background:#000;
-  will-change: transform;
-}
-.mesh-container .color-circle{
-  position:absolute;
-  width:150%;height:150%;
-  border-radius:50%;
-  /* animationを削除 */
-  opacity: .5;
+/* MESH GRADIENT — フィルターを使わない軽量版 */
+.mesh-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  background: #000;
+  /* filter: blur を削除（これがフチのぼやけの原因） */
+  will-change: auto; /* 重い時は一旦リセット */
 }
 
-/* 各色の位置を固定 */
-.mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 60%);top:-50%;left:-50%;}
-.mesh-container .c2{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;}
-.mesh-container .c3{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;}
-.mesh-container .c4{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;}
+.mesh-container .color-circle {
+  position: absolute;
+  width: 120vmax; /* 少しサイズを調整 */
+  height: 120vmax;
+  border-radius: 50%;
+  opacity: 0.4;
+  /* 円自体に強いグラデーションをかけることで、blurなしでボケを表現 */
+}
+
+/* 放射状グラデーションの境界を極限まで広げることで、フィルターなしでボカす */
+.mesh-container .c1 {
+  background: radial-gradient(circle, rgba(1,79,88,1) 0%, rgba(1,79,88,0) 70%);
+  top: -40%; left: -30%;
+}
+.mesh-container .c2 {
+  background: radial-gradient(circle, rgba(16,78,74,1) 0%, rgba(16,78,74,0) 70%);
+  top: -60%; right: -20%;
+}
+.mesh-container .c3 {
+  background: radial-gradient(circle, rgba(126,62,44,1) 0%, rgba(126,62,44,0) 70%);
+  bottom: -40%; left: -20%;
+}
+.mesh-container .c4 {
+  background: radial-gradient(circle, rgba(138,101,56,1) 0%, rgba(138,101,56,0) 70%);
+  bottom: -50%; right: -30%;
+}
 
 /* LOADER */
 #loader{position:fixed;inset:0;background:#2D2E2E;z-index:10000;display:flex;align-items:center;justify-content:center}
