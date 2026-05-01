@@ -305,6 +305,7 @@ body{padding-bottom:6rem}
 <header class="cms-header">
   <h1 class="cms-title">CMS — Portfolio</h1>
   <div class="header-actions">
+    <button class="btn btn-ghost" id="resetBtn">Reset</button>
     <button class="btn btn-ghost" id="exportBtn">Export JSON</button>
     <button class="btn btn-primary" id="exportZipBtn">Export ZIP</button>
     <button class="btn btn-ghost" id="importBtn">Import</button>
@@ -322,6 +323,11 @@ body{padding-bottom:6rem}
         <li class="cat-row">
           <button class="cat-item" id="logoPageBtn">
             Logo <span class="count" id="logoStatus">—</span>
+          </button>
+        </li>
+        <li class="cat-row">
+          <button class="cat-item" id="homeBgPageBtn">
+            Home BG Slides <span class="count" id="homeBgCount">0</span>
           </button>
         </li>
         <li class="cat-row">
@@ -402,12 +408,14 @@ WORKS_DATA: [
 const STORAGE_KEY = 'worksData';
 const PROFILE_KEY = 'profileData';
 const LOGO_KEY = 'logoData';
+const HOMEBG_KEY = 'homeBgData';
 let DATA = [];
 let PROFILE = { images: [] };
 let LOGO = { src: '' };
+let HOME_BG = { images: [] };
 let currentCat = null;
 let currentItem = null;
-let currentPage = null;    // 'profile' | 'logo' | null
+let currentPage = null;    // 'profile' | 'logo' | 'homebg' | null
 
 /* ─── UTIL ─── */
 function uid(){
@@ -446,11 +454,17 @@ function load(){
       LOGO = JSON.parse(lRaw);
       if(!LOGO.src) LOGO.src = '';
     }
+    const hRaw = localStorage.getItem(HOMEBG_KEY);
+    if(hRaw){
+      HOME_BG = JSON.parse(hRaw);
+      if(!HOME_BG.images) HOME_BG.images = [];
+    }
   } catch(e){
     console.error(e);
     DATA = getDefaultData();
     PROFILE = { images: [] };
     LOGO = { src: '' };
+    HOME_BG = { images: [] };
   }
 }
 function save(){
@@ -458,6 +472,7 @@ function save(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE));
     localStorage.setItem(LOGO_KEY, JSON.stringify(LOGO));
+    localStorage.setItem(HOMEBG_KEY, JSON.stringify(HOME_BG));
   } catch(e){
     toast('保存に失敗しました（容量超過の可能性）', 'error');
   }
@@ -649,8 +664,8 @@ function renderLogoContent(root){
       </div>
       <div class="images-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
         ${hasLogo ? `
-          <div class="img-card" style="background:#3a3b3b">
-            <img src="${LOGO.src}" alt="" style="object-fit:contain;padding:1rem">
+          <div class="img-card" style="background:#1d1e1e;border:1px solid var(--border)">
+            <img src="${LOGO.src}" alt="" style="object-fit:contain;padding:1rem;width:100%;height:100%">
             <div class="img-actions">
               <button data-action="logo-del">×</button>
             </div>
@@ -670,8 +685,14 @@ function renderLogoContent(root){
       const f = e.target.files[0];
       if(!f) return;
       try {
-        // ロゴはサイズ小さめでOK
-        const dataUrl = await readImageAsResizedDataURL(f, 512, 0.92);
+        let dataUrl;
+        // SVG/PNGはそのまま読み込む（透過・画質維持）
+        if(f.type === 'image/svg+xml' || f.type === 'image/png'){
+          dataUrl = await readFileAsDataURL(f);
+        } else {
+          // JPGなどはリサイズ
+          dataUrl = await readImageAsResizedDataURL(f, 512, 0.92);
+        }
         LOGO.src = dataUrl;
         save();
         renderLogoContent(root);
@@ -700,13 +721,108 @@ function updateLogoStatus(){
   if(el) el.textContent = LOGO.src ? '✓' : '—';
 }
 
+/* ─── HOME BG ページ ─── */
+function renderHomeBgContent(root){
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-title">Home — WORKS Background Slides</div>
+      <div class="help-text" style="margin-bottom:.6rem">
+        ・HOMEのWORKSセクション背景でスライドする画像を指定します<br>
+        ・複数枚アップロードすると順番に流れます<br>
+        ・空の場合は WORKS 各作品の1枚目画像が自動で使われます
+      </div>
+      <div class="images-grid" id="homeBgImagesGrid"></div>
+    </div>
+  `;
+  renderHomeBgImages();
+}
+
+function renderHomeBgImages(){
+  const grid = document.getElementById('homeBgImagesGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(!HOME_BG.images) HOME_BG.images = [];
+
+  HOME_BG.images.forEach((img, idx) => {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <img src="${img.src}" alt="">
+      <div class="img-actions">
+        <button data-action="del">×</button>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    card.querySelector('[data-action="del"]').addEventListener('click', e => {
+      e.stopPropagation();
+      HOME_BG.images.splice(idx, 1);
+      save();
+      renderHomeBgImages();
+      updateHomeBgCount();
+    });
+    card.addEventListener('dragstart', () => {
+      card.classList.add('dragging');
+      window._draggingHomeBgIdx = idx;
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.img-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const fromIdx = window._draggingHomeBgIdx;
+      if(fromIdx === idx) return;
+      const moved = HOME_BG.images.splice(fromIdx, 1)[0];
+      HOME_BG.images.splice(idx, 0, moved);
+      save();
+      renderHomeBgImages();
+    });
+  });
+
+  const up = document.createElement('label');
+  up.className = 'img-upload';
+  up.innerHTML = '＋ Upload';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+  up.appendChild(input);
+  grid.appendChild(up);
+
+  input.addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []);
+    for(const file of files){
+      try {
+        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        HOME_BG.images.push({src: dataUrl});
+      } catch(err){ toast(`${file.name}失敗`,'error'); }
+    }
+    save();
+    renderHomeBgImages();
+    updateHomeBgCount();
+    toast(`${files.length}枚追加しました`);
+  });
+}
+
+function updateHomeBgCount(){
+  const el = document.getElementById('homeBgCount');
+  if(el) el.textContent = (HOME_BG.images || []).length;
+}
+
 /* ─── PROFILE ページ ─── */
 function renderProfileContent(root){
   root.innerHTML = `
     <div class="section">
       <div class="section-title">Profile Images</div>
       <div class="help-text" style="margin-bottom:.6rem">
-        ・複数枚アップロードすると、PROFILE画像が6秒ごとに切り替わるスライドショーになります<br>
+        ・複数枚アップロードすると、PROFILE画像が4秒ごとに切り替わるスライドショーになります<br>
         ・1枚のみの場合は静止画として表示されます<br>
         ・ドラッグ＆ドロップで表示順を変更できます
       </div>
@@ -809,6 +925,10 @@ function renderContent(){
   }
   if(currentPage === 'logo'){
     renderLogoContent(root);
+    return;
+  }
+  if(currentPage === 'homebg'){
+    renderHomeBgContent(root);
     return;
   }
   if(!currentItem){
@@ -1023,6 +1143,16 @@ function readImageAsResizedDataURL(file, maxW, quality){
   });
 }
 
+/* ファイルをそのままBase64で保存（SVG/PNG透過保持用） */
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 /* ─── 確認モーダル ─── */
 function confirmAction(text, ok){
   const modal = document.getElementById('confirmModal');
@@ -1058,7 +1188,7 @@ function addWork(){
 
 /* ─── Export / Import ─── */
 function exportData(){
-  const exportObj = { works: DATA, profile: PROFILE, logo: LOGO };
+  const exportObj = { works: DATA, profile: PROFILE, logo: LOGO, homeBg: HOME_BG };
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1083,6 +1213,7 @@ async function exportZip(){
   const works = JSON.parse(JSON.stringify(DATA));
   const profile = JSON.parse(JSON.stringify(PROFILE));
   const logo = JSON.parse(JSON.stringify(LOGO));
+  const homeBg = JSON.parse(JSON.stringify(HOME_BG));
 
   let imgCounter = 0;
   function processImageEntry(entry, prefix){
@@ -1109,11 +1240,14 @@ async function exportZip(){
   if(profile.images){
     profile.images.forEach(img => processImageEntry(img, 'profile'));
   }
+  if(homeBg.images){
+    homeBg.images.forEach(img => processImageEntry(img, 'homebg'));
+  }
   if(logo.src){
     processImageEntry(logo, 'logo');
   }
 
-  zip.file('data.json', JSON.stringify({works, profile, logo}, null, 2));
+  zip.file('data.json', JSON.stringify({works, profile, logo, homeBg}, null, 2));
 
   const blob = await zip.generateAsync({type:'blob'});
   const url = URL.createObjectURL(blob);
@@ -1143,6 +1277,7 @@ async function importData(file){
       const newData = data.works || [];
       const newProfile = data.profile || { images: [] };
       const newLogo = data.logo || { src: '' };
+      const newHomeBg = data.homeBg || { images: [] };
 
       /* images/ フォルダの画像をBase64に戻す（編集中はBase64で扱う） */
       async function pathToBase64(entry){
@@ -1165,6 +1300,9 @@ async function importData(file){
       if(newProfile.images){
         for(const img of newProfile.images) await pathToBase64(img);
       }
+      if(newHomeBg.images){
+        for(const img of newHomeBg.images) await pathToBase64(img);
+      }
       if(newLogo.src){
         await pathToBase64(newLogo);
       }
@@ -1173,10 +1311,12 @@ async function importData(file){
         DATA = newData;
         PROFILE = newProfile;
         LOGO = newLogo;
+        HOME_BG = newHomeBg;
         currentCat = null; currentItem = null; currentPage = null;
         save();
         updateProfileCount();
         updateLogoStatus();
+        updateHomeBgCount();
         renderCategories();
         renderWorks();
         renderContent();
@@ -1194,15 +1334,17 @@ async function importData(file){
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      let newData, newProfile, newLogo;
+      let newData, newProfile, newLogo, newHomeBg;
       if(Array.isArray(data)){
         newData = data;
         newProfile = PROFILE;
         newLogo = LOGO;
+        newHomeBg = HOME_BG;
       } else if(data.works){
         newData = data.works;
         newProfile = data.profile || { images: [] };
         newLogo = data.logo || { src: '' };
+        newHomeBg = data.homeBg || { images: [] };
       } else {
         throw new Error('Invalid');
       }
@@ -1210,10 +1352,12 @@ async function importData(file){
         DATA = newData;
         PROFILE = newProfile;
         LOGO = newLogo;
+        HOME_BG = newHomeBg;
         currentCat = null; currentItem = null; currentPage = null;
         save();
         updateProfileCount();
         updateLogoStatus();
+        updateHomeBgCount();
         renderCategories();
         renderWorks();
         renderContent();
@@ -1234,6 +1378,7 @@ function escapeAttr(s){ return escapeHtml(s); }
 load();
 updateProfileCount();
 updateLogoStatus();
+updateHomeBgCount();
 renderCategories();
 renderWorks();
 renderContent();
@@ -1245,6 +1390,17 @@ document.getElementById('logoPageBtn').addEventListener('click', () => {
   currentItem = null;
   document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
   document.getElementById('logoPageBtn').classList.add('active');
+  renderWorks();
+  renderContent();
+});
+
+/* HomeBG ページ選択 */
+document.getElementById('homeBgPageBtn').addEventListener('click', () => {
+  currentPage = 'homebg';
+  currentCat = null;
+  currentItem = null;
+  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('homeBgPageBtn').classList.add('active');
   renderWorks();
   renderContent();
 });
@@ -1282,6 +1438,23 @@ document.getElementById('catName').addEventListener('keydown', e => { if(e.key =
 document.getElementById('addWorkBtn').addEventListener('click', addWork);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('exportZipBtn').addEventListener('click', exportZip);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  confirmAction('全てのデータをデフォルトに戻します。よろしいですか？（保存していないデータは消えます）', () => {
+    DATA = getDefaultData();
+    PROFILE = { images: [] };
+    LOGO = { src: '' };
+    HOME_BG = { images: [] };
+    currentCat = null; currentItem = null; currentPage = null;
+    save();
+    updateProfileCount();
+    updateLogoStatus();
+    updateHomeBgCount();
+    renderCategories();
+    renderWorks();
+    renderContent();
+    toast('デフォルトに戻しました');
+  });
+});
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change', e => {
   if(e.target.files[0]) importData(e.target.files[0]);

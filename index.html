@@ -296,6 +296,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;
   letter-spacing:.22em;color:rgba(225,226,226,.18);text-transform:uppercase;
 }
+.works-bg-cell.has-img::after{display:none}
 @keyframes slideLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes slideRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 
@@ -336,10 +337,10 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   position:absolute;inset:0;
   background-size:cover;background-position:center;
   opacity:0;
-  transition:opacity .9s ease;
-  z-index:0;
+  transition:opacity 1.2s ease;
+  z-index:1;
 }
-.profile-slide.active{opacity:1;z-index:1}
+.profile-slide.active{opacity:1;z-index:2}
 
 /* 中央にPROFILEタイトルが画像に被って配置 */
 .profile-title-center{
@@ -1208,7 +1209,7 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       </div>
       <p class="contact-sub">お問い合わせはこちらから</p>
       <a href="mailto:tattalineart@gmail.com" class="contact-email-btn">
-        ✉&nbsp;&nbsp;tattalineart@gmail.com
+        tattalineart@gmail.com
       </a>
     </div>
   </div>
@@ -1636,6 +1637,8 @@ async function loadSiteData(){
       if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
       const lRaw = localStorage.getItem('logoData');
       if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
+      const hRaw = localStorage.getItem('homeBgData');
+      if(hRaw){ window._SITE_HOMEBG = JSON.parse(hRaw); }
     } catch(e){}
     applyLogo();
     return;
@@ -1649,6 +1652,7 @@ async function loadSiteData(){
       if(json.works) WORKS_DATA = json.works;
       if(json.profile) SITE_PROFILE = json.profile;
       if(json.logo) SITE_LOGO = json.logo;
+      if(json.homeBg) window._SITE_HOMEBG = json.homeBg;
       applyLogo();
       return;
     }
@@ -1661,6 +1665,8 @@ async function loadSiteData(){
     if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
     const lRaw = localStorage.getItem('logoData');
     if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
+    const hRaw = localStorage.getItem('homeBgData');
+    if(hRaw){ window._SITE_HOMEBG = JSON.parse(hRaw); }
   } catch(e){}
   applyLogo();
 }
@@ -1688,6 +1694,30 @@ function applyLogo(){
     document.head.appendChild(link);
   }
   link.href = src;
+}
+
+/* HOME WORKSセクション背景スライドに画像を配置 */
+function applyWorksBg(){
+  let sources = [];
+  /* 1) HOME_BGがあればそれを使う */
+  if(window._SITE_HOMEBG && window._SITE_HOMEBG.images && window._SITE_HOMEBG.images.length){
+    sources = window._SITE_HOMEBG.images.map(i => i.src);
+  } else {
+    /* 2) フォールバック: 各WORKSの1枚目画像を集める */
+    WORKS_DATA.forEach(g => g.items.forEach(it => {
+      if(it.images && it.images[0]) sources.push(it.images[0].src);
+    }));
+  }
+  if(sources.length === 0) return;
+
+  const cells = document.querySelectorAll('.works-bg-cell');
+  cells.forEach((cell, i) => {
+    const src = sources[i % sources.length];
+    cell.style.backgroundImage = `url("${src}")`;
+    cell.style.backgroundSize = 'cover';
+    cell.style.backgroundPosition = 'center';
+    cell.classList.add('has-img');
+  });
 }
 
 function renderWorksList(){
@@ -1780,7 +1810,7 @@ function renderProfileSlideshow(){
         const slides = target.querySelectorAll('.profile-slide');
         slides.forEach((s, i) => s.classList.toggle('active', i === idx));
       });
-    }, 6000);
+    }, 4000);
   }
 }
 
@@ -1788,6 +1818,7 @@ function renderProfileSlideshow(){
   await loadSiteData();
   renderWorksList();
   renderProfileSlideshow();
+  applyWorksBg();
 })();
 
 /* オーバーレイ外タップでactive解除 */
