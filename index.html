@@ -36,7 +36,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .mesh-container{
   position:absolute;inset:0;
   overflow:hidden;
-  filter:blur(80px); /* 重い場合はここを 60px 程度に下げるとより軽くなります */
+  filter:blur(50px); /* 重い場合はここを 60px 程度に下げるとより軽くなります */
   pointer-events:none;
   z-index:0;
   background:#000;
@@ -52,13 +52,9 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 
 /* 各色の位置を固定 */
 .mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 60%);top:-50%;left:-50%;}
-.mesh-container .c2{background:radial-gradient(circle,#003a3d 0%,transparent 60%);bottom:-50%;left:-80%;}
-.mesh-container .c3{background:radial-gradient(circle,#006064 0%,transparent 50%);top:20%;left:-100%;}
-.mesh-container .c4{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;}
-.mesh-container .c5{background:radial-gradient(circle,#8a5a3a 0%,transparent 60%);top:-50%;right:-80%;}
-.mesh-container .c6{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;}
-.mesh-container .c7{background:radial-gradient(circle,#a66a1e 0%,transparent 50%);bottom:20%;right:-100%;}
-.mesh-container .c8{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;}
+.mesh-container .c2{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;}
+.mesh-container .c3{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;}
+.mesh-container .c4{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;}
 
 /* LOADER */
 #loader{position:fixed;inset:0;background:#2D2E2E;z-index:10000;display:flex;align-items:center;justify-content:center}
@@ -631,10 +627,6 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       <div class="color-circle c2"></div>
       <div class="color-circle c3"></div>
       <div class="color-circle c4"></div>
-      <div class="color-circle c5"></div>
-      <div class="color-circle c6"></div>
-      <div class="color-circle c7"></div>
-      <div class="color-circle c8"></div>
     </div>
   </div>
   <div class="skill-inner">
@@ -657,7 +649,10 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       <h2 class="contact-title rv">CONTACT</h2>
       <div class="contact-img ph">
         <div class="mesh-container">
-          <div class="color-circle c1"></div><div class="color-circle c2"></div><div class="color-circle c3"></div><div class="color-circle c4"></div><div class="color-circle c5"></div><div class="color-circle c6"></div><div class="color-circle c7"></div><div class="color-circle c8"></div>
+          <div class="color-circle c1"></div>
+          <div class="color-circle c2"></div>
+          <div class="color-circle c3"></div>
+          <div class="color-circle c4"></div>
         </div>
       </div>
       <p class="contact-sub">お問い合わせはこちらから</p>
