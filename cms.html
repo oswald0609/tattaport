@@ -305,7 +305,6 @@ body{padding-bottom:6rem}
 <header class="cms-header">
   <h1 class="cms-title">CMS — Portfolio</h1>
   <div class="header-actions">
-    <button class="btn btn-ghost" id="resetBtn">Reset</button>
     <button class="btn btn-ghost" id="exportBtn">Export JSON</button>
     <button class="btn btn-primary" id="exportZipBtn">Export ZIP</button>
     <button class="btn btn-ghost" id="importBtn">Import</button>
@@ -1438,23 +1437,6 @@ document.getElementById('catName').addEventListener('keydown', e => { if(e.key =
 document.getElementById('addWorkBtn').addEventListener('click', addWork);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('exportZipBtn').addEventListener('click', exportZip);
-document.getElementById('resetBtn').addEventListener('click', () => {
-  confirmAction('全てのデータをデフォルトに戻します。よろしいですか？（保存していないデータは消えます）', () => {
-    DATA = getDefaultData();
-    PROFILE = { images: [] };
-    LOGO = { src: '' };
-    HOME_BG = { images: [] };
-    currentCat = null; currentItem = null; currentPage = null;
-    save();
-    updateProfileCount();
-    updateLogoStatus();
-    updateHomeBgCount();
-    renderCategories();
-    renderWorks();
-    renderContent();
-    toast('デフォルトに戻しました');
-  });
-});
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change', e => {
   if(e.target.files[0]) importData(e.target.files[0]);
