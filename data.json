@@ -8,46 +8,35 @@
           "tag": "Branding",
           "title": "SOTOYA リブランディング CI 開発",
           "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
-          "images": [
-            {
-              "src": "images/work-sotoya-rebrand-1.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-2.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-3.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-4.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-5.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-6.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-7.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-8.webp",
-              "cols": 1
-            },
-            {
-              "src": "images/work-sotoya-rebrand-9.webp",
-              "cols": 1
-            }
-          ],
+          "images": [],
           "meta": {},
-          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "dataList": [
+            {
+              "label": "Client",
+              "value": ""
+            },
+            {
+              "label": "Year",
+              "value": ""
+            },
+            {
+              "label": "Art Direction",
+              "value": ""
+            },
+            {
+              "label": "Design",
+              "value": ""
+            },
+            {
+              "label": "Direction",
+              "value": ""
+            },
+            {
+              "label": "Tools",
+              "value": ""
+            }
+          ]
         },
         {
           "id": "sotoya-logo",
@@ -56,7 +45,33 @@
           "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
           "images": [],
           "meta": {},
-          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "dataList": [
+            {
+              "label": "Client",
+              "value": ""
+            },
+            {
+              "label": "Year",
+              "value": ""
+            },
+            {
+              "label": "Art Direction",
+              "value": ""
+            },
+            {
+              "label": "Design",
+              "value": ""
+            },
+            {
+              "label": "Direction",
+              "value": ""
+            },
+            {
+              "label": "Tools",
+              "value": ""
+            }
+          ]
         },
         {
           "id": "sotoya-web",
@@ -210,24 +225,24 @@
   "profile": {
     "images": [
       {
-        "src": "images/profile-10.webp"
+        "src": "images/profile-1.webp"
       },
       {
-        "src": "images/profile-11.webp"
+        "src": "images/profile-2.webp"
       },
       {
-        "src": "images/profile-12.webp"
+        "src": "images/profile-3.webp"
       },
       {
-        "src": "images/profile-13.webp"
+        "src": "images/profile-4.webp"
       },
       {
-        "src": "images/profile-14.webp"
+        "src": "images/profile-5.webp"
       }
     ]
   },
   "logo": {
-    "src": "images/logo-15.svg"
+    "src": "images/logo-6.svg"
   },
   "homeBg": {
     "images": []
