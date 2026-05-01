@@ -150,6 +150,7 @@ section{height:100vh;position:relative;overflow:hidden;z-index:1;background:tran
   transform:translate(50%,-50%);
   cursor:pointer;background:none;border:none;padding:0;
   width:48px;height:48px;
+  z-index:501;
 }
 .hamburger span{
   display:block;width:34px;height:1.8px;background:var(--text);
@@ -824,6 +825,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     position:relative;
     flex-shrink:0;
     pointer-events:auto;
+    z-index:501;
   }
   .hamburger span{
     display:block;
@@ -843,19 +845,19 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   .top-nav{display:none}
 
   /* TOP */
-  .top-content{left:6vw;top:50%}
+  .top-content{left:6vw;top:44%}
   .top-name{font-size:clamp(2rem,8vw,3.2rem);letter-spacing:.10em}
   .top-tags p{font-size:11px}
 
-  /* SP HOME: SCROLLを画面下端へ */
-  .scroll-ind{bottom:0;gap:.35rem}
+  /* SP HOME: SCROLLを少し上に、バーを長く */
+  .scroll-ind{bottom:10vh;gap:.35rem}
   .scroll-ind span{font-size:8.5px}
-  .scroll-line-v{height:32px}
+  .scroll-line-v{height:52px}
 
   .works-bg-cell{width:50vw}
   .works-title{font-size:clamp(2rem,8vw,3rem);font-weight:300}
   .works-sub{font-size:11px;line-height:1.6;padding:0 2rem}
-  .works-center{padding:24vh 0 18vh}
+  .works-center{padding:18vh 0 14vh}
   .works-viewall{font-size:11px;padding:13px 52px;letter-spacing:.22em}
 
   /* SP セクションタイトル共通ウェイト */
@@ -867,8 +869,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   #profile{display:flex;flex-direction:column;overflow:visible}
   .profile-bg{display:none}
   .profile-title-center{display:none}
-  /* 画像エリアをさらに広げる */
-  .profile-sp-hero{display:flex;flex-shrink:0;height:45vh;position:relative;overflow:visible}
+  .profile-sp-hero{display:flex;flex-shrink:0;height:35vh;position:relative;overflow:visible}
   .profile-sp-bg{position:absolute;inset:0;overflow:hidden}
   .profile-sp-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.25)}
   /* タイトルを画像の下辺に文字の上半分が重なる位置 + 下文章の左揃えに合わせる */
@@ -895,7 +896,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 
   /* SKILL SP */
   .skill-bg{top:0;bottom:0}
-  .skill-inner{display:flex;flex-direction:column;padding-top:5rem}
+  .skill-inner{display:flex;flex-direction:column;padding-top:3rem}
   .skill-left{
     padding:2.6rem 6vw 2.4rem;justify-content:flex-start;
     border-bottom:none;
@@ -973,23 +974,24 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     margin:0;
   }
   /* フッター */
-  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
+  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 7rem}
   .cf-links{gap:2rem}
   .cf-links a{font-size:10px;letter-spacing:.14em}
   /* フッターロゴ 小さく・下に余白 */
   .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
   .footer-logo::after{font-size:5.5px}
 
-  /* ALL WORKS SP */
-  /* SP: Back to HOMEは固定じゃなくスクロールに乗る */
+  /* SKILL/CONTACT背景のメッシュグラデ：SPではアニメ停止（パフォーマンス改善） */
+  .mesh-container{filter:blur(60px);animation:none}
+  .mesh-container .color-circle{animation:none!important;transform:translate(0,0) scale(1)}
+  /* SP WORKS一覧: Back to HOMEはスクロールに乗る（固定なし）、左右スクロール防止、下マージン */
   .wa-back{
-    position:absolute;
-    top:1.4rem;left:6vw;
+    position:static;
+    display:inline-flex;
+    margin:5.5rem 0 .8rem 6vw;
   }
-  /* SPはナビが上部に表示されるので、Backリンクとwa-bodyにナビ分の余白を確保 */
-  #works-all{padding-top:0}
-  .wa-back{top:5rem}
-  .wa-body{padding-top:8rem}
+  #works-all{overflow-x:hidden}
+  .wa-body{padding-top:0;overflow-x:hidden;padding-bottom:9rem}
   .wa-grid{grid-template-columns:1fr;gap:3px}
   .wa-card{aspect-ratio:16/9}
   .wa-card-title{font-size:13.5px;margin-bottom:.35rem;font-weight:300}
