@@ -978,36 +978,13 @@ function renderContent(){
 
     <div class="section">
       <div class="section-title">Data</div>
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label">Client</label>
-          <input type="text" data-meta="client" value="${escapeAttr((it.meta && it.meta.client) || '')}">
-        </div>
-        <div class="field">
-          <label class="field-label">Year</label>
-          <input type="text" data-meta="year" value="${escapeAttr((it.meta && it.meta.year) || '')}">
-        </div>
+      <div class="help-text" style="margin-bottom:.8rem">
+        ・ラベル名（Client / Year など）は自由に編集できます<br>
+        ・空のラベルや値の行は詳細ページに表示されません<br>
+        ・「+ Add Row」で行を追加、右の×で削除
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label">Art Direction</label>
-          <input type="text" data-meta="artDirection" value="${escapeAttr((it.meta && it.meta.artDirection) || '')}">
-        </div>
-        <div class="field">
-          <label class="field-label">Design</label>
-          <input type="text" data-meta="design" value="${escapeAttr((it.meta && it.meta.design) || '')}">
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label">Direction</label>
-          <input type="text" data-meta="direction" value="${escapeAttr((it.meta && it.meta.direction) || '')}">
-        </div>
-        <div class="field">
-          <label class="field-label">Tools</label>
-          <input type="text" data-meta="tools" value="${escapeAttr((it.meta && it.meta.tools) || '')}">
-        </div>
-      </div>
+      <div id="dataRows"></div>
+      <button class="btn btn-sm btn-ghost" id="addDataRowBtn" style="margin-top:.5rem">+ Add Row</button>
     </div>
 
     <div class="section">
@@ -1031,11 +1008,62 @@ function renderContent(){
       it[el.dataset.bind] = el.value;
     });
   });
-  root.querySelectorAll('[data-meta]').forEach(el => {
-    el.addEventListener('input', () => {
-      if(!it.meta) it.meta = {};
-      it.meta[el.dataset.meta] = el.value;
+
+  /* Data 行レンダリング & 追加 */
+  function migrateMeta(){
+    /* 旧形式の meta:{client,year,...} → dataList:[{label,value}...] へ変換 */
+    if(!it.dataList || !Array.isArray(it.dataList)){
+      const labels = [
+        ['client', 'Client'],
+        ['year', 'Year'],
+        ['artDirection', 'Art Direction'],
+        ['design', 'Design'],
+        ['direction', 'Direction'],
+        ['tools', 'Tools']
+      ];
+      const m = it.meta || {};
+      it.dataList = labels.map(([k, label]) => ({label, value: m[k] || ''}));
+    }
+  }
+  migrateMeta();
+
+  function renderDataRows(){
+    const root = document.getElementById('dataRows');
+    if(!root) return;
+    root.innerHTML = '';
+    it.dataList.forEach((row, idx) => {
+      const r = document.createElement('div');
+      r.style.cssText = 'display:grid;grid-template-columns:140px 1fr auto;gap:.5rem;margin-bottom:.5rem;align-items:center';
+      r.innerHTML = `
+        <input type="text" placeholder="Label" value="${escapeAttr(row.label || '')}" data-row-idx="${idx}" data-row-field="label" style="font-family:var(--ff-sm);font-size:11px;letter-spacing:.06em;text-transform:uppercase">
+        <input type="text" placeholder="Value" value="${escapeAttr(row.value || '')}" data-row-idx="${idx}" data-row-field="value">
+        <button class="cat-icon-btn danger" data-row-del="${idx}" title="Delete">×</button>
+      `;
+      root.appendChild(r);
     });
+    /* 入力イベント */
+    root.querySelectorAll('[data-row-idx]').forEach(el => {
+      el.addEventListener('input', () => {
+        const i = parseInt(el.dataset.rowIdx);
+        const f = el.dataset.rowField;
+        it.dataList[i][f] = el.value;
+      });
+    });
+    /* 削除 */
+    root.querySelectorAll('[data-row-del]').forEach(b => {
+      b.addEventListener('click', () => {
+        const i = parseInt(b.dataset.rowDel);
+        it.dataList.splice(i, 1);
+        save();
+        renderDataRows();
+      });
+    });
+  }
+  renderDataRows();
+
+  document.getElementById('addDataRowBtn').addEventListener('click', () => {
+    it.dataList.push({label:'', value:''});
+    renderDataRows();
   });
   document.getElementById('saveBtn').addEventListener('click', () => {
     save();

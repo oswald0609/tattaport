@@ -232,6 +232,7 @@ body{background:transparent;color:var(--text);font-family:var(--ff-jp);min-heigh
     background:#3a3b3b;
     overflow:hidden;
   }
+  .nav-logo:hover,.nav-logo:active{transform:none !important}
   .nav-logo::after{
     content:'LOGO';position:absolute;inset:0;
     display:flex;align-items:center;justify-content:center;
@@ -477,21 +478,28 @@ async function loadAndRender(){
   document.getElementById('heroLead').textContent = item.lead || item.desc || '';
   document.title = `${item.title} — SHOTA INOUE`;
 
-  /* DATA メタ */
-  const meta = item.meta || {};
-  const dataList = document.querySelector('.data-list');
-  if(dataList){
-    const rows = [
-      ['Client', meta.client],
-      ['Year', meta.year],
-      ['Art Direction', meta.artDirection],
-      ['Design', meta.design],
-      ['Direction', meta.direction],
-      ['Tools', meta.tools],
-    ].filter(r => r[1]);
+  /* DATA: dataList を優先、無ければ旧 meta から構築 */
+  const dataListEl = document.querySelector('.data-list');
+  if(dataListEl){
+    let rows = [];
+    if(item.dataList && Array.isArray(item.dataList)){
+      rows = item.dataList
+        .filter(r => r.label && r.value)
+        .map(r => [r.label, r.value]);
+    } else {
+      const meta = item.meta || {};
+      rows = [
+        ['Client', meta.client],
+        ['Year', meta.year],
+        ['Art Direction', meta.artDirection],
+        ['Design', meta.design],
+        ['Direction', meta.direction],
+        ['Tools', meta.tools],
+      ].filter(r => r[1]);
+    }
     if(rows.length){
-      dataList.innerHTML = rows.map(([l,v]) =>
-        `<div><span class="lbl">${l}</span>${escapeHtml(v)}</div>`
+      dataListEl.innerHTML = rows.map(([l,v]) =>
+        `<div><span class="lbl">${escapeHtml(l)}</span>${escapeHtml(v)}</div>`
       ).join('');
     }
   }

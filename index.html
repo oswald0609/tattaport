@@ -200,7 +200,7 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
   position:fixed;inset:0;
   background:rgba(35,36,36,.97);
   backdrop-filter:blur(12px);
-  z-index:99;
+  z-index:500;
   flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;
   opacity:0;visibility:hidden;
   transition:opacity .45s var(--eoe),visibility .45s;
@@ -986,10 +986,10 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     position:absolute;
     top:1.4rem;left:6vw;
   }
-  .wa-body{padding-top:4.5rem}
-  /* SP: WORKS一覧表示中はナビを非表示 */
-  #works-all.open ~ * .nav-fixed,
-  body.works-open .nav-fixed{opacity:0 !important;visibility:hidden !important;pointer-events:none !important}
+  /* SPはナビが上部に表示されるので、Backリンクとwa-bodyにナビ分の余白を確保 */
+  #works-all{padding-top:0}
+  .wa-back{top:5rem}
+  .wa-body{padding-top:8rem}
   .wa-grid{grid-template-columns:1fr;gap:3px}
   .wa-card{aspect-ratio:16/9}
   .wa-card-title{font-size:13.5px;margin-bottom:.35rem;font-weight:300}
@@ -1323,6 +1323,13 @@ function closeMob(){ mob.classList.remove('open'); ham.classList.remove('open');
 
 /* nav-logo → HOMEへ */
 document.getElementById('navLogoBtn').addEventListener('click', () => {
+  /* WORKS一覧が開いていれば閉じる */
+  if(worksAll && worksAll.classList.contains('open')){
+    worksAll.classList.remove('open');
+    document.body.style.overflow='';
+    document.body.classList.remove('works-open');
+    if(!isMobile()) navFixed.classList.remove('show');
+  }
   snapTo(topSec.offsetTop);
 });
 
@@ -1375,8 +1382,6 @@ function openWorksAll(){
   document.body.style.overflow='hidden';
   if(!isMobile()){
     navFixed.classList.add('show');
-  } else {
-    document.body.classList.add('works-open');
   }
 }
 document.getElementById('viewAllBtn').addEventListener('click',e=>{
