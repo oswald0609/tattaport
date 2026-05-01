@@ -7,42 +7,83 @@
           "id": "sotoya-rebrand",
           "tag": "Branding",
           "title": "SOTOYA リブランディング CI 開発",
-          "desc": "コンテンツこの文章はダミーです。",
-          "lead": "コンテンツこの文章はダミーです。",
-          "meta": {
-            "client": "SOTOYA",
-            "year": "2024",
-            "artDirection": "SHOTA INOUE",
-            "design": "SHOTA INOUE",
-            "direction": "SHOTA INOUE",
-            "tools": "Illustrator / Photoshop"
-          },
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
           "images": [
             {
-              "src": "images/work-sotoya-rebrand-1.jpg",
+              "src": "images/work-sotoya-rebrand-1.webp",
               "cols": 1
             },
             {
-              "src": "images/work-sotoya-rebrand-2.jpg",
-              "cols": 3
+              "src": "images/work-sotoya-rebrand-2.webp",
+              "cols": 1
             },
             {
-              "src": "images/work-sotoya-rebrand-3.jpg",
-              "cols": 3
+              "src": "images/work-sotoya-rebrand-3.webp",
+              "cols": 1
             },
             {
-              "src": "images/work-sotoya-rebrand-4.jpg",
-              "cols": 2
+              "src": "images/work-sotoya-rebrand-4.webp",
+              "cols": 1
             },
             {
-              "src": "images/work-sotoya-rebrand-5.jpg",
-              "cols": 2
+              "src": "images/work-sotoya-rebrand-5.webp",
+              "cols": 1
             },
             {
-              "src": "images/work-sotoya-rebrand-6.jpg",
+              "src": "images/work-sotoya-rebrand-6.webp",
+              "cols": 1
+            },
+            {
+              "src": "images/work-sotoya-rebrand-7.webp",
+              "cols": 1
+            },
+            {
+              "src": "images/work-sotoya-rebrand-8.webp",
+              "cols": 1
+            },
+            {
+              "src": "images/work-sotoya-rebrand-9.webp",
               "cols": 1
             }
-          ]
+          ],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "sotoya-logo",
+          "tag": "Branding",
+          "title": "SOTOYA LOGO",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "sotoya-web",
+          "tag": "Branding / Web",
+          "title": "SOTOYA WEB SITE",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "sotoya-tools",
+          "tag": "Branding",
+          "title": "SOTOYA コーポレートツール",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "ec-flame",
+          "tag": "Branding / EC",
+          "title": "EC SITE flame",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
         }
       ]
     },
@@ -53,17 +94,115 @@
           "id": "nasta-hp",
           "tag": "Web",
           "title": "Nasta HP",
-          "desc": "コンテンツこの文章はダミーです。",
-          "lead": "",
-          "meta": {
-            "client": "Nasta",
-            "year": "2024",
-            "artDirection": "",
-            "design": "SHOTA INOUE",
-            "direction": "",
-            "tools": "Figma / Photoshop"
-          },
-          "images": []
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "nasta-post",
+          "tag": "Web",
+          "title": "Nasta Box +POST WEB SITE",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "nasta-light",
+          "tag": "Web",
+          "title": "Nasta Box LIGHT　WEB SITE",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "nasta-amazon",
+          "tag": "Web / EC",
+          "title": "Nasta Interphone 2　Amazon page",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "nasta-sns",
+          "tag": "SNS",
+          "title": "Nasta SNS クリエイティブ",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        }
+      ]
+    },
+    {
+      "cat": "POP / Print media",
+      "items": [
+        {
+          "id": "pamphlet",
+          "tag": "Print",
+          "title": "カテゴリ別 製品一覧パンフレット",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "flyer-poster",
+          "tag": "Print",
+          "title": "各種販促チラシ・ポスター",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        }
+      ]
+    },
+    {
+      "cat": "UI / UX",
+      "items": [
+        {
+          "id": "box-admin",
+          "tag": "UI/UX",
+          "title": "宅配ボックス管理者用 WEB システム",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "nasta-app",
+          "tag": "UI/UX",
+          "title": "Nasta Box APP",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        }
+      ]
+    },
+    {
+      "cat": "Other",
+      "items": [
+        {
+          "id": "nasta-mvv",
+          "tag": "Project",
+          "title": "Nasta MVV Project",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
+        },
+        {
+          "id": "illusts",
+          "tag": "Illustration",
+          "title": "ILLUSTs",
+          "desc": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。",
+          "images": [],
+          "meta": {},
+          "lead": "コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。"
         }
       ]
     }
@@ -71,23 +210,26 @@
   "profile": {
     "images": [
       {
-        "src": "images/profile-7.jpg"
+        "src": "images/profile-10.webp"
       },
       {
-        "src": "images/profile-8.jpg"
+        "src": "images/profile-11.webp"
       },
       {
-        "src": "images/profile-9.jpg"
+        "src": "images/profile-12.webp"
       },
       {
-        "src": "images/profile-10.jpg"
+        "src": "images/profile-13.webp"
       },
       {
-        "src": "images/profile-11.jpg"
+        "src": "images/profile-14.webp"
       }
     ]
   },
   "logo": {
-    "src": "images/logo-12.jpg"
+    "src": "images/logo-15.svg"
+  },
+  "homeBg": {
+    "images": []
   }
 }
