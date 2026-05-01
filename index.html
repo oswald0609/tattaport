@@ -80,8 +80,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   content:'LOGO';
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--ff-sm);font-size:9px;font-weight:400;
-  letter-spacing:.22em;color:rgba(225,226,226,.25);
-  text-transform:uppercase;
+  letter-spacing:.22em;color:rgba(225,226,226,.25);text-transform:uppercase;
 }
 @keyframes ldZoomIn{
   from{transform:scale(0)}
@@ -112,9 +111,8 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
    中央高さに logo左 / hamburger右
 */
 .nav-fixed{
-  position:fixed;top:50%;left:0;right:0;
-  transform:translateY(-50%);
-  z-index:400;
+  position:fixed;inset:0;
+  z-index:501;
   pointer-events:none;
   opacity:0;visibility:hidden;
   transition:opacity .5s ease,visibility .5s ease;
@@ -122,16 +120,17 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .nav-fixed.show{opacity:1;visibility:visible}
 .nav-fixed > *{pointer-events:auto}
 
-/* ロゴ：左セーフエリアの中央 */
+/* ロゴ：左セーフエリアの垂直中央 */
 .nav-logo{
   position:absolute;
   left:calc(var(--safe-x) / 2);
-  top:50%;
+  top:50dvh;
   transform:translate(-50%,-50%);
   width:48px;height:48px;
   background:#3a3b3b;
   overflow:hidden;
   cursor:pointer;
+  z-index:501;
   transition:transform .3s var(--eoe);
 }
 .nav-logo::after{
@@ -142,11 +141,11 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 }
 .nav-logo:hover{transform:translate(-50%,-50%) scale(1.05)}
 
-/* ハンバーガー：右セーフエリアの中央 */
+/* ハンバーガー：右セーフエリアの垂直中央 */
 .hamburger{
   position:absolute;
   right:calc(var(--safe-x) / 2);
-  top:50%;
+  top:50dvh;
   transform:translate(50%,-50%);
   cursor:pointer;background:none;border:none;padding:0;
   width:48px;height:48px;
@@ -167,7 +166,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 /* ─── TOP RIGHT NAV (HOMEのみ表示) ─── */
 .top-nav{
   position:absolute;
-  right:14vw;top:50%;
+  right:14vw;top:50dvh;
   transform:translateY(-50%);
   z-index:50;
   display:flex;flex-direction:column;align-items:flex-end;gap:.9rem;
@@ -235,7 +234,7 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 /* 名前・スキルを中央寄せ（左側） */
 .top-content{
   position:absolute;
-  left:var(--safe-x);top:50%;
+  left:var(--safe-x);top:50dvh;
   transform:translateY(-50%);
   z-index:2;
 }
@@ -303,7 +302,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 
 .works-dark{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,.62)}
 
-.works-center{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16vh 0 16vh}
+.works-center{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16dvh 0 16dvh}
 .works-upper{display:flex;flex-direction:column;align-items:center;gap:1.1rem}
 .works-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1}
 .works-sub{font-family:var(--ff-jp);font-weight:300;font-size:12.5px;letter-spacing:.08em;color:var(--text);text-align:center;line-height:2.05}
@@ -575,7 +574,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   letter-spacing:.28em;color:rgba(225,226,226,.3);text-transform:uppercase;
 }
 
-/* メアドボタン — CONTACTセクション内の画像中央に配置 */
+/* 修正箇所：メアドボタン — CONTACTセクション内の画像中央に絶対配置 */
 .contact-email-btn{
   position:absolute;
   top:50%;left:50%;
@@ -588,9 +587,11 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   letter-spacing:.03em;
   padding:30px 80px;border-radius:90px;
   text-decoration:none;
-  transition:background .25s,color .25s,transform .25s;
+  transition:background .25s,color .25s,transform .25s,opacity .3s;
   white-space:nowrap;
+  opacity:0;pointer-events:none;
 }
+body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .contact-email-btn:hover{background:var(--accent);transform:translate(-50%,-50%) scale(1.04)}
 
 /* Footer */
@@ -791,11 +792,14 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:900px){
   .nav-fixed{
-    position:fixed;top:0;left:0;right:0;
+    position:fixed;
+    inset:auto;
+    top:0;left:0;right:0;bottom:auto;
     transform:none;
     display:flex;align-items:center;justify-content:space-between;
     padding:1.2rem 1.5rem;
     height:auto;
+    z-index:501;
     opacity:1;visibility:visible;
   }
   /* SP: ロゴとハンバーガーの全positioning/transformをリセット */
@@ -809,6 +813,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     position:relative;
     flex-shrink:0;
     pointer-events:auto;
+    z-index:501;
     transform:none !important;
   }
   .nav-logo:hover,.nav-logo:active{transform:none !important}
@@ -846,20 +851,25 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   .top-nav{display:none}
 
   /* TOP */
-  .top-content{left:6vw;top:44dvh;transform:translateY(-50%)}
+  .top-content{left:6vw;top:50dvh;transform:translateY(-50%)}
   .top-name{font-size:clamp(2rem,8vw,3.2rem);letter-spacing:.10em}
   .top-tags p{font-size:11px}
 
-  /* SP HOME: SCROLLを少し上に、バーを長く */
-  .scroll-ind{bottom:10dvh;gap:.35rem}
+  /* SP HOME: SCROLLを画面底面に */
+  .scroll-ind{bottom:0;gap:.35rem}
   .scroll-ind span{font-size:8.5px}
   .scroll-line-v{height:52px}
 
   .works-bg-cell{width:50vw}
   .works-title{font-size:clamp(2rem,8vw,3rem);font-weight:300}
   .works-sub{font-size:11px;line-height:1.6;padding:0 2rem}
-  .works-center{padding:18dvh 0 14dvh}
-  .works-viewall{font-size:11px;padding:13px 52px;letter-spacing:.22em}
+  .works-center{
+    padding:0;
+    justify-content:space-between;
+    display:flex;flex-direction:column;
+  }
+  .works-upper{padding-top:22dvh}
+  .works-viewall{font-size:11px;padding:13px 52px;letter-spacing:.22em;margin-bottom:18dvh}
 
   /* SP セクションタイトル共通ウェイト */
   .profile-sp-title,
@@ -870,7 +880,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   #profile{display:flex;flex-direction:column;overflow:visible}
   .profile-bg{display:none}
   .profile-title-center{display:none}
-  .profile-sp-hero{display:flex;flex-shrink:0;height:35dvh;position:relative;overflow:visible}
+  .profile-sp-hero{display:flex;flex-shrink:0;height:45dvh;position:relative;overflow:visible}
   .profile-sp-bg{position:absolute;inset:0;overflow:hidden}
   .profile-sp-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.25)}
   /* タイトルを画像の下辺に文字の上半分が重なる位置 + 下文章の左揃えに合わせる */
@@ -897,7 +907,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 
   /* SKILL SP */
   .skill-bg{top:0;bottom:0}
-  .skill-inner{display:flex;flex-direction:column;padding-top:3rem}
+  .skill-inner{
+    display:flex;flex-direction:column;
+    min-height:100dvh;
+    justify-content:center;
+    padding-top:0;
+  }
   .skill-left{
     padding:2.6rem 6vw 2.4rem;justify-content:flex-start;
     border-bottom:none;
@@ -957,10 +972,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   /* SP: メアドボタンは画像中央 absolute で常に表示 */
   .contact-email-btn{
     position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
     font-size:16px;padding:20px 38px;gap:.7rem;
     font-weight:500;letter-spacing:.05em;
     border-radius:60px;
-    opacity:1;visibility:visible;
+    opacity:1;pointer-events:auto;
   }
   /* 「お問い合わせはこちらから」を少し下に */
   .contact-stack{position:relative}
@@ -975,7 +992,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     margin:0;
   }
   /* フッター */
-  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 7rem}
+  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
   .cf-links{gap:2rem}
   .cf-links a{font-size:10px;letter-spacing:.14em}
   /* フッターロゴ 小さく・下に余白 */
@@ -985,14 +1002,17 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   /* SKILL/CONTACT背景のメッシュグラデ：SPではアニメ停止（パフォーマンス改善） */
   .mesh-container{filter:blur(60px);animation:none}
   .mesh-container .color-circle{animation:none!important;transform:translate(0,0) scale(1)}
-  /* SP WORKS一覧: Back to HOMEはスクロールに乗る（固定なし）、左右スクロール防止、下マージン */
+  
+  /* 修正箇所：SP WORKS一覧: Back to HOMEはスクロールに乗る（固定なし） */
   .wa-back{
     position:static;
+    top:auto;
+    left:auto;
     display:inline-flex;
-    margin:5.5rem 0 .8rem 6vw;
+    margin:5rem 0 1rem 6vw; /* wa-bodyのpadding-topを無くし、ここで上部の余白を確保 */
   }
-  #works-all{overflow-x:hidden}
-  .wa-body{padding-top:0;overflow-x:hidden;padding-bottom:9rem}
+  #works-all{display:block; overflow-y:scroll; overflow-x:hidden}
+  .wa-body{padding-top:0; overflow-y:visible; overflow-x:hidden; padding-bottom:9rem}
   .wa-grid{grid-template-columns:1fr;gap:3px}
   .wa-card{aspect-ratio:16/9}
   .wa-card-title{font-size:13.5px;margin-bottom:.35rem;font-weight:300}
@@ -1018,18 +1038,14 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 </head>
 <body>
 
-<!-- BACKGROUND DOTS -->
 <canvas id="dotsCanvas"></canvas>
 
-<!-- LOADER -->
 <div id="loader">
   <div class="ld-logo-box"></div>
 </div>
 
-<!-- CURSOR -->
 <div class="cursor" id="cur"></div>
 
-<!-- FIXED NAV (HOMEでは非表示、WORKS以降表示) -->
 <div class="nav-fixed" id="navFixed">
   <div class="nav-logo" id="navLogoBtn"></div>
   <button class="hamburger" id="ham" aria-label="menu">
@@ -1037,7 +1053,6 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   </button>
 </div>
 
-<!-- MOBILE MENU -->
 <div class="mob-menu" id="mobMenu">
   <a href="#top"     class="mob-link">Home</a>
   <a href="#works"   class="mob-link">Works</a>
@@ -1046,11 +1061,9 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   <a href="#contact" class="mob-link">Contact</a>
 </div>
 
-<!-- ═══ TOP ═══ -->
 <section id="top">
-  <div class="top-photo"><!-- <img src="photo-top.jpg" alt=""> --></div>
+  <div class="top-photo"></div>
 
-  <!-- HOMEのみ右サイド中央に表示 -->
   <nav class="top-nav">
     <a href="#works">Works</a>
     <a href="#profile">Profile</a>
@@ -1075,9 +1088,7 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   </div>
 </section>
 
-<!-- ═══ WORKS ═══ -->
 <section id="works">
-  <!-- 3段スライド背景 -->
   <div class="works-bg">
     <div class="works-bg-row">
       <div class="works-bg-track dir-left">
@@ -1109,27 +1120,22 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   <div class="works-center">
     <div class="works-upper">
       <h2 class="works-title rv">WORKS</h2>
-      <p class="works-sub rv">コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。</p>
+      <p class="works-sub rv">上流過程の要件定義から企画提案、グラフィックデザインまで一貫して行なっています。<br>趣味でイラスト制作も取り組んでいます。</p>
     </div>
     <button class="works-viewall rv" id="viewAllBtn">View all</button>
   </div>
 </section>
 
-<!-- ═══ PROFILE ═══ -->
 <section id="profile">
-  <!-- SP -->
   <div class="profile-sp-hero">
     <div class="profile-sp-bg ph" id="profileBgSP"></div>
     <h2 class="profile-sp-title">PROFILE</h2>
   </div>
 
-  <!-- PC 左画像 -->
   <div class="profile-bg ph" id="profileBgPC"></div>
 
-  <!-- PC 中央タイトル（縦書き・画像に被さる） -->
   <h2 class="profile-title-center">PROFILE</h2>
 
-  <!-- 右コンテンツ -->
   <div class="profile-right">
     <p class="profile-name">井上 翔太</p>
     <p class="profile-name-en">Shota Inoue</p>
@@ -1143,7 +1149,6 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   </div>
 </section>
 
-<!-- ═══ SKILL ═══ -->
 <section id="skill">
   <div class="skill-bg ph">
     <div class="mesh-container">
@@ -1206,7 +1211,6 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   </div>
 </section>
 
-<!-- ═══ CONTACT ═══ -->
 <section id="contact">
   <div class="contact-body">
     <div class="contact-stack">
@@ -1242,11 +1246,10 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
   </footer>
 </section>
 
-<!-- ═══ ALL WORKS OVERLAY ═══ -->
 <div id="works-all">
-  <a href="#" class="wa-back" id="waBack">Back to HOME</a>
   <div class="wa-body" id="waBody">
-    <!-- カードはJSで動的生成 -->
+    <a href="#" class="wa-back" id="waBack">Back to HOME</a>
+    <div id="waGridContainer"></div>
   </div>
 </div>
 
@@ -1311,12 +1314,17 @@ new IntersectionObserver(entries => {
 }, {threshold:[0, .5, 1]}).observe(topSec);
 
 /* SP: 常に表示 */
-
-/* SP: 常に表示 */
 if(isMobile()) navFixed.classList.add('show');
 window.addEventListener('resize', () => {
   if(isMobile()) navFixed.classList.add('show');
 });
+
+/* CONTACTセクション表示時にメアドボタンを表示 */
+new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    document.body.classList.toggle('in-contact', e.isIntersecting && e.intersectionRatio > 0.3);
+  });
+}, {threshold:[0,.3,1]}).observe(document.getElementById('contact'));
 
 /* HAMBURGER */
 const ham = document.getElementById('ham');
@@ -1396,11 +1404,11 @@ document.getElementById('waBack').addEventListener('click',e=>{
   worksAll.classList.remove('open');
   document.body.style.overflow='';
   document.body.classList.remove('works-open');
-  /* TOPに戻ったときの整合性: 現在TOPセクションなら非表示に戻す */
-  const topVisible = topSec.getBoundingClientRect().top >= -window.innerHeight * 0.3;
-  if(topVisible && !isMobile()) navFixed.classList.remove('show');
-  /* HOMEセクションへスクロール */
-  document.getElementById('top').scrollIntoView({behavior:'smooth',block:'start'});
+  const worksSec = document.getElementById('works');
+  if(worksSec){
+    snapTo(worksSec.offsetTop);
+  }
+  if(!isMobile()) navFixed.classList.add('show');
 });
 
 /* URLパラメータ ?works=1 の場合、自動でWORKS一覧を開く */
@@ -1746,8 +1754,9 @@ function renderWorksList(){
   /* 詳細ページから参照できるよう localStorage にも保存 */
   try { localStorage.setItem('worksData', JSON.stringify(WORKS_DATA)); } catch(e){}
 
-  const waBody = document.getElementById('waBody');
-  waBody.innerHTML = '';
+  // 修正箇所：waBody ではなく、新設した waGridContainer に中身を生成する
+  const waGrid = document.getElementById('waGridContainer');
+  waGrid.innerHTML = '';
   WORKS_DATA.forEach(group => {
     const cat = document.createElement('div');
     cat.className = 'wa-category';
@@ -1771,7 +1780,7 @@ function renderWorksList(){
       `;
       grid.appendChild(card);
     });
-    waBody.appendChild(cat);
+    waGrid.appendChild(cat);
   });
 
   /* スクロール登場 */
