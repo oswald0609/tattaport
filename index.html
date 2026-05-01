@@ -22,52 +22,45 @@
   --eoe:cubic-bezier(0.16,1,0.3,1);
   --eio:cubic-bezier(0.65,0,0.35,1);
   --ph:linear-gradient(135deg,#3a3b3b 0%,#2a2b2b 40%,#323333 100%);
-  /* セーフエリア = (画面端からロゴ/ハンバーガー外辺まで + ロゴ幅) × 1.5 */
   --safe-x:calc((3.5rem + 48px) * 1.5);
 }
 html{overflow-y:scroll;height:100%;scroll-behavior:auto}
 body{background:transparent;color:var(--text);font-family:var(--ff-jp);overflow-x:hidden;cursor:none;position:relative}
 
-/* セクションは canvas より上のレイヤーに */
 section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;background:transparent}
 
-/* PHOTO PLACEHOLDER */
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
 .ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
 
-/* MESH GRADIENT — SKILL背景 / CONTACT正方形画像 */
+/* MESH GRADIENT — アニメーションを削除し静止画化 */
 .mesh-container{
   position:absolute;inset:0;
   overflow:hidden;
-  filter:blur(80px);
+  filter:blur(80px); /* 重い場合はここを 60px 程度に下げるとより軽くなります */
   pointer-events:none;
   z-index:0;
   background:#000;
+  will-change: transform;
 }
 .mesh-container .color-circle{
   position:absolute;
   width:150%;height:150%;
   border-radius:50%;
-  animation:meshMove linear infinite;
-  will-change:transform;
-}
-.mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 60%);top:-50%;left:-50%;animation-duration:18s;opacity:.6}
-.mesh-container .c2{background:radial-gradient(circle,#003a3d 0%,transparent 60%);bottom:-50%;left:-80%;animation-duration:25s;opacity:.5}
-.mesh-container .c3{background:radial-gradient(circle,#006064 0%,transparent 50%);top:20%;left:-100%;animation-duration:30s;opacity:.4}
-.mesh-container .c4{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;animation-duration:28s;opacity:.4}
-.mesh-container .c5{background:radial-gradient(circle,#8a5a3a 0%,transparent 60%);top:-50%;right:-80%;animation-duration:22s;animation-direction:reverse;opacity:.6}
-.mesh-container .c6{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;animation-duration:15s;animation-direction:reverse;opacity:.5}
-.mesh-container .c7{background:radial-gradient(circle,#a66a1e 0%,transparent 50%);bottom:20%;right:-100%;animation-duration:12s;opacity:.5}
-.mesh-container .c8{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;animation-duration:19s;opacity:.5}
-
-@keyframes meshMove{
-  0%{transform:translate(0,0) rotate(0deg) scale(1)}
-  33%{transform:translate(60%,-40%) rotate(120deg) scale(1.2)}
-  66%{transform:translate(-40%,60%) rotate(240deg) scale(.8)}
-  100%{transform:translate(0,0) rotate(360deg) scale(1)}
+  /* animationを削除 */
+  opacity: .5;
 }
 
-/* LOADER — 中心から拡大して登場 */
+/* 各色の位置を固定 */
+.mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 60%);top:-50%;left:-50%;}
+.mesh-container .c2{background:radial-gradient(circle,#003a3d 0%,transparent 60%);bottom:-50%;left:-80%;}
+.mesh-container .c3{background:radial-gradient(circle,#006064 0%,transparent 50%);top:20%;left:-100%;}
+.mesh-container .c4{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;}
+.mesh-container .c5{background:radial-gradient(circle,#8a5a3a 0%,transparent 60%);top:-50%;right:-80%;}
+.mesh-container .c6{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;}
+.mesh-container .c7{background:radial-gradient(circle,#a66a1e 0%,transparent 50%);bottom:20%;right:-100%;}
+.mesh-container .c8{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;}
+
+/* LOADER */
 #loader{position:fixed;inset:0;background:#2D2E2E;z-index:10000;display:flex;align-items:center;justify-content:center}
 .ld-logo-box{
   width:64px;height:64px;
@@ -106,10 +99,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .cursor.expanded{width:36px;height:36px;background:rgba(255,255,255,.15)}
 @media(hover:none){.cursor{display:none}body{cursor:auto}}
 
-/* ─── NAV BAR ───
-   PC: HOMEセクションでは非表示 → WORKS到達後フェードイン
-   中央高さに logo左 / hamburger右
-*/
+/* NAV BAR */
 .nav-fixed{
   position:fixed;inset:0;
   z-index:501;
@@ -120,7 +110,6 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .nav-fixed.show{opacity:1;visibility:visible}
 .nav-fixed > *{pointer-events:auto}
 
-/* ロゴ：左セーフエリアの垂直中央 */
 .nav-logo{
   position:absolute;
   left:calc(var(--safe-x) / 2);
@@ -141,7 +130,6 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 }
 .nav-logo:hover{transform:translate(-50%,-50%) scale(1.05)}
 
-/* ハンバーガー：右セーフエリアの垂直中央 */
 .hamburger{
   position:absolute;
   right:calc(var(--safe-x) / 2);
@@ -163,7 +151,6 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){top:24px;transform:rotate(-45deg);background:var(--accent)}
 
-/* ─── TOP RIGHT NAV (HOMEのみ表示) ─── */
 .top-nav{
   position:absolute;
   right:14vw;top:50dvh;
@@ -178,7 +165,6 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   letter-spacing:.08em;
   color:var(--accent);text-decoration:none;text-transform:uppercase;
   transition:letter-spacing .3s var(--eoe),opacity .2s;
-  /* 登場アニメ: タグの後に順番にフェードイン */
   opacity:0;
   transform:translateY(8px);
 }
@@ -194,7 +180,6 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 }
 .top-nav a:hover{letter-spacing:.16em}
 
-/* MOBILE MENU — アニメーション付き */
 .mob-menu{
   display:flex;
   position:fixed;inset:0;
@@ -206,10 +191,6 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
   transition:opacity .45s var(--eoe),visibility .45s;
 }
 .mob-menu.open{opacity:1;visibility:visible}
-
-/* 左から差し込むアクセントライン */
-.mob-menu::before{display:none}
-
 .mob-menu a{
   font-family:var(--ff-disp);font-size:2rem;font-weight:300;
   letter-spacing:.14em;color:var(--text);text-decoration:none;text-transform:uppercase;
@@ -226,12 +207,8 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 .mob-menu.open a:nth-child(5){transition-delay:.5s}
 .mob-menu a:hover{color:var(--accent);letter-spacing:.22em}
 
-/* SECTION BASE — 上部で定義済み */
-
 /* ═══ TOP ═══ */
 .top-photo{position:absolute;inset:0}
-
-/* 名前・スキルを中央寄せ（左側） */
 .top-content{
   position:absolute;
   left:var(--safe-x);top:50dvh;
@@ -259,7 +236,6 @@ body.loaded .top-tags{animation:fadeIn .45s ease .35s forwards}
 .top-tags p.main{color:var(--accent)}
 .top-tags p.italic{font-style:italic;color:var(--text);font-weight:300}
 
-/* SCROLL — 画面底辺、サイズアップ、線太く */
 .scroll-ind{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.55rem;z-index:2;opacity:0}
 body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .scroll-ind span{font-family:var(--ff-disp);font-weight:300;font-size:11px;letter-spacing:.18em;color:var(--text);text-transform:uppercase}
@@ -270,19 +246,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 @keyframes fadeIn{to{opacity:1}}
 
 /* ═══ WORKS ═══ */
-/* 3段の画像スライド背景 */
 .works-bg{
   position:absolute;inset:0;z-index:1;
   display:grid;grid-template-rows:1fr 1fr 1fr;
 }
-.works-bg-row{
-  overflow:hidden;position:relative;
-  display:flex;
-}
-.works-bg-track{
-  display:flex;flex-shrink:0;
-  width:max-content;
-}
+.works-bg-row{overflow:hidden;position:relative;display:flex;}
+.works-bg-track{display:flex;flex-shrink:0;width:max-content;}
 .works-bg-track.dir-left{animation:slideLeft 40s linear infinite}
 .works-bg-track.dir-right{animation:slideRight 40s linear infinite}
 .works-bg-cell{
@@ -299,9 +268,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .works-bg-cell.has-img::after{display:none}
 @keyframes slideLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes slideRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
-
 .works-dark{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,.62)}
-
 .works-center{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16dvh 0 16dvh}
 .works-upper{display:flex;flex-direction:column;align-items:center;gap:1.1rem}
 .works-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1}
@@ -315,7 +282,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   transition:color .3s ease .5s;
   cursor:pointer;background:none;
 }
-/* ホバー終了時の戻り遅延 0.5s */
 .works-viewall::before{
   content:'';position:absolute;inset:0;
   background:var(--text);transform:translateY(105%);
@@ -327,11 +293,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 
 /* ═══ PROFILE ═══ */
 #profile{position:relative}
-
-/* 左側画像（画面の横半分） */
 .profile-bg{position:absolute;left:0;top:0;bottom:0;width:50%;z-index:1}
-
-/* PROFILE スライドショー */
 .profile-bg.has-slides::after,.profile-sp-bg.has-slides::after{display:none}
 .profile-slide{
   position:absolute;inset:0;
@@ -341,8 +303,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   z-index:1;
 }
 .profile-slide.active{opacity:1;z-index:2}
-
-/* 中央にPROFILEタイトルが画像に被って配置 */
 .profile-title-center{
   position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -354,8 +314,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   color:var(--accent);line-height:1;
   padding:0 .3rem;
 }
-
-/* 右コンテンツ */
 .profile-right{
   position:absolute;right:0;top:0;bottom:0;
   width:50%;z-index:2;
@@ -372,7 +330,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .profile-text{font-family:var(--ff-jp);font-size:12.5px;line-height:2.05;color:var(--text);margin-bottom:1.3rem}
 .profile-text-accent{font-family:var(--ff-jp);font-size:12.5px;line-height:2.05;color:var(--text)}
 
-/* 遊び心の演出: タップでキラキラ + 定期ヒント */
 .playful{
   display:inline-block;
   position:relative;
@@ -381,19 +338,11 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   transition:letter-spacing .35s var(--eoe);
   -webkit-tap-highlight-color:transparent;
   transform-origin:center;
-  /* 7秒に1回 揺れるヒント */
   animation:playfulHint 3s ease-in-out infinite;
 }
-.playful:hover{
-  letter-spacing:.04em;
-}
-/* poked: ヒントアニメを上書きして1回だけ実行 */
-.playful.poked{
-  animation:playfulPoke .9s var(--eoe) forwards;
-  pointer-events:none;
-}
+.playful:hover{letter-spacing:.04em;}
+.playful.poked{animation:playfulPoke .9s var(--eoe) forwards;pointer-events:none;}
 
-/* タップ時の動き＋色変化 → 白に戻る */
 @keyframes playfulPoke{
   0%  {color:var(--text);  transform:rotate(0) scale(1)}
   10% {color:var(--playful-c, var(--accent));transform:rotate(-1.5deg) scale(1.04)}
@@ -402,8 +351,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   60% {color:var(--playful-c, var(--accent));transform:rotate(0) scale(1)}
   100%{color:var(--text);  transform:rotate(0) scale(1)}
 }
-
-/* ヒント: 7秒に1回 同じ揺れ動きだけ（色変化なし）*/
 @keyframes playfulHint{
   0%,82%,100%{transform:rotate(0)}
   85% {transform:rotate(-.9deg)}
@@ -411,21 +358,8 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   91% {transform:rotate(-.4deg)}
   95% {transform:rotate(0)}
 }
-
-/* キラキラパーティクル */
-.spark{
-  position:fixed;
-  pointer-events:none;
-  z-index:9000;
-  font-size:14px;
-  color:var(--accent);
-  opacity:0;
-  user-select:none;
-  will-change:transform,opacity;
-}
-.spark.fly{
-  animation:sparkFly 1.1s var(--eoe) forwards;
-}
+.spark{position:fixed;pointer-events:none;z-index:9000;font-size:14px;color:var(--accent);opacity:0;user-select:none;will-change:transform,opacity;}
+.spark.fly{animation:sparkFly 1.1s var(--eoe) forwards;}
 @keyframes sparkFly{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0)}
   20%{opacity:1}
@@ -434,469 +368,118 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
     transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(var(--rot));
   }
 }
-
-/* SP */
 .profile-sp-hero{display:none}
 
 /* ═══ SKILL ═══ */
 #skill{position:relative}
-/* 画像背景 — 上下余白、横幅いっぱい */
-.skill-bg{
-  position:absolute;left:0;right:0;top:15vh;bottom:15vh;z-index:1;
-}
+.skill-bg{position:absolute;left:0;right:0;top:15vh;bottom:15vh;z-index:1;}
 .skill-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.55)}
-
-.skill-inner{
-  position:relative;z-index:2;
-  height:100%;
-  display:grid;grid-template-columns:1fr 1fr;
-}
-.skill-left{
-  position:relative;
-  display:flex;flex-direction:column;justify-content:center;
-  align-items:flex-start;
-  padding:0 3vw 0 14vw;
-}
-.skill-title{
-  font-family:var(--ff-disp);font-weight:200;
-  font-size:clamp(2.4rem,5vw,4.4rem);
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--accent);line-height:1;margin-bottom:1.5rem;
-}
+.skill-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:1fr 1fr;}
+.skill-left{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 3vw 0 14vw;}
+.skill-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;margin-bottom:1.5rem;}
 .skill-desc{font-family:var(--ff-jp);font-size:12.5px;line-height:2.05;color:var(--text)}
-
-/* 中央の縦線 — 白色、スキル項目の高さ */
-.skill-vline{
-  position:absolute;
-  right:0;
-  top:50%;transform:translateY(-50%);
-  width:1px;height:60%;
-  background:var(--text);
-  opacity:.65;
-}
-
-.skill-right{
-  display:flex;flex-direction:column;justify-content:center;
-  align-items:stretch;
-  padding:0 var(--safe-x) 0 4vw;gap:1.8rem;
-}
-
-.sg-head{
-  font-family:var(--ff-sm);font-weight:400;
-  font-size:clamp(18px,1.7vw,24px);
-  letter-spacing:.04em;
-  color:var(--accent);margin-bottom:.85rem;
-  text-transform:none;
-}
-/* Tool: 横幅統一 */
+.skill-vline{position:absolute;right:0;top:50%;transform:translateY(-50%);width:1px;height:60%;background:var(--text);opacity:.65;}
+.skill-right{display:flex;flex-direction:column;justify-content:center;align-items:stretch;padding:0 var(--safe-x) 0 4vw;gap:1.8rem;}
+.sg-head{font-family:var(--ff-sm);font-weight:400;font-size:clamp(18px,1.7vw,24px);letter-spacing:.04em;color:var(--accent);margin-bottom:.85rem;text-transform:none;}
 .sk-tool{display:flex;flex-wrap:wrap;gap:8px 10px;width:100%}
-/* Design: 四角、3x2、TOOLと同幅 */
 .sk-design{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-
-/* pill/box 共通プロパティ */
-.sk-tool .sk-pill,
-.sk-design .sk-box{
-  font-family:var(--ff-sm);font-weight:400;font-size:12px;
-  letter-spacing:.04em;
-  border:1.5px solid rgba(225,226,226,.4);
-  color:var(--text);
-  background:none;
-  height:30px;
-  display:flex;align-items:center;justify-content:center;
-}
-.sk-tool .sk-pill{
-  letter-spacing:.06em;
-  padding:0 10px;border-radius:40px;
-  flex:0 0 auto;
-  width:calc(25% - 7.5px);
-  min-width:0;
-}
-.sk-design .sk-box{
-  padding:0 8px;text-align:center;
-}
-/* Premiere Pro / Figma（br-row以降）は上段4項目と同じ25%幅で左揃え */
-.sk-tool .br-row ~ .sk-pill{
-  width:calc(25% - 7.5px);
-}
+.sk-tool .sk-pill,.sk-design .sk-box{font-family:var(--ff-sm);font-weight:400;font-size:12px;letter-spacing:.04em;border:1.5px solid rgba(225,226,226,.4);color:var(--text);background:none;height:30px;display:flex;align-items:center;justify-content:center;}
+.sk-tool .sk-pill{letter-spacing:.06em;padding:0 10px;border-radius:40px;flex:0 0 auto;width:calc(25% - 7.5px);min-width:0;}
+.sk-design .sk-box{padding:0 8px;text-align:center;}
+.sk-tool .br-row ~ .sk-pill{width:calc(25% - 7.5px);}
 .sk-tool .br-row{flex-basis:100%;height:0}
-
-/* hiクラス共通: アクセントカラー */
-.sk-tool .sk-pill.hi,
-.sk-design .sk-box.hi{
-  border-color:var(--accent);color:var(--accent);
-}
-
+.sk-tool .sk-pill.hi,.sk-design .sk-box.hi{border-color:var(--accent);color:var(--accent);}
 .strategy-text{font-family:var(--ff-jp);font-size:12px;line-height:2.05;color:var(--text)}
 
 /* ═══ CONTACT ═══ */
 #contact{display:flex;flex-direction:column;position:relative}
-.contact-body{
-  position:relative;z-index:2;flex:1;
-  display:flex;align-items:center;justify-content:center;
-  padding:5vh 5vw 0; /* 少し下にオフセット */
-}
-.contact-stack{
-  position:relative;
-  display:flex;flex-direction:column;align-items:center;
-  width:min(460px,88vw);
-}
-
-/* CONTACTタイトル */
-.contact-title{
-  font-family:var(--ff-disp);font-weight:200;
-  font-size:clamp(2.4rem,5vw,4.4rem);
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--accent);line-height:1;
-  position:relative;z-index:3;
-  margin-bottom:-0.55em;
-}
-/* sub: 画像の上部に絶対配置（CONTACT寄り） */
-.contact-sub{
-  position:absolute;
-  top:19%;
-  left:50%;transform:translateX(-50%);
-  font-family:var(--ff-jp);font-size:12.5px;
-  letter-spacing:.08em;color:var(--text);
-  z-index:5;white-space:nowrap;line-height:2.05;
-  margin:0;
-}
-.contact-img{
-  width:min(420px,82vw);aspect-ratio:1/1;
-  background:var(--ph);
-  position:relative;z-index:2;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-}
+.contact-body{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:center;padding:5vh 5vw 0;}
+.contact-stack{position:relative;display:flex;flex-direction:column;align-items:center;width:min(460px,88vw);}
+.contact-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;position:relative;z-index:3;margin-bottom:-0.55em;}
+.contact-sub{position:absolute;top:19%;left:50%;transform:translateX(-50%);font-family:var(--ff-jp);font-size:12.5px;letter-spacing:.08em;color:var(--text);z-index:5;white-space:nowrap;line-height:2.05;margin:0;}
+.contact-img{width:min(420px,82vw);aspect-ratio:1/1;background:var(--ph);position:relative;z-index:2;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .contact-img::before{content:'';position:absolute;inset:0;background:rgba(35,36,36,.55);z-index:1}
-.contact-img::after{
-  content:'PHOTO';position:relative;z-index:2;
-  font-family:var(--ff-sm);font-size:12px;font-weight:400;
-  letter-spacing:.28em;color:rgba(225,226,226,.3);text-transform:uppercase;
-}
-
-/* 修正箇所：メアドボタン — CONTACTセクション内の画像中央に絶対配置 */
-.contact-email-btn{
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  z-index:5;
-  background:var(--text);color:var(--bg);
-  display:flex;align-items:center;justify-content:center;gap:1.1rem;
-  font-family:var(--ff-sm);font-weight:300;
-  font-size:clamp(20px,2.2vw,30px);
-  letter-spacing:.03em;
-  padding:30px 80px;border-radius:90px;
-  text-decoration:none;
-  transition:background .25s,color .25s,transform .25s,opacity .3s;
-  white-space:nowrap;
-  opacity:0;pointer-events:none;
-}
+.contact-img::after{content:'PHOTO';position:relative;z-index:2;font-family:var(--ff-sm);font-size:12px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.3);text-transform:uppercase;}
+.contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;gap:1.1rem;font-family:var(--ff-sm);font-weight:300;font-size:clamp(20px,2.2vw,30px);letter-spacing:.03em;padding:30px 80px;border-radius:90px;text-decoration:none;transition:background .25s,color .25s,transform .25s,opacity .3s;white-space:nowrap;opacity:0;pointer-events:none;}
 body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .contact-email-btn:hover{background:var(--accent);transform:translate(-50%,-50%) scale(1.04)}
-
-/* Footer */
-.contact-footer{
-  position:relative;z-index:3;flex-shrink:0;
-  background:var(--bg2);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:1.4rem 3vw;
-}
+.contact-footer{position:relative;z-index:3;flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3vw;}
 .cf-links{display:flex;gap:3rem}
-.cf-links a{
-  font-family:var(--ff-disp);font-weight:400;
-  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--text);text-decoration:none;transition:color .2s;
-}
+.cf-links a{font-family:var(--ff-disp);font-weight:400;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);text-decoration:none;transition:color .2s;}
 .cf-links a:hover{color:var(--accent)}
-.footer-logo{
-  width:34px;height:34px;background:#3a3b3b;position:relative;overflow:hidden;
-}
-.footer-logo::after{
-  content:'LOGO';position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--ff-sm);font-size:7px;font-weight:400;
-  letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;
-}
+.footer-logo{width:34px;height:34px;background:#3a3b3b;position:relative;overflow:hidden;}
+.footer-logo::after{content:'LOGO';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--ff-sm);font-size:7px;font-weight:400;letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;}
 
 /* ═══ ALL WORKS OVERLAY ═══ */
-#works-all{
-  position:fixed;inset:0;background:var(--bg);z-index:300;
-  display:flex;flex-direction:column;
-  opacity:0;visibility:hidden;
-  transition:opacity .45s ease,visibility .45s;
-  overflow:hidden;
-  min-height:100dvh;
-}
+#works-all{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;overflow:hidden;min-height:100dvh;}
 #works-all.open{opacity:1;visibility:visible}
-
-/* WORKS一覧 戻るリンク - Detailと同じスタイル */
-.wa-back{
-  position:fixed;
-  top:1.6rem;left:var(--safe-x);
-  z-index:50;
-  display:inline-flex;align-items:center;gap:.6rem;
-  font-family:var(--ff-disp);font-weight:400;
-  font-size:13px;letter-spacing:.16em;
-  color:var(--text-dim);text-decoration:none;
-  transition:color .25s,gap .3s var(--eoe);
-}
+.wa-back{position:fixed;top:1.6rem;left:var(--safe-x);z-index:50;display:inline-flex;align-items:center;gap:.6rem;font-family:var(--ff-disp);font-weight:400;font-size:13px;letter-spacing:.16em;color:var(--text-dim);text-decoration:none;transition:color .25s,gap .3s var(--eoe);}
 .wa-back:hover{color:var(--accent);gap:.9rem}
-.wa-back::before{
-  content:'';
-  width:8px;height:8px;
-  border-left:1.5px solid currentColor;
-  border-bottom:1.5px solid currentColor;
-  transform:rotate(45deg);
-  transition:border-color .25s;
-}
-
-.wa-body{
-  flex:1;overflow-y:scroll;
-  padding:5rem 0 3rem;
-  scrollbar-width:thin;scrollbar-color:var(--text-dim) transparent;
-}
-
+.wa-back::before{content:'';width:8px;height:8px;border-left:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:border-color .25s;}
+.wa-body{flex:1;overflow-y:scroll;padding:5rem 0 3rem;scrollbar-width:thin;scrollbar-color:var(--text-dim) transparent;}
 .wa-category{margin-bottom:0;padding-top:3.2rem}
-
-/* カテゴリラベル: Bricolage、左の細いアクセント線 */
-.wa-cat-label{
-  display:flex;align-items:center;gap:1.2rem;
-  font-family:var(--ff-sm);font-size:clamp(13px,1.5vw,17px);font-weight:500;
-  letter-spacing:.04em;
-  color:var(--text);
-  margin-bottom:1rem;
-  text-transform:none;
-}
-/* PCのみ: アクセント線は画面端から少し短めで、文字との間にマージン */
-.wa-cat-label::before{
-  content:'';
-  width:calc(var(--safe-x) - 1rem);
-  height:1.5px;
-  background:var(--accent);
-  flex-shrink:0;
-}
-
-/* 画像グリッド: 隙間なし */
-.wa-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:0;
-  padding:0;
-}
-.wa-card{
-  position:relative;overflow:hidden;
-  background:var(--ph);
-  border:none;
-  aspect-ratio:21/9;cursor:pointer;
-}
+.wa-cat-label{display:flex;align-items:center;gap:1.2rem;font-family:var(--ff-sm);font-size:clamp(13px,1.5vw,17px);font-weight:500;letter-spacing:.04em;color:var(--text);margin-bottom:1rem;text-transform:none;}
+.wa-cat-label::before{content:'';width:calc(var(--safe-x) - 1rem);height:1.5px;background:var(--accent);flex-shrink:0;}
+.wa-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;}
+.wa-card{position:relative;overflow:hidden;background:var(--ph);border:none;aspect-ratio:21/9;cursor:pointer;}
 .wa-card-img{position:absolute;inset:0}
-.wa-card-img-ph{
-  width:100%;height:100%;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--ph);
-}
-.wa-card-img-ph::after{
-  content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;
-  letter-spacing:.22em;color:rgba(225,226,226,.2);text-transform:uppercase;
-}
-.wa-card-body{
-  position:absolute;inset:0;z-index:2;
-  background:rgba(35,36,36,0);
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding:1.2rem 1.4rem;
-  opacity:0;
-  transition:background .3s,opacity .3s;
-}
+.wa-card-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--ph);}
+.wa-card-img-ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;letter-spacing:.22em;color:rgba(225,226,226,.2);text-transform:uppercase;}
+.wa-card-body{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,0);display:flex;flex-direction:column;justify-content:flex-end;padding:1.2rem 1.4rem;opacity:0;transition:background .3s,opacity .3s;}
 @media (hover:hover) and (min-width:901px){
-  .wa-card:hover .wa-card-body{
-    background:rgba(35,36,36,.82);
-    opacity:1;
-  }
-  /* 左カラム(奇数)：ロゴ側 = 左にセーフエリア余白 */
-  .wa-card:nth-child(odd) .wa-card-body{
-    padding-left:calc(var(--safe-x) + 0.5rem);
-    padding-right:1.4rem;
-  }
-  /* 右カラム(偶数)：ハンバーガー側 = 右にセーフエリア余白 */
-  .wa-card:nth-child(even) .wa-card-body{
-    padding-right:calc(var(--safe-x) + 0.5rem);
-    padding-left:1.4rem;
-  }
+  .wa-card:hover .wa-card-body{background:rgba(35,36,36,.82);opacity:1;}
+  .wa-card:nth-child(odd) .wa-card-body{padding-left:calc(var(--safe-x) + 0.5rem);padding-right:1.4rem;}
+  .wa-card:nth-child(even) .wa-card-body{padding-right:calc(var(--safe-x) + 0.5rem);padding-left:1.4rem;}
 }
-.wa-card.active .wa-card-body{
-  background:rgba(35,36,36,.85);
-  opacity:1;
-}
-
-/* 詳細遷移アイコン (○の中に直角矢印) — 900px以下でactive時のみ表示 */
-.wa-card-arrow{
-  position:absolute;right:1.2rem;bottom:1.2rem;
-  width:34px;height:34px;border-radius:50%;
-  border:1.5px solid var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  z-index:3;
-  opacity:0;transform:scale(.7);
-  transition:opacity .3s,transform .3s var(--eoe);
-  pointer-events:none;
-}
-/* 直角矢印の > を線で描画 */
-.wa-card-arrow::before{
-  content:'';
-  width:9px;height:9px;
-  border-top:2px solid var(--accent);
-  border-right:2px solid var(--accent);
-  transform:rotate(45deg) translate(-1px,1px);
-}
-.wa-card.active .wa-card-arrow{
-  opacity:1;transform:scale(1);
-}
-@media (hover:hover) and (min-width:901px){
-  .wa-card-arrow{display:none}
-}
-
-/* 900px以下: タップ時にテキストはアイコン分の余白を確保 */
-@media (max-width:900px){
-  .wa-card.active .wa-card-body{
-    padding-right:4.2rem;
-    padding-bottom:1rem;
-  }
-  .wa-card.active .wa-card-desc{
-    padding-right:0;
-  }
-}
-.wa-card-title{
-  font-family:var(--ff-jp);font-size:clamp(15px,1.8vw,22px);font-weight:300;
-  color:var(--text);line-height:1.45;margin-bottom:.55rem;
-}
-.wa-card-desc{
-  font-family:var(--ff-jp);font-size:11.5px;line-height:1.7;
-  color:var(--text);
-}
-
-/* WORKS一覧 スクロール登場アニメ — フォーカスリビール（ぼかし→クリア） */
-.wa-fade{
-  opacity:0;
-  filter:blur(18px);
-  transform:scale(1.06);
-  transition:opacity .7s ease,filter .9s var(--eoe),transform 1s var(--eoe);
-  will-change:filter,transform,opacity;
-}
-.wa-fade.in{
-  opacity:1;
-  filter:blur(0);
-  transform:scale(1);
-}
-
-/* SCROLL REVEAL */
+.wa-card.active .wa-card-body{background:rgba(35,36,36,.85);opacity:1;}
+.wa-card-arrow{position:absolute;right:1.2rem;bottom:1.2rem;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;z-index:3;opacity:0;transform:scale(.7);transition:opacity .3s,transform .3s var(--eoe);pointer-events:none;}
+.wa-card-arrow::before{content:'';width:9px;height:9px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);transform:rotate(45deg) translate(-1px,1px);}
+.wa-card.active .wa-card-arrow{opacity:1;transform:scale(1);}
+@media (hover:hover) and (min-width:901px){.wa-card-arrow{display:none}}
+@media (max-width:900px){.wa-card.active .wa-card-body{padding-right:4.2rem;padding-bottom:1rem;}.wa-card.active .wa-card-desc{padding-right:0;}}
+.wa-card-title{font-family:var(--ff-jp);font-size:clamp(15px,1.8vw,22px);font-weight:300;color:var(--text);line-height:1.45;margin-bottom:.55rem;}
+.wa-card-desc{font-family:var(--ff-jp);font-size:11.5px;line-height:1.7;color:var(--text);}
+.wa-fade{opacity:0;filter:blur(18px);transform:scale(1.06);transition:opacity .7s ease,filter .9s var(--eoe),transform 1s var(--eoe);will-change:filter,transform,opacity;}
+.wa-fade.in{opacity:1;filter:blur(0);transform:scale(1);}
 .rv{opacity:0;transform:translateY(16px);transition:opacity .65s ease,transform .65s var(--eoe)}
 .rv.vis{opacity:1;transform:translateY(0)}
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:900px){
-  .nav-fixed{
-    position:fixed;
-    inset:auto;
-    top:0;left:0;right:0;bottom:auto;
-    transform:none;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:1.2rem 1.5rem;
-    height:auto;
-    z-index:501;
-    opacity:1;visibility:visible;
-  }
-  /* SP: ロゴとハンバーガーの全positioning/transformをリセット */
-  .nav-logo{
-    all:unset;
-    display:flex;align-items:center;justify-content:center;
-    width:32px;height:32px;
-    background:#3a3b3b;
-    cursor:pointer;
-    overflow:hidden;
-    position:relative;
-    flex-shrink:0;
-    pointer-events:auto;
-    z-index:501;
-    transform:none !important;
-  }
+  .nav-fixed{position:fixed;inset:auto;top:0;left:0;right:0;bottom:auto;transform:none;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;height:auto;z-index:501;opacity:1;visibility:visible;}
+  .nav-logo{all:unset;display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#3a3b3b;cursor:pointer;overflow:hidden;position:relative;flex-shrink:0;pointer-events:auto;z-index:501;transform:none !important;}
   .nav-logo:hover,.nav-logo:active{transform:none !important}
-  .nav-logo::after{
-    content:'LOGO';position:absolute;inset:0;
-    display:flex;align-items:center;justify-content:center;
-    font-family:var(--ff-sm);font-size:7px;font-weight:400;
-    letter-spacing:.18em;color:rgba(225,226,226,.25);text-transform:uppercase;
-  }
-  .hamburger{
-    all:unset;
-    display:flex;flex-direction:column;
-    cursor:pointer;
-    width:32px;height:32px;
-    position:relative;
-    flex-shrink:0;
-    pointer-events:auto;
-    z-index:501;
-  }
-  .hamburger span{
-    display:block;
-    position:absolute;
-    background:var(--text);
-    transition:transform .3s ease,opacity .2s ease,top .28s ease,background .25s;
-    width:20px;height:1.5px;left:5px;
-  }
+  .nav-logo::after{content:'LOGO';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--ff-sm);font-size:7px;font-weight:400;letter-spacing:.18em;color:rgba(225,226,226,.25);text-transform:uppercase;}
+  .hamburger{all:unset;display:flex;flex-direction:column;cursor:pointer;width:32px;height:32px;position:relative;flex-shrink:0;pointer-events:auto;z-index:501;}
+  .hamburger span{display:block;position:absolute;background:var(--text);transition:transform .3s ease,opacity .2s ease,top .28s ease,background .25s;width:20px;height:1.5px;left:5px;}
   .hamburger span:nth-child(1){top:10px}
   .hamburger span:nth-child(2){top:16px}
   .hamburger span:nth-child(3){top:22px}
   .hamburger.open span:nth-child(1){top:16px;transform:rotate(45deg);background:var(--accent)}
   .hamburger.open span:nth-child(2){opacity:0}
   .hamburger.open span:nth-child(3){top:16px;transform:rotate(-45deg);background:var(--accent)}
-
-  /* SPではtop-navは非表示（ハンバーガーだけ） */
   .top-nav{display:none}
-
-  /* TOP */
   .top-content{left:6vw;top:50dvh;transform:translateY(-50%)}
   .top-name{font-size:clamp(2rem,8vw,3.2rem);letter-spacing:.10em}
   .top-tags p{font-size:11px}
-
-  /* SP HOME: SCROLLを画面底面に */
   .scroll-ind{bottom:0;gap:.35rem}
   .scroll-ind span{font-size:8.5px}
   .scroll-line-v{height:52px}
-
   .works-bg-cell{width:50vw}
   .works-title{font-size:clamp(2rem,8vw,3rem);font-weight:300}
   .works-sub{font-size:11px;line-height:1.6;padding:0 2rem}
-  .works-center{
-    padding:0;
-    justify-content:space-between;
-    display:flex;flex-direction:column;
-  }
+  .works-center{padding:0;justify-content:space-between;display:flex;flex-direction:column;}
   .works-upper{padding-top:22dvh}
   .works-viewall{font-size:11px;padding:13px 52px;letter-spacing:.22em;margin-bottom:18dvh}
-
-  /* SP セクションタイトル共通ウェイト */
-  .profile-sp-title,
-  .skill-title,
-  .contact-title{font-weight:300}
-
-  /* PROFILE SP */
+  .profile-sp-title,.skill-title,.contact-title{font-weight:300}
   #profile{display:flex;flex-direction:column;overflow:visible}
   .profile-bg{display:none}
   .profile-title-center{display:none}
   .profile-sp-hero{display:flex;flex-shrink:0;height:45dvh;position:relative;overflow:visible}
   .profile-sp-bg{position:absolute;inset:0;overflow:hidden}
   .profile-sp-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.25)}
-  /* タイトルを画像の下辺に文字の上半分が重なる位置 + 下文章の左揃えに合わせる */
-  .profile-sp-title{
-    position:absolute;left:6vw;bottom:0;
-    transform:translateY(50%);
-    z-index:5;
-    font-family:var(--ff-disp);font-weight:300;
-    font-size:clamp(2rem,8vw,3rem);letter-spacing:.08em;text-transform:uppercase;
-    color:var(--accent);line-height:1;
-  }
-  .profile-right{
-    position:static;width:100%;
-    flex:1;padding:2.6rem 6vw 1.5rem;
-    justify-content:flex-start;overflow-y:auto;
-  }
+  .profile-sp-title{position:absolute;left:6vw;bottom:0;transform:translateY(50%);z-index:5;font-family:var(--ff-disp);font-weight:300;font-size:clamp(2rem,8vw,3rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;}
+  .profile-right{position:static;width:100%;flex:1;padding:2.6rem 6vw 1.5rem;justify-content:flex-start;overflow-y:auto;}
   .profile-name{font-size:clamp(1.1rem,5vw,1.45rem);margin-bottom:.2rem}
   .profile-name-en{font-size:11px;margin-bottom:1rem}
   .profile-meta{gap:.5rem 1.5rem;margin-bottom:1rem}
@@ -904,113 +487,40 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .pm-val{font-size:12px}
   .profile-text{font-size:11px;line-height:1.6;margin-bottom:.9rem}
   .profile-text-accent{font-size:11px;line-height:1.6}
-
-  /* SKILL SP */
   .skill-bg{top:0;bottom:0}
-  .skill-inner{
-    display:flex;flex-direction:column;
-    min-height:100dvh;
-    justify-content:center;
-    padding-top:0;
-  }
-  .skill-left{
-    padding:2.6rem 6vw 2.4rem;justify-content:flex-start;
-    border-bottom:none;
-    position:relative;
-  }
-  /* SKILL/desc下の区切り線：グレーで本文幅と同じ長さ */
-  .skill-left::after{
-    content:'';
-    position:absolute;left:6vw;right:6vw;bottom:0;
-    height:1px;background:var(--text-dim);
-  }
+  .skill-inner{display:flex;flex-direction:column;min-height:100dvh;justify-content:center;padding-top:0;}
+  .skill-left{padding:2.6rem 6vw 2.4rem;justify-content:flex-start;border-bottom:none;position:relative;}
+  .skill-left::after{content:'';position:absolute;left:6vw;right:6vw;bottom:0;height:1px;background:var(--text-dim);}
   .skill-vline{display:none}
   .skill-title{font-size:clamp(1.8rem,8vw,2.5rem);margin-bottom:.5rem;line-height:1}
   .skill-desc{font-size:11px;line-height:1.6}
   .skill-right{padding:2.8rem 6vw 1.4rem;gap:1.6rem;justify-content:flex-start;overflow-y:auto}
-  /* sk-tool・sk-designの親(.rv)をフル幅にして横幅を揃える */
   .skill-right .rv{width:100%}
   .sg-head{font-size:18px;margin-bottom:.45rem;line-height:1.2}
-  /* TOOL と Design の横幅をStrategy文章幅に揃える */
   .sk-tool{gap:6px;width:100%}
   .sk-tool .sk-pill{flex:1;min-width:0;justify-content:center}
-  /* Premiere Pro / Figma（br-row以降）は上段4項目と完全同幅 */
-  .sk-tool .br-row ~ .sk-pill{
-    flex:0 0 auto !important;
-    width:calc(25% - 4.5px) !important;
-    min-width:0 !important;
-    padding:0 !important;
-    justify-content:center;
-  }
+  .sk-tool .br-row ~ .sk-pill{flex:0 0 auto !important;width:calc(25% - 4.5px) !important;min-width:0 !important;padding:0 !important;justify-content:center;}
   .sk-tool .br-row{flex-basis:100%;height:0}
-  .sk-design{
-    grid-template-columns:repeat(3,1fr);
-    gap:6px;
-    width:100%;
-    max-width:none !important;
-  }
-  .sk-tool .sk-pill,.sk-design .sk-box{
-    font-size:10.5px;
-    border-width:1px;
-    line-height:1.3;
-    min-width:0;
-  }
+  .sk-design{grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:none !important;}
+  .sk-tool .sk-pill,.sk-design .sk-box{font-size:10.5px;border-width:1px;line-height:1.3;min-width:0;}
   .sk-tool .sk-pill{padding:5px 8px}
-  .sk-design .sk-box{
-    padding:6px 2px;
-    letter-spacing:-.02em;
-    font-size:9px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+  .sk-design .sk-box{padding:6px 2px;letter-spacing:-.02em;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .strategy-text{font-size:10.5px;line-height:1.65}
-
-  /* CONTACT SP */
   .contact-img{width:min(320px,75vw);position:relative}
   .contact-title{font-size:clamp(2rem,8vw,3rem)}
-  /* SP: メアドボタンは画像中央 absolute で常に表示 */
-  .contact-email-btn{
-    position:absolute;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    font-size:16px;padding:20px 38px;gap:.7rem;
-    font-weight:500;letter-spacing:.05em;
-    border-radius:60px;
-    opacity:1;pointer-events:auto;
-  }
-  /* 「お問い合わせはこちらから」を少し下に */
+  .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;padding:20px 38px;gap:.7rem;font-weight:500;letter-spacing:.05em;border-radius:60px;opacity:1;pointer-events:auto;}
   .contact-stack{position:relative}
-  .contact-sub{
-    position:absolute;
-    top:19%;
-    left:50%;transform:translateX(-50%);
-    bottom:auto;
-    z-index:5;
-    text-align:center;white-space:nowrap;
-    font-size:11px;line-height:1.6;
-    margin:0;
-  }
-  /* フッター */
+  .contact-sub{position:absolute;top:19%;left:50%;transform:translateX(-50%);bottom:auto;z-index:5;text-align:center;white-space:nowrap;font-size:11px;line-height:1.6;margin:0;}
   .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
   .cf-links{gap:2rem}
   .cf-links a{font-size:10px;letter-spacing:.14em}
-  /* フッターロゴ 小さく・下に余白 */
   .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
   .footer-logo::after{font-size:5.5px}
 
-  /* SKILL/CONTACT背景のメッシュグラデ：SPではアニメ停止（パフォーマンス改善） */
-  .mesh-container{filter:blur(60px);animation:none}
-  .mesh-container .color-circle{animation:none!important;transform:translate(0,0) scale(1)}
+  /* SPでのぼかし強度を下げて負荷軽減 */
+  .mesh-container{filter:blur(60px);will-change: auto;}
   
-  /* 修正箇所：SP WORKS一覧: Back to HOMEはスクロールに乗る（固定なし） */
-  .wa-back{
-    position:static;
-    top:auto;
-    left:auto;
-    display:inline-flex;
-    margin:5rem 0 1rem 6vw; /* wa-bodyのpadding-topを無くし、ここで上部の余白を確保 */
-  }
+  .wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
   #works-all{display:block; overflow-y:scroll; overflow-x:hidden}
   .wa-body{padding-top:0; overflow-y:visible; overflow-x:hidden; padding-bottom:9rem}
   .wa-grid{grid-template-columns:1fr;gap:3px}
@@ -1020,17 +530,12 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .wa-cat-label{font-size:13px;gap:.8rem;padding-left:0}
   .wa-cat-label::before{width:4vw;min-width:24px;height:2.5px}
 }
-@media(max-width:520px){
-  .cf-links{gap:1.4rem}
-  .contact-img{width:min(240px,65vw)}
-}
-/* ?works=1: WORKS一覧開くまで全体を隠す（HOMEちらつき防止）*/
+@media(max-width:520px){.cf-links{gap:1.4rem}.contact-img{width:min(240px,65vw)}}
 html.skip-opening{background:var(--bg)}
 html.skip-opening body > *:not(#works-all):not(canvas):not(.cursor):not(.nav-fixed):not(.mob-menu){visibility:hidden}
 html.skip-opening #works-all{opacity:1 !important;visibility:visible !important;transition:none}
 </style>
 <script>
-/* head内で即時実行: ?works=1ならhtmlにクラスを付与 */
 if(new URLSearchParams(window.location.search).get('works') === '1'){
   document.documentElement.classList.add('skip-opening');
 }
@@ -1039,11 +544,9 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 <body>
 
 <canvas id="dotsCanvas"></canvas>
-
 <div id="loader">
   <div class="ld-logo-box"></div>
 </div>
-
 <div class="cursor" id="cur"></div>
 
 <div class="nav-fixed" id="navFixed">
@@ -1063,14 +566,12 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 
 <section id="top">
   <div class="top-photo"></div>
-
   <nav class="top-nav">
     <a href="#works">Works</a>
     <a href="#profile">Profile</a>
     <a href="#skill">Skill</a>
     <a href="#contact">Contact</a>
   </nav>
-
   <div class="top-content">
     <h1 class="top-name">
       <span class="lw"><span class="li">SHOTA</span></span>
@@ -1081,7 +582,6 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       <p class="italic">Design · Direction · Planning · Management</p>
     </div>
   </div>
-
   <div class="scroll-ind">
     <span>SCROLL</span>
     <div class="scroll-line-v"></div>
@@ -1090,33 +590,11 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 
 <section id="works">
   <div class="works-bg">
-    <div class="works-bg-row">
-      <div class="works-bg-track dir-left">
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-      </div>
-    </div>
-    <div class="works-bg-row">
-      <div class="works-bg-track dir-right">
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-      </div>
-    </div>
-    <div class="works-bg-row">
-      <div class="works-bg-track dir-left">
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-        <div class="works-bg-cell"></div><div class="works-bg-cell"></div>
-      </div>
-    </div>
+    <div class="works-bg-row"><div class="works-bg-track dir-left"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
+    <div class="works-bg-row"><div class="works-bg-track dir-right"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
+    <div class="works-bg-row"><div class="works-bg-track dir-left"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
   </div>
   <div class="works-dark"></div>
-
   <div class="works-center">
     <div class="works-upper">
       <h2 class="works-title rv">WORKS</h2>
@@ -1131,11 +609,8 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
     <div class="profile-sp-bg ph" id="profileBgSP"></div>
     <h2 class="profile-sp-title">PROFILE</h2>
   </div>
-
   <div class="profile-bg ph" id="profileBgPC"></div>
-
   <h2 class="profile-title-center">PROFILE</h2>
-
   <div class="profile-right">
     <p class="profile-name">井上 翔太</p>
     <p class="profile-name-en">Shota Inoue</p>
@@ -1162,51 +637,16 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       <div class="color-circle c8"></div>
     </div>
   </div>
-
   <div class="skill-inner">
     <div class="skill-left">
       <h2 class="skill-title rv">SKILL</h2>
-      <p class="skill-desc rv">
-        グラフィック制作を中心に、簡単な動画編集まで対応可能です。<br>
-        また、スプレッドシート・Miro・Backlog など、<br>
-        企画進行・チームコラボツールの使用も可能です。
-      </p>
+      <p class="skill-desc rv">グラフィック制作を中心に、簡単な動画編集まで対応可能です。<br>また、スプレッドシート・Miro・Backlog など、<br>企画進行・チームコラボツールの使用も可能です。</p>
       <div class="skill-vline"></div>
     </div>
-
     <div class="skill-right">
-      <div class="rv">
-        <div class="sg-head">Tool</div>
-        <div class="sk-tool">
-          <span class="sk-pill hi">Illustrator</span>
-          <span class="sk-pill hi">Photoshop</span>
-          <span class="sk-pill hi">Adobe XD</span>
-          <span class="sk-pill hi">Indesign</span>
-          <div class="br-row"></div>
-          <span class="sk-pill">Premiere Pro</span>
-          <span class="sk-pill">Figma</span>
-        </div>
-      </div>
-
-      <div class="rv">
-        <div class="sg-head">Design</div>
-        <div class="sk-design">
-          <div class="sk-box hi">グラフィックデザイン</div>
-          <div class="sk-box hi">WEBデザイン</div>
-          <div class="sk-box hi">UI・UXデザイン</div>
-          <div class="sk-box hi">ブランディング</div>
-          <div class="sk-box hi">ディレクション</div>
-          <div class="sk-box">コピーライティング</div>
-        </div>
-      </div>
-
-      <div class="rv">
-        <div class="sg-head">Strategy</div>
-        <p class="strategy-text">
-          企画提案 ／ 要件定義 ／ IA・情報設計 ／ 業務フロー設計・改善改修 ／ 進行管理<br>
-          SNS運用 ／ CMS運用 ／ GA4運用
-        </p>
-      </div>
+      <div class="rv"><div class="sg-head">Tool</div><div class="sk-tool"><span class="sk-pill hi">Illustrator</span><span class="sk-pill hi">Photoshop</span><span class="sk-pill hi">Adobe XD</span><span class="sk-pill hi">Indesign</span><div class="br-row"></div><span class="sk-pill">Premiere Pro</span><span class="sk-pill">Figma</span></div></div>
+      <div class="rv"><div class="sg-head">Design</div><div class="sk-design"><div class="sk-box hi">グラフィックデザイン</div><div class="sk-box hi">WEBデザイン</div><div class="sk-box hi">UI・UXデザイン</div><div class="sk-box hi">ブランディング</div><div class="sk-box hi">ディレクション</div><div class="sk-box">コピーライティング</div></div></div>
+      <div class="rv"><div class="sg-head">Strategy</div><p class="strategy-text">企画提案 ／ 要件定義 ／ IA・情報設計 ／ 業務フロー設計・改善改修 ／ 進行管理<br>SNS運用 ／ CMS運用 ／ GA4運用</p></div>
     </div>
   </div>
 </section>
@@ -1217,31 +657,15 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
       <h2 class="contact-title rv">CONTACT</h2>
       <div class="contact-img ph">
         <div class="mesh-container">
-          <div class="color-circle c1"></div>
-          <div class="color-circle c2"></div>
-          <div class="color-circle c3"></div>
-          <div class="color-circle c4"></div>
-          <div class="color-circle c5"></div>
-          <div class="color-circle c6"></div>
-          <div class="color-circle c7"></div>
-          <div class="color-circle c8"></div>
+          <div class="color-circle c1"></div><div class="color-circle c2"></div><div class="color-circle c3"></div><div class="color-circle c4"></div><div class="color-circle c5"></div><div class="color-circle c6"></div><div class="color-circle c7"></div><div class="color-circle c8"></div>
         </div>
       </div>
       <p class="contact-sub">お問い合わせはこちらから</p>
-      <a href="mailto:tattalineart@gmail.com" class="contact-email-btn">
-        tattalineart@gmail.com
-      </a>
+      <a href="mailto:tattalineart@gmail.com" class="contact-email-btn">tattalineart@gmail.com</a>
     </div>
   </div>
-
   <footer class="contact-footer">
-    <div class="cf-links">
-      <a href="#top">HOME</a>
-      <a href="#works">WORKS</a>
-      <a href="#profile">PROFILE</a>
-      <a href="#skill">SKILL</a>
-      <a href="#contact">CONTACT</a>
-    </div>
+    <div class="cf-links"><a href="#top">HOME</a><a href="#works">WORKS</a><a href="#profile">PROFILE</a><a href="#skill">SKILL</a><a href="#contact">CONTACT</a></div>
     <div class="footer-logo"></div>
   </footer>
 </section>
@@ -1259,7 +683,6 @@ let isLoading = true;
 const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
 
 if(skipOpening){
-  /* WORKS一覧から戻ってきた時：オープニングアニメをスキップ */
   loader.style.display = 'none';
   document.body.classList.add('loaded');
   isLoading = false;
@@ -1280,7 +703,6 @@ if(skipOpening){
   });
 }
 
-/* CURSOR */
 const cur = document.getElementById('cur');
 let mx=0,my=0;
 document.addEventListener('mousemove', e => {
@@ -1292,16 +714,13 @@ document.querySelectorAll('a,button,.wa-card,.nav-logo,.playful').forEach(el => 
   el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
 });
 
-/* ─── FIXED NAV Show/Hide based on current section ─── */
 const navFixed = document.getElementById('navFixed');
 const topSec = document.getElementById('top');
 const getSecs = () => [...document.querySelectorAll('section')];
-
 const isMobile = () => window.innerWidth <= 900;
 
 new IntersectionObserver(entries => {
   entries.forEach(e => {
-    /* PC: topセクションだけは nav-fixed 非表示。ただしWORKS一覧表示中は除外 */
     if(e.target.id === 'top' && !isMobile()){
       if(worksAll.classList.contains('open')) return;
       if(e.isIntersecting && e.intersectionRatio > 0.5){
@@ -1313,28 +732,23 @@ new IntersectionObserver(entries => {
   });
 }, {threshold:[0, .5, 1]}).observe(topSec);
 
-/* SP: 常に表示 */
 if(isMobile()) navFixed.classList.add('show');
 window.addEventListener('resize', () => {
   if(isMobile()) navFixed.classList.add('show');
 });
 
-/* CONTACTセクション表示時にメアドボタンを表示 */
 new IntersectionObserver(entries => {
   entries.forEach(e => {
     document.body.classList.toggle('in-contact', e.isIntersecting && e.intersectionRatio > 0.3);
   });
 }, {threshold:[0,.3,1]}).observe(document.getElementById('contact'));
 
-/* HAMBURGER */
 const ham = document.getElementById('ham');
 const mob = document.getElementById('mobMenu');
 ham.addEventListener('click', () => { const o=mob.classList.toggle('open'); ham.classList.toggle('open',o); });
 function closeMob(){ mob.classList.remove('open'); ham.classList.remove('open'); }
 
-/* nav-logo → HOMEへ */
 document.getElementById('navLogoBtn').addEventListener('click', () => {
-  /* WORKS一覧が開いていれば閉じる */
   if(worksAll && worksAll.classList.contains('open')){
     worksAll.classList.remove('open');
     document.body.style.overflow='';
@@ -1344,7 +758,6 @@ document.getElementById('navLogoBtn').addEventListener('click', () => {
   snapTo(topSec.offsetTop);
 });
 
-/* SCROLL SNAP */
 const htmlEl = document.documentElement;
 const SNAP_DUR = 820;
 const eie = t => t===0?0:t===1?1:t<.5?Math.pow(2,20*t-10)/2:(2-Math.pow(2,-20*t+10))/2;
@@ -1362,7 +775,6 @@ function snapTo(y,dur=SNAP_DUR){
   (function s(now){ const p=Math.min((now-t0)/dur,1); htmlEl.scrollTop=sy+dist*eie(p); if(p<1)requestAnimationFrame(s); else{htmlEl.scrollTop=y;snapping=false;} })(performance.now());
 }
 
-/* wheel */
 let wa=0,wt=null;
 htmlEl.addEventListener('wheel', e => {
   if(worksAll.classList.contains('open'))return;
@@ -1371,14 +783,12 @@ htmlEl.addEventListener('wheel', e => {
   wt=setTimeout(()=>{ if(Math.abs(wa)<18){wa=0;return;} const d=wa>0?1:-1; wa=0; snapTo(nearest(htmlEl.scrollTop,d)); },3);
 },{passive:false});
 
-/* touch */
 let tys=0,tss=0;
 const isT=()=>window.matchMedia('(hover:none)').matches;
 htmlEl.addEventListener('touchstart',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; tys=e.touches[0].clientY; tss=htmlEl.scrollTop; },{passive:false});
 htmlEl.addEventListener('touchmove',e=>{ if(isLoading){e.preventDefault();return;} if(worksAll.classList.contains('open'))return; if(!isT())return; e.preventDefault(); },{passive:false});
 htmlEl.addEventListener('touchend',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; if(snapping)return; const dy=tys-e.changedTouches[0].clientY; if(Math.abs(dy)<30)return; snapTo(nearest(tss,dy>0?1:-1)); },{passive:true});
 
-/* link clicks */
 document.querySelectorAll('.top-nav a, .cf-links a').forEach(a=>{
   a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); const t=document.querySelector(h); if(t)snapTo(t.offsetTop); });
 });
@@ -1386,40 +796,28 @@ document.querySelectorAll('.mob-link').forEach(a=>{
   a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); closeMob(); const t=document.querySelector(h); if(t)setTimeout(()=>snapTo(t.offsetTop),60); });
 });
 
-/* ALL WORKS */
 const worksAll = document.getElementById('works-all');
 function openWorksAll(){
   worksAll.classList.add('open');
   document.body.style.overflow='hidden';
-  if(!isMobile()){
-    navFixed.classList.add('show');
-  }
+  if(!isMobile()) navFixed.classList.add('show');
 }
-document.getElementById('viewAllBtn').addEventListener('click',e=>{
-  e.preventDefault();
-  openWorksAll();
-});
+document.getElementById('viewAllBtn').addEventListener('click',e=>{ e.preventDefault(); openWorksAll(); });
 document.getElementById('waBack').addEventListener('click',e=>{
   e.preventDefault();
   worksAll.classList.remove('open');
   document.body.style.overflow='';
   document.body.classList.remove('works-open');
   const worksSec = document.getElementById('works');
-  if(worksSec){
-    snapTo(worksSec.offsetTop);
-  }
+  if(worksSec) snapTo(worksSec.offsetTop);
   if(!isMobile()) navFixed.classList.add('show');
 });
 
-/* URLパラメータ ?works=1 の場合、自動でWORKS一覧を開く */
 if(skipOpening){
-  /* ローダーをスキップしているので即時オープン */
   openWorksAll();
-  /* ちらつき防止クラスを解除 */
   document.documentElement.classList.remove('skip-opening');
 }
 
-/* SCROLL REVEAL */
 const rvObs = new IntersectionObserver((entries,obs)=>{
   entries.forEach((e,i)=>{
     if(e.isIntersecting){
@@ -1430,23 +828,16 @@ const rvObs = new IntersectionObserver((entries,obs)=>{
 },{threshold:.15});
 document.querySelectorAll('.rv').forEach(el=>rvObs.observe(el));
 
-/* ─── PLAYFUL SPARKLE — 「ちょっぴり遊び心」の演出 ─── */
 const playful = document.getElementById('playful');
 if(playful){
   const sparkChars = ['✦','✧','＊','✦','◦','✺'];
-  /* タップごとにサイト全体のアクセントカラーを変える */
   const playfulColors = ['#196ed2','#f04650','#f0eb50','#e6f0e1','#50f0d2'];
   let playfulIdx = -1;
-
   const burst = (e) => {
-    /* 色を進めてサイト全体に反映 */
     playfulIdx = (playfulIdx + 1) % playfulColors.length;
     const col = playfulColors[playfulIdx];
-    /* CSS変数を書き換えてサイト全体に反映（ドットエフェクトはそのまま） */
     document.documentElement.style.setProperty('--accent', col);
     playful.style.setProperty('--playful-c', col);
-
-    /* 単語を一瞬光らせる */
     playful.classList.remove('poked');
     void playful.offsetWidth;
     playful.classList.add('poked');
@@ -1456,8 +847,6 @@ if(playful){
       void playful.offsetWidth;
       playful.style.animation = '';
     }, 950);
-
-    /* キラキラを8〜10個生成 */
     const rect = playful.getBoundingClientRect();
     const count = 8 + Math.floor(Math.random()*3);
     for(let i = 0; i < count; i++){
@@ -1484,12 +873,11 @@ if(playful){
   playful.addEventListener('click', burst);
 }
 
-/* ─── 背景ドットエフェクト ─── */
+/* 背景ドットエフェクト */
 (() => {
   const canvas = document.getElementById('dotsCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d', { alpha: false });
-
   const SPACING = 14;
   const BASE_RADIUS = 0.9;
   const MAX_RADIUS = 5.0;
@@ -1497,17 +885,13 @@ if(playful){
   const EASE = 0.12;
   const IDLE_DECAY = 0.85;
   const STOP_DELAY = 750;
-
   const BG_COLOR = '#2D2E2E';
   const DOT_COLOR = '#3a3b3b';
   const ACCENT_COLOR = '#4a4b4b';
-
   let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
   let W = 0, H = 0;
   let stopTimer = null;
-
   const pointer = { x:-9999, y:-9999, tx:-9999, ty:-9999, strength:0, targetStrength:0 };
-
   function resize(){
     W = window.innerWidth;
     H = window.innerHeight;
@@ -1517,22 +901,17 @@ if(playful){
   }
   resize();
   window.addEventListener('resize', resize);
-
   function resetStopTimer(){
     pointer.targetStrength = 1;
     clearTimeout(stopTimer);
     stopTimer = setTimeout(() => { pointer.targetStrength = 0; }, STOP_DELAY);
   }
-
   window.addEventListener('mousemove', e => {
     pointer.tx = e.clientX; pointer.ty = e.clientY;
     if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
     resetStopTimer();
   });
-  window.addEventListener('mouseleave', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
+  window.addEventListener('mouseleave', () => { pointer.targetStrength = 0; clearTimeout(stopTimer); });
   window.addEventListener('touchstart', e => {
     const t = e.touches[0];
     pointer.tx = t.clientX; pointer.ty = t.clientY;
@@ -1544,56 +923,32 @@ if(playful){
     pointer.tx = t.clientX; pointer.ty = t.clientY;
     resetStopTimer();
   }, { passive: true });
-  window.addEventListener('touchend', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
-
+  window.addEventListener('touchend', () => { pointer.targetStrength = 0; clearTimeout(stopTimer); });
   let isTouchDev = window.matchMedia('(hover:none)').matches;
-  window.addEventListener('resize', () => {
-    isTouchDev = window.matchMedia('(hover:none)').matches;
-  });
-
+  window.addEventListener('resize', () => { isTouchDev = window.matchMedia('(hover:none)').matches; });
   function frame(){
     if(pointer.tx > -9000){
-      if(isTouchDev){
-        /* SP: 遅延なしで即反映 */
-        pointer.x = pointer.tx;
-        pointer.y = pointer.ty;
-      } else {
-        pointer.x += (pointer.tx - pointer.x) * EASE;
-        pointer.y += (pointer.ty - pointer.y) * EASE;
-      }
+      if(isTouchDev){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+      else { pointer.x += (pointer.tx - pointer.x) * EASE; pointer.y += (pointer.ty - pointer.y) * EASE; }
     }
-    if(pointer.targetStrength > pointer.strength){
-      pointer.strength += (pointer.targetStrength - pointer.strength) * 0.1;
-    }else{
-      pointer.strength *= IDLE_DECAY;
-      if(pointer.strength < 0.001) pointer.strength = 0;
-    }
-
-    ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, W, H);
-
+    if(pointer.targetStrength > pointer.strength){ pointer.strength += (pointer.targetStrength - pointer.strength) * 0.1; }
+    else{ pointer.strength *= IDLE_DECAY; if(pointer.strength < 0.001) pointer.strength = 0; }
+    ctx.fillStyle = BG_COLOR; ctx.fillRect(0, 0, W, H);
     const px = pointer.x, py = pointer.y;
     const s = pointer.strength;
     const inflSq = INFLUENCE * INFLUENCE;
-
-    ctx.fillStyle = DOT_COLOR;
-    ctx.beginPath();
+    ctx.fillStyle = DOT_COLOR; ctx.beginPath();
     let row = 0;
     for(let y = SPACING/2; y < H; y += SPACING){
       const offset = (row % 2) ? SPACING/2 : 0;
       for(let x = SPACING/2 + offset; x < W; x += SPACING){
         const dx = x - px, dy = y - py;
         if(s > 0.01 && (dx*dx + dy*dy) < inflSq) continue;
-        ctx.moveTo(x + BASE_RADIUS, y);
-        ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
+        ctx.moveTo(x + BASE_RADIUS, y); ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
       }
       row++;
     }
     ctx.fill();
-
     if(s > 0.01){
       let row2 = 0;
       for(let y = SPACING/2; y < H; y += SPACING){
@@ -1607,9 +962,7 @@ if(playful){
           t = t * t * (3 - 2 * t) * s;
           const r = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * t;
           ctx.fillStyle = (t > 0.6) ? ACCENT_COLOR : DOT_COLOR;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
         }
         row2++;
       }
@@ -1619,9 +972,6 @@ if(playful){
   requestAnimationFrame(frame);
 })();
 
-/* ─── ALL WORKS データ + 生成 ─── */
-/* data.json から読み込み（GitHub Pages配信時の本番データ）。
-   失敗時は localStorage にあるCMS編集データ、それも無ければデフォルト */
 const DEFAULT_WORKS_DATA = [
   { cat:'Branding', items:[
     {id:'sotoya-rebrand',  tag:'Branding',        title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
@@ -1657,24 +1007,15 @@ let SITE_LOGO = { src: '' };
 
 async function loadSiteData(){
   const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
-
-  /* プレビューモード: localStorage を優先（CMS編集中の最新を反映） */
   if(isPreview){
     try {
-      const raw = localStorage.getItem('worksData');
-      if(raw){ WORKS_DATA = JSON.parse(raw); }
-      const pRaw = localStorage.getItem('profileData');
-      if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
-      const lRaw = localStorage.getItem('logoData');
-      if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
-      const hRaw = localStorage.getItem('homeBgData');
-      if(hRaw){ window._SITE_HOMEBG = JSON.parse(hRaw); }
+      const raw = localStorage.getItem('worksData'); if(raw) WORKS_DATA = JSON.parse(raw);
+      const pRaw = localStorage.getItem('profileData'); if(pRaw) SITE_PROFILE = JSON.parse(pRaw);
+      const lRaw = localStorage.getItem('logoData'); if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+      const hRaw = localStorage.getItem('homeBgData'); if(hRaw) window._SITE_HOMEBG = JSON.parse(hRaw);
     } catch(e){}
-    applyLogo();
-    return;
+    applyLogo(); return;
   }
-
-  /* 通常: data.json を優先 */
   try {
     const res = await fetch('data.json', { cache: 'no-cache' });
     if(res.ok){
@@ -1683,78 +1024,40 @@ async function loadSiteData(){
       if(json.profile) SITE_PROFILE = json.profile;
       if(json.logo) SITE_LOGO = json.logo;
       if(json.homeBg) window._SITE_HOMEBG = json.homeBg;
-      applyLogo();
-      return;
+      applyLogo(); return;
     }
   } catch(e){}
-  /* data.json 失敗時のフォールバック */
   try {
-    const raw = localStorage.getItem('worksData');
-    if(raw){ WORKS_DATA = JSON.parse(raw); }
-    const pRaw = localStorage.getItem('profileData');
-    if(pRaw){ SITE_PROFILE = JSON.parse(pRaw); }
-    const lRaw = localStorage.getItem('logoData');
-    if(lRaw){ SITE_LOGO = JSON.parse(lRaw); }
-    const hRaw = localStorage.getItem('homeBgData');
-    if(hRaw){ window._SITE_HOMEBG = JSON.parse(hRaw); }
+    const raw = localStorage.getItem('worksData'); if(raw) WORKS_DATA = JSON.parse(raw);
+    const pRaw = localStorage.getItem('profileData'); if(pRaw) SITE_PROFILE = JSON.parse(pRaw);
+    const lRaw = localStorage.getItem('logoData'); if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+    const hRaw = localStorage.getItem('homeBgData'); if(hRaw) window._SITE_HOMEBG = JSON.parse(hRaw);
   } catch(e){}
   applyLogo();
 }
 
-/* ロゴ適用: ナビ/フッター/ローダー/ファビコン */
 function applyLogo(){
   if(!SITE_LOGO || !SITE_LOGO.src) return;
   const src = SITE_LOGO.src;
-
-  /* ロゴ要素にbackground-image適用 + テキストを消す */
   document.querySelectorAll('.nav-logo, .footer-logo, .ld-logo-box').forEach(el => {
-    el.style.backgroundImage = `url("${src}")`;
-    el.style.backgroundSize = 'contain';
-    el.style.backgroundPosition = 'center';
-    el.style.backgroundRepeat = 'no-repeat';
-    el.style.backgroundColor = 'transparent';
-    el.classList.add('has-logo');
+    el.style.backgroundImage = `url("${src}")`; el.style.backgroundSize = 'contain'; el.style.backgroundPosition = 'center'; el.style.backgroundRepeat = 'no-repeat'; el.style.backgroundColor = 'transparent'; el.classList.add('has-logo');
   });
-
-  /* ファビコン */
   let link = document.querySelector('link[rel="icon"]');
-  if(!link){
-    link = document.createElement('link');
-    link.rel = 'icon';
-    document.head.appendChild(link);
-  }
+  if(!link){ link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
   link.href = src;
 }
 
-/* HOME WORKSセクション背景スライドに画像を配置 */
 function applyWorksBg(){
   let sources = [];
-  /* 1) HOME_BGがあればそれを使う */
-  if(window._SITE_HOMEBG && window._SITE_HOMEBG.images && window._SITE_HOMEBG.images.length){
-    sources = window._SITE_HOMEBG.images.map(i => i.src);
-  } else {
-    /* 2) フォールバック: 各WORKSの1枚目画像を集める */
-    WORKS_DATA.forEach(g => g.items.forEach(it => {
-      if(it.images && it.images[0]) sources.push(it.images[0].src);
-    }));
-  }
+  if(window._SITE_HOMEBG && window._SITE_HOMEBG.images && window._SITE_HOMEBG.images.length){ sources = window._SITE_HOMEBG.images.map(i => i.src); }
+  else { WORKS_DATA.forEach(g => g.items.forEach(it => { if(it.images && it.images[0]) sources.push(it.images[0].src); })); }
   if(sources.length === 0) return;
-
   const cells = document.querySelectorAll('.works-bg-cell');
-  cells.forEach((cell, i) => {
-    const src = sources[i % sources.length];
-    cell.style.backgroundImage = `url("${src}")`;
-    cell.style.backgroundSize = 'cover';
-    cell.style.backgroundPosition = 'center';
-    cell.classList.add('has-img');
-  });
+  cells.forEach((cell, i) => { const src = sources[i % sources.length]; cell.style.backgroundImage = `url("${src}")`; cell.style.backgroundSize = 'cover'; cell.style.backgroundPosition = 'center'; cell.classList.add('has-img'); });
 }
 
 function renderWorksList(){
-  /* 詳細ページから参照できるよう localStorage にも保存 */
   try { localStorage.setItem('worksData', JSON.stringify(WORKS_DATA)); } catch(e){}
-
-  // 修正箇所：waBody ではなく、新設した waGridContainer に中身を生成する
   const waGrid = document.getElementById('waGridContainer');
   waGrid.innerHTML = '';
   WORKS_DATA.forEach(group => {
@@ -1767,48 +1070,20 @@ function renderWorksList(){
       card.className = 'wa-card wa-fade';
       card.dataset.id = item.id;
       const thumbSrc = item.images && item.images[0] ? item.images[0].src : null;
-      const imgHtml = thumbSrc
-        ? `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
-        : `<div class="wa-card-img-ph"></div>`;
-      card.innerHTML = `
-        <div class="wa-card-img">${imgHtml}</div>
-        <div class="wa-card-body">
-          <div class="wa-card-title">${item.title}</div>
-          <div class="wa-card-desc">${item.desc || ''}</div>
-        </div>
-        <div class="wa-card-arrow"></div>
-      `;
+      const imgHtml = thumbSrc ? `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<div class="wa-card-img-ph"></div>`;
+      card.innerHTML = `<div class="wa-card-img">${imgHtml}</div><div class="wa-card-body"><div class="wa-card-title">${item.title}</div><div class="wa-card-desc">${item.desc || ''}</div></div><div class="wa-card-arrow"></div>`;
       grid.appendChild(card);
     });
     waGrid.appendChild(cat);
   });
-
-  /* スクロール登場 */
-  const waFadeObs = new IntersectionObserver((entries, obs) => {
-    entries.forEach(e => {
-      if(e.isIntersecting){
-        e.target.classList.add('in');
-        obs.unobserve(e.target);
-      }
-    });
-  }, { root: document.querySelector('.wa-body'), threshold: 0.12 });
+  const waFadeObs = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } }); }, { root: document.querySelector('.wa-body'), threshold: 0.12 });
   document.querySelectorAll('.wa-fade').forEach(el => waFadeObs.observe(el));
-
-  /* タップ/クリック */
   const isHoverPC = () => window.matchMedia('(hover:hover) and (min-width:901px)').matches;
   document.querySelectorAll('.wa-card').forEach(card => {
     card.addEventListener('click', () => {
       const id = card.dataset.id;
-      if(isHoverPC()){
-        window.location.href = `detail.html?id=${id}`;
-      }else{
-        if(card.classList.contains('active')){
-          window.location.href = `detail.html?id=${id}`;
-        }else{
-          document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active'));
-          card.classList.add('active');
-        }
-      }
+      if(isHoverPC()){ window.location.href = `detail.html?id=${id}`; }
+      else{ if(card.classList.contains('active')){ window.location.href = `detail.html?id=${id}`; }else{ document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active')); card.classList.add('active'); } }
     });
   });
 }
@@ -1816,32 +1091,15 @@ function renderWorksList(){
 function renderProfileSlideshow(){
   const images = SITE_PROFILE.images || [];
   if(images.length === 0) return;
-
-  const targets = ['profileBgPC','profileBgSP']
-    .map(id => document.getElementById(id))
-    .filter(Boolean);
-
+  const targets = ['profileBgPC','profileBgSP'].map(id => document.getElementById(id)).filter(Boolean);
   targets.forEach(target => {
     target.classList.add('has-slides');
-    /* 既存スライドをクリア */
     target.querySelectorAll('.profile-slide').forEach(el => el.remove());
-    images.forEach((img, i) => {
-      const s = document.createElement('div');
-      s.className = 'profile-slide' + (i === 0 ? ' active' : '');
-      s.style.backgroundImage = `url("${img.src}")`;
-      target.appendChild(s);
-    });
+    images.forEach((img, i) => { const s = document.createElement('div'); s.className = 'profile-slide' + (i === 0 ? ' active' : ''); s.style.backgroundImage = `url("${img.src}")`; target.appendChild(s); });
   });
-
   if(images.length > 1){
     let idx = 0;
-    setInterval(() => {
-      idx = (idx + 1) % images.length;
-      targets.forEach(target => {
-        const slides = target.querySelectorAll('.profile-slide');
-        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
-      });
-    }, 4000);
+    setInterval(() => { idx = (idx + 1) % images.length; targets.forEach(target => { const slides = target.querySelectorAll('.profile-slide'); slides.forEach((s, i) => s.classList.toggle('active', i === idx)); }); }, 4000);
   }
 }
 
@@ -1852,12 +1110,7 @@ function renderProfileSlideshow(){
   applyWorksBg();
 })();
 
-/* オーバーレイ外タップでactive解除 */
-document.querySelector('.wa-body').addEventListener('click', e => {
-  if(!e.target.closest('.wa-card')){
-    document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active'));
-  }
-});
+document.querySelector('.wa-body').addEventListener('click', e => { if(!e.target.closest('.wa-card')){ document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active')); } });
 </script>
 </body>
 </html>
