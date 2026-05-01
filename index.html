@@ -625,23 +625,31 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   overflow:hidden;
 }
 #works-all.open{opacity:1;visibility:visible}
-.wa-hd{
-  padding:1.2rem var(--safe-x);
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:none;
-  flex-shrink:0;
-  /* ロゴ・ハンバーガーがここに入るのでWORKSタイトルとXは中央パディングで */
+
+/* WORKS一覧 戻るリンク - Detailと同じスタイル */
+.wa-back{
+  position:fixed;
+  top:1.6rem;left:var(--safe-x);
+  z-index:50;
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-family:var(--ff-disp);font-weight:400;
+  font-size:13px;letter-spacing:.16em;
+  color:var(--text-dim);text-decoration:none;
+  transition:color .25s,gap .3s var(--eoe);
 }
-.wa-hd h2{font-family:var(--ff-disp);font-weight:300;font-size:clamp(1rem,2vw,1.4rem);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
-.wa-close{width:32px;height:32px;position:relative;cursor:pointer;background:none;border:none;padding:0}
-.wa-close::before,.wa-close::after{content:'';position:absolute;left:5px;width:20px;height:1.5px;background:var(--text-dim);transition:background .2s}
-.wa-close::before{transform:rotate(45deg)}
-.wa-close::after{transform:rotate(-45deg)}
-.wa-close:hover::before,.wa-close:hover::after{background:var(--accent)}
+.wa-back:hover{color:var(--accent);gap:.9rem}
+.wa-back::before{
+  content:'';
+  width:8px;height:8px;
+  border-left:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg);
+  transition:border-color .25s;
+}
 
 .wa-body{
   flex:1;overflow-y:scroll;
-  padding:1rem 0 3rem;
+  padding:5rem 0 3rem;
   scrollbar-width:thin;scrollbar-color:var(--text-dim) transparent;
 }
 
@@ -973,7 +981,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   .footer-logo::after{font-size:5.5px}
 
   /* ALL WORKS SP */
-  .wa-hd{padding:1.2rem 5vw}
+  /* SP: Back to HOMEは固定じゃなくスクロールに乗る */
+  .wa-back{
+    position:absolute;
+    top:1.4rem;left:6vw;
+  }
+  .wa-body{padding-top:4.5rem}
   /* SP: WORKS一覧表示中はナビを非表示 */
   #works-all.open ~ * .nav-fixed,
   body.works-open .nav-fixed{opacity:0 !important;visibility:hidden !important;pointer-events:none !important}
@@ -990,7 +1003,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 }
 /* ?works=1: WORKS一覧開くまで全体を隠す（HOMEちらつき防止）*/
 html.skip-opening{background:var(--bg)}
-html.skip-opening body > *:not(#works-all):not(canvas):not(.cursor){visibility:hidden}
+html.skip-opening body > *:not(#works-all):not(canvas):not(.cursor):not(.nav-fixed):not(.mob-menu){visibility:hidden}
 html.skip-opening #works-all{opacity:1 !important;visibility:visible !important;transition:none}
 </style>
 <script>
@@ -1228,10 +1241,7 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 
 <!-- ═══ ALL WORKS OVERLAY ═══ -->
 <div id="works-all">
-  <div class="wa-hd">
-    <h2>Works</h2>
-    <button class="wa-close" id="waClose" aria-label="Close"></button>
-  </div>
+  <a href="#" class="wa-back" id="waBack">Back to HOME</a>
   <div class="wa-body" id="waBody">
     <!-- カードはJSで動的生成 -->
   </div>
@@ -1373,12 +1383,16 @@ document.getElementById('viewAllBtn').addEventListener('click',e=>{
   e.preventDefault();
   openWorksAll();
 });
-document.getElementById('waClose').addEventListener('click',()=>{
+document.getElementById('waBack').addEventListener('click',e=>{
+  e.preventDefault();
   worksAll.classList.remove('open');
   document.body.style.overflow='';
   document.body.classList.remove('works-open');
+  /* TOPに戻ったときの整合性: 現在TOPセクションなら非表示に戻す */
   const topVisible = topSec.getBoundingClientRect().top >= -window.innerHeight * 0.3;
   if(topVisible && !isMobile()) navFixed.classList.remove('show');
+  /* HOMEセクションへスクロール */
+  document.getElementById('top').scrollIntoView({behavior:'smooth',block:'start'});
 });
 
 /* URLパラメータ ?works=1 の場合、自動でWORKS一覧を開く */
