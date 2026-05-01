@@ -305,6 +305,7 @@ body{padding-bottom:6rem}
 <header class="cms-header">
   <h1 class="cms-title">CMS — Portfolio</h1>
   <div class="header-actions">
+    <span id="storageUsage" style="font-family:var(--ff-sm);font-size:10px;color:var(--text-dim);letter-spacing:.06em;margin-right:.5rem"></span>
     <button class="btn btn-ghost" id="exportBtn">Export JSON</button>
     <button class="btn btn-primary" id="exportZipBtn">Export ZIP</button>
     <button class="btn btn-ghost" id="importBtn">Import</button>
@@ -472,9 +473,30 @@ function save(){
     localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE));
     localStorage.setItem(LOGO_KEY, JSON.stringify(LOGO));
     localStorage.setItem(HOMEBG_KEY, JSON.stringify(HOME_BG));
+    updateStorageUsage();
   } catch(e){
-    toast('保存に失敗しました（容量超過の可能性）', 'error');
+    updateStorageUsage();
+    toast('容量超過しました。Export ZIP でバックアップして、不要画像を減らしてください', 'error');
   }
+}
+
+function updateStorageUsage(){
+  const el = document.getElementById('storageUsage');
+  if(!el) return;
+  let total = 0;
+  for(const key of [STORAGE_KEY, PROFILE_KEY, LOGO_KEY, HOMEBG_KEY]){
+    const v = localStorage.getItem(key);
+    if(v) total += v.length;
+  }
+  /* localStorageの実際の上限はブラウザにより異なる(5〜10MB)。5MBを目安に */
+  const mb = (total / 1024 / 1024).toFixed(1);
+  const limit = 5;
+  const pct = Math.round((total / 1024 / 1024 / limit) * 100);
+  let color = 'var(--text-dim)';
+  if(pct > 80) color = 'var(--danger)';
+  else if(pct > 60) color = '#f0c84a';
+  el.style.color = color;
+  el.textContent = `STORAGE: ${mb}MB / ~${limit}MB (${pct}%)`;
 }
 
 function getDefaultData(){
@@ -799,7 +821,7 @@ function renderHomeBgImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
         HOME_BG.images.push({src: dataUrl});
       } catch(err){ toast(`${file.name}失敗`,'error'); }
     }
@@ -897,7 +919,7 @@ function renderProfileImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
         PROFILE.images.push({src: dataUrl});
       } catch(err){
         toast(`${file.name}の読み込み失敗`,'error');
@@ -1106,7 +1128,7 @@ function renderImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
         it.images.push({src: dataUrl, cols: 1});
       } catch(err){
         toast(`${file.name}の読み込み失敗`,'error');
@@ -1118,7 +1140,7 @@ function renderImages(){
   });
 }
 
-/* 画像をリサイズしてBase64で保存 */
+/* 画像をリサイズしてBase64で保存 (WebP優先、未対応ならJPEG) */
 function readImageAsResizedDataURL(file, maxW, quality){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1132,7 +1154,12 @@ function readImageAsResizedDataURL(file, maxW, quality){
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        /* WebPで書き出し（対応してない古いブラウザはJPEGにフォールバック） */
+        let dataUrl = canvas.toDataURL('image/webp', quality);
+        if(!dataUrl.startsWith('data:image/webp')){
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve(dataUrl);
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -1378,6 +1405,7 @@ load();
 updateProfileCount();
 updateLogoStatus();
 updateHomeBgCount();
+updateStorageUsage();
 renderCategories();
 renderWorks();
 renderContent();
