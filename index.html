@@ -29,7 +29,7 @@ html{overflow-y:scroll;height:100%;scroll-behavior:auto}
 body{background:transparent;color:var(--text);font-family:var(--ff-jp);overflow-x:hidden;cursor:none;position:relative}
 
 /* セクションは canvas より上のレイヤーに */
-section{height:100vh;position:relative;overflow:hidden;z-index:1;background:transparent}
+section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;background:transparent}
 
 /* PHOTO PLACEHOLDER */
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
@@ -624,6 +624,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   opacity:0;visibility:hidden;
   transition:opacity .45s ease,visibility .45s;
   overflow:hidden;
+  min-height:100dvh;
 }
 #works-all.open{opacity:1;visibility:visible}
 
@@ -845,19 +846,19 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   .top-nav{display:none}
 
   /* TOP */
-  .top-content{left:6vw;top:44%}
+  .top-content{left:6vw;top:44dvh;transform:translateY(-50%)}
   .top-name{font-size:clamp(2rem,8vw,3.2rem);letter-spacing:.10em}
   .top-tags p{font-size:11px}
 
   /* SP HOME: SCROLLを少し上に、バーを長く */
-  .scroll-ind{bottom:10vh;gap:.35rem}
+  .scroll-ind{bottom:10dvh;gap:.35rem}
   .scroll-ind span{font-size:8.5px}
   .scroll-line-v{height:52px}
 
   .works-bg-cell{width:50vw}
   .works-title{font-size:clamp(2rem,8vw,3rem);font-weight:300}
   .works-sub{font-size:11px;line-height:1.6;padding:0 2rem}
-  .works-center{padding:18vh 0 14vh}
+  .works-center{padding:18dvh 0 14dvh}
   .works-viewall{font-size:11px;padding:13px 52px;letter-spacing:.22em}
 
   /* SP セクションタイトル共通ウェイト */
@@ -869,7 +870,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   #profile{display:flex;flex-direction:column;overflow:visible}
   .profile-bg{display:none}
   .profile-title-center{display:none}
-  .profile-sp-hero{display:flex;flex-shrink:0;height:35vh;position:relative;overflow:visible}
+  .profile-sp-hero{display:flex;flex-shrink:0;height:35dvh;position:relative;overflow:visible}
   .profile-sp-bg{position:absolute;inset:0;overflow:hidden}
   .profile-sp-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.25)}
   /* タイトルを画像の下辺に文字の上半分が重なる位置 + 下文章の左揃えに合わせる */
