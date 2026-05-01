@@ -32,25 +32,33 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
 .ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
 
-/* MESH GRADIENT — 円を4個にしアニメーションを全削除 */
+/* MESH GRADIENT — アニメーションを削除し静止画化 */
 .mesh-container{
-  position:fixed;inset:0;
+  position:absolute;inset:0;
   overflow:hidden;
-  filter:blur(100px);
+  filter:blur(80px); /* 重い場合はここを 60px 程度に下げるとより軽くなります */
   pointer-events:none;
   z-index:0;
-  background:#1a1b1b;
+  background:#000;
+  will-change: transform;
 }
 .mesh-container .color-circle{
   position:absolute;
-  width:100vmax;height:100vmax;
+  width:150%;height:150%;
   border-radius:50%;
-  opacity: 0.4;
+  /* animationを削除 */
+  opacity: .5;
 }
-.mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 70%);top:-20%;left:-10%;}
-.mesh-container .c2{background:radial-gradient(circle,#7e3e2c 0%,transparent 70%);bottom:-10%;right:-20%;}
-.mesh-container .c3{background:radial-gradient(circle,#006064 0%,transparent 70%);top:40%;left:-30%;}
-.mesh-container .c4{background:radial-gradient(circle,#8a5a3a 0%,transparent 70%);bottom:20%;right:-10%;}
+
+/* 各色の位置を固定 */
+.mesh-container .c1{background:radial-gradient(circle,#014f58 0%,transparent 60%);top:-50%;left:-50%;}
+.mesh-container .c2{background:radial-gradient(circle,#003a3d 0%,transparent 60%);bottom:-50%;left:-80%;}
+.mesh-container .c3{background:radial-gradient(circle,#006064 0%,transparent 50%);top:20%;left:-100%;}
+.mesh-container .c4{background:radial-gradient(circle,#104e4a 0%,transparent 55%);top:-100%;left:20%;}
+.mesh-container .c5{background:radial-gradient(circle,#8a5a3a 0%,transparent 60%);top:-50%;right:-80%;}
+.mesh-container .c6{background:radial-gradient(circle,#7e3e2c 0%,transparent 60%);bottom:-80%;right:-50%;}
+.mesh-container .c7{background:radial-gradient(circle,#a66a1e 0%,transparent 50%);bottom:20%;right:-100%;}
+.mesh-container .c8{background:radial-gradient(circle,#8a6538 0%,transparent 55%);bottom:-100%;right:20%;}
 
 /* LOADER */
 #loader{position:fixed;inset:0;background:#2D2E2E;z-index:10000;display:flex;align-items:center;justify-content:center}
@@ -474,401 +482,610 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .profile-right{position:static;width:100%;flex:1;padding:2.6rem 6vw 1.5rem;justify-content:flex-start;overflow-y:auto;}
   .profile-name{font-size:clamp(1.1rem,5vw,1.45rem);margin-bottom:.2rem}
   .profile-name-en{font-size:11px;margin-bottom:1rem}
-  .profile-meta{grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1.5rem;width:100%}
-  .pm-val{font-size:14px}
-  .profile-text,.profile-text-accent{font-size:11.5px;line-height:1.8}
-  .skill-inner{display:flex;flex-direction:column;padding-top:5.5rem}
-  .skill-left{padding:0 6vw;margin-bottom:2.2rem}
+  .profile-meta{gap:.5rem 1.5rem;margin-bottom:1rem}
+  .pm-label{font-size:9px}
+  .pm-val{font-size:12px}
+  .profile-text{font-size:11px;line-height:1.6;margin-bottom:.9rem}
+  .profile-text-accent{font-size:11px;line-height:1.6}
+  .skill-bg{top:0;bottom:0}
+  .skill-inner{display:flex;flex-direction:column;min-height:100dvh;justify-content:center;padding-top:0;}
+  .skill-left{padding:2.6rem 6vw 2.4rem;justify-content:flex-start;border-bottom:none;position:relative;}
+  .skill-left::after{content:'';position:absolute;left:6vw;right:6vw;bottom:0;height:1px;background:var(--text-dim);}
   .skill-vline{display:none}
-  .skill-right{padding:0 6vw 3rem;gap:1.6rem}
-  .sg-head{font-size:18px;margin-bottom:.6rem}
-  .sk-tool .sk-pill{width:calc(33.3% - 6.7px);font-size:11px;height:28px}
-  .sk-design .sk-box{font-size:11px;height:28px}
-  .strategy-text{font-size:11.5px}
-  .contact-body{padding:8vh 6vw 0}
-  .contact-stack{width:100%}
-  .contact-sub{top:20%;font-size:11px}
-  .contact-email-btn{padding:20px 48px;font-size:18px}
-  .contact-footer{flex-direction:column;gap:1.5rem;padding:2rem 6vw}
-  .cf-links{gap:1.8rem}
-  .cf-links a{font-size:10px}
-  .wa-back{left:6vw;top:1.4rem;font-size:12px}
-  .wa-cat-label::before{width:1.5rem}
-  .wa-grid{grid-template-columns:1fr}
-  .wa-card{aspect-ratio:16/9}
-  .wa-card:nth-child(odd) .wa-card-body,.wa-card:nth-child(even) .wa-card-body{padding:1rem 1.2rem}
-  .wa-card-title{font-size:17px}
-}
-@media(max-width:480px){.sk-tool .sk-pill{width:calc(50% - 5px)}}
-</style>
-</head>
-<body class="is-loading">
+  .skill-title{font-size:clamp(1.8rem,8vw,2.5rem);margin-bottom:.5rem;line-height:1}
+  .skill-desc{font-size:11px;line-height:1.6}
+  .skill-right{padding:2.8rem 6vw 1.4rem;gap:1.6rem;justify-content:flex-start;overflow-y:auto}
+  .skill-right .rv{width:100%}
+  .sg-head{font-size:18px;margin-bottom:.45rem;line-height:1.2}
+  .sk-tool{gap:6px;width:100%}
+  .sk-tool .sk-pill{flex:1;min-width:0;justify-content:center}
+  .sk-tool .br-row ~ .sk-pill{flex:0 0 auto !important;width:calc(25% - 4.5px) !important;min-width:0 !important;padding:0 !important;justify-content:center;}
+  .sk-tool .br-row{flex-basis:100%;height:0}
+  .sk-design{grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:none !important;}
+  .sk-tool .sk-pill,.sk-design .sk-box{font-size:10.5px;border-width:1px;line-height:1.3;min-width:0;}
+  .sk-tool .sk-pill{padding:5px 8px}
+  .sk-design .sk-box{padding:6px 2px;letter-spacing:-.02em;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .strategy-text{font-size:10.5px;line-height:1.65}
+  .contact-img{width:min(320px,75vw);position:relative}
+  .contact-title{font-size:clamp(2rem,8vw,3rem)}
+  .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;padding:20px 38px;gap:.7rem;font-weight:500;letter-spacing:.05em;border-radius:60px;opacity:1;pointer-events:auto;}
+  .contact-stack{position:relative}
+  .contact-sub{position:absolute;top:19%;left:50%;transform:translateX(-50%);bottom:auto;z-index:5;text-align:center;white-space:nowrap;font-size:11px;line-height:1.6;margin:0;}
+  .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
+  .cf-links{gap:2rem}
+  .cf-links a{font-size:10px;letter-spacing:.14em}
+  .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
+  .footer-logo::after{font-size:5.5px}
 
-<div class="mesh-container">
-  <div class="color-circle c1"></div>
-  <div class="color-circle c2"></div>
-  <div class="color-circle c3"></div>
-  <div class="color-circle c4"></div>
-</div>
+  /* SPでのぼかし強度を下げて負荷軽減 */
+  .mesh-container{filter:blur(60px);will-change: auto;}
+  
+  .wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
+  #works-all{display:block; overflow-y:scroll; overflow-x:hidden}
+  .wa-body{padding-top:0; overflow-y:visible; overflow-x:hidden; padding-bottom:9rem}
+  .wa-grid{grid-template-columns:1fr;gap:3px}
+  .wa-card{aspect-ratio:16/9}
+  .wa-card-title{font-size:13.5px;margin-bottom:.35rem;font-weight:300}
+  .wa-card-desc{font-size:9px}
+  .wa-cat-label{font-size:13px;gap:.8rem;padding-left:0}
+  .wa-cat-label::before{width:4vw;min-width:24px;height:2.5px}
+}
+@media(max-width:520px){.cf-links{gap:1.4rem}.contact-img{width:min(240px,65vw)}}
+html.skip-opening{background:var(--bg)}
+html.skip-opening body > *:not(#works-all):not(canvas):not(.cursor):not(.nav-fixed):not(.mob-menu){visibility:hidden}
+html.skip-opening #works-all{opacity:1 !important;visibility:visible !important;transition:none}
+</style>
+<script>
+if(new URLSearchParams(window.location.search).get('works') === '1'){
+  document.documentElement.classList.add('skip-opening');
+}
+</script>
+</head>
+<body>
 
 <canvas id="dotsCanvas"></canvas>
+<div id="loader">
+  <div class="ld-logo-box"></div>
+</div>
+<div class="cursor" id="cur"></div>
 
-<div id="loader"><div class="ld-logo-box"></div></div>
-<div class="cursor"></div>
-
-<div class="nav-fixed">
-  <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"></div>
-  <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="nav-fixed" id="navFixed">
+  <div class="nav-logo" id="navLogoBtn"></div>
+  <button class="hamburger" id="ham" aria-label="menu">
+    <span></span><span></span><span></span>
+  </button>
 </div>
 
-<nav class="top-nav">
-  <a href="#works">Works</a>
-  <a href="#profile">Profile</a>
-  <a href="#skill">Skill</a>
-  <a href="#contact">Contact</a>
-</nav>
-
-<div class="mob-menu">
-  <a href="#works" onclick="closeMenu()">Works</a>
-  <a href="#profile" onclick="closeMenu()">Profile</a>
-  <a href="#skill" onclick="closeMenu()">Skill</a>
-  <a href="#contact" onclick="closeMenu()">Contact</a>
-  <a href="https://www.instagram.com/" target="_blank">Instagram</a>
+<div class="mob-menu" id="mobMenu">
+  <a href="#top"     class="mob-link">Home</a>
+  <a href="#works"   class="mob-link">Works</a>
+  <a href="#profile" class="mob-link">Profile</a>
+  <a href="#skill"   class="mob-link">Skill</a>
+  <a href="#contact" class="mob-link">Contact</a>
 </div>
 
-<main id="smooth-wrapper">
-  <div id="smooth-content">
-
-    <section id="top">
-      <div class="top-content">
-        <h1 class="top-name">
-          <span class="lw"><span class="li">SHOTA</span></span>
-          <span class="lw"><span class="li d2">INOUE</span></span>
-        </h1>
-        <div class="top-tags">
-          <p class="main">Designer / Creative Director</p>
-          <p class="italic">Based in Tokyo, Japan.</p>
-        </div>
-      </div>
-      <div class="scroll-ind">
-        <span>Scroll</span>
-        <div class="scroll-line-v"></div>
-      </div>
-    </section>
-
-    <section id="works">
-      <div class="works-bg" id="worksBg"></div>
-      <div class="works-dark"></div>
-      <div class="works-center">
-        <div class="works-upper">
-          <h2 class="works-title">Works</h2>
-          <p class="works-sub">デザインと機能性を両立させた<br>クリエイティブ・プロジェクト</p>
-        </div>
-        <button class="works-viewall" onclick="openWorksAll()">View All Projects</button>
-      </div>
-    </section>
-
-    <section id="profile">
-      <div class="profile-sp-hero">
-        <div class="profile-sp-bg" id="profileBgSP"></div>
-        <h2 class="profile-sp-title">Profile</h2>
-      </div>
-      <div class="profile-bg" id="profileBgPC"></div>
-      <div class="profile-title-center">Profile</div>
-      <div class="profile-right">
-        <h3 class="profile-name">井上 翔太</h3>
-        <p class="profile-name-en">SHOTA INOUE</p>
-        <div class="profile-meta">
-          <div><p class="pm-label">Role</p><p class="pm-val">Designer</p></div>
-          <div><p class="pm-label">Born</p><p class="pm-val">1996</p></div>
-          <div><p class="pm-label">Location</p><p class="pm-val">Tokyo</p></div>
-        </div>
-        <p class="profile-text">
-          東京都を拠点に活動するデザイナー。
-          UI/UXデザインからグラフィック、ブランディングまで幅広く手掛ける。
-          <span class="playful" data-color="#50F0D2">「美しさと使いやすさの融合」</span>を掲げ、
-          ユーザーの記憶に残るデジタル体験を創造することを得意としている。
-        </p>
-        <p class="profile-text-accent">
-          現在はフリーランスとして、スタートアップから大手企業まで
-          多様なプロジェクトのクリエイティブ制作に携わっている。
-        </p>
-      </div>
-    </section>
-
-    <section id="skill">
-      <div class="skill-inner">
-        <div class="skill-left">
-          <h2 class="skill-title">Skill</h2>
-          <p class="skill-desc">最新のテクノロジーとデザイン思考を組み合わせ、<br>最適なソリューションを構築します。</p>
-          <div class="skill-vline"></div>
-        </div>
-        <div class="skill-right">
-          <div class="skill-group">
-            <h4 class="sg-head">Design Tools</h4>
-            <div class="sk-design">
-              <div class="sk-box hi">Figma</div>
-              <div class="sk-box hi">Photoshop</div>
-              <div class="sk-box hi">Illustrator</div>
-              <div class="sk-box">After Effects</div>
-              <div class="sk-box">Premiere Pro</div>
-              <div class="sk-box">Cinema 4D</div>
-            </div>
-          </div>
-          <div class="skill-group">
-            <h4 class="sg-head">Development</h4>
-            <div class="sk-tool">
-              <div class="sk-pill hi">HTML5</div>
-              <div class="sk-pill hi">CSS3</div>
-              <div class="sk-pill hi">JavaScript</div>
-              <div class="sk-pill hi">React</div>
-              <div class="br-row"></div>
-              <div class="sk-pill">Next.js</div>
-              <div class="sk-pill">Three.js</div>
-              <div class="sk-pill">GSAP</div>
-              <div class="sk-pill">Webflow</div>
-            </div>
-          </div>
-          <div class="skill-group">
-            <h4 class="sg-head">Strategy</h4>
-            <p class="strategy-text">UX Research / Branding / Creative Direction / IA / Prototyping</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact">
-      <div class="contact-body">
-        <div class="contact-stack">
-          <h2 class="contact-title">Contact</h2>
-          <p class="contact-sub">プロジェクトのご相談・お問い合わせ</p>
-          <div class="contact-img" id="contactImg"></div>
-          <a href="mailto:shota.inoue@example.com" class="contact-email-btn">Say Hello</a>
-        </div>
-      </div>
-      <footer class="contact-footer">
-        <div class="footer-logo"></div>
-        <div class="cf-links">
-          <a href="https://www.instagram.com/" target="_blank">Instagram</a>
-          <a href="https://twitter.com/" target="_blank">Twitter</a>
-          <a href="https://www.behance.net/" target="_blank">Behance</a>
-        </div>
-      </footer>
-    </section>
-
+<section id="top">
+  <div class="top-photo"></div>
+  <nav class="top-nav">
+    <a href="#works">Works</a>
+    <a href="#profile">Profile</a>
+    <a href="#skill">Skill</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="top-content">
+    <h1 class="top-name">
+      <span class="lw"><span class="li">SHOTA</span></span>
+      <span class="lw"><span class="li d2">INOUE</span></span>
+    </h1>
+    <div class="top-tags">
+      <p class="main">Graphic · Branding · UIUX · SNS · Editorial</p>
+      <p class="italic">Design · Direction · Planning · Management</p>
+    </div>
   </div>
-</main>
+  <div class="scroll-ind">
+    <span>SCROLL</span>
+    <div class="scroll-line-v"></div>
+  </div>
+</section>
+
+<section id="works">
+  <div class="works-bg">
+    <div class="works-bg-row"><div class="works-bg-track dir-left"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
+    <div class="works-bg-row"><div class="works-bg-track dir-right"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
+    <div class="works-bg-row"><div class="works-bg-track dir-left"><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div><div class="works-bg-cell"></div></div></div>
+  </div>
+  <div class="works-dark"></div>
+  <div class="works-center">
+    <div class="works-upper">
+      <h2 class="works-title rv">WORKS</h2>
+      <p class="works-sub rv">上流過程の要件定義から企画提案、グラフィックデザインまで一貫して行なっています。<br>趣味でイラスト制作も取り組んでいます。</p>
+    </div>
+    <button class="works-viewall rv" id="viewAllBtn">View all</button>
+  </div>
+</section>
+
+<section id="profile">
+  <div class="profile-sp-hero">
+    <div class="profile-sp-bg ph" id="profileBgSP"></div>
+    <h2 class="profile-sp-title">PROFILE</h2>
+  </div>
+  <div class="profile-bg ph" id="profileBgPC"></div>
+  <h2 class="profile-title-center">PROFILE</h2>
+  <div class="profile-right">
+    <p class="profile-name">井上 翔太</p>
+    <p class="profile-name-en">Shota Inoue</p>
+    <div class="profile-meta">
+      <div><div class="pm-label">Nickname</div><div class="pm-val">たった</div></div>
+      <div><div class="pm-label">Birth</div><div class="pm-val">2000.06.09</div></div>
+      <div><div class="pm-label">Hometown</div><div class="pm-val">東京都 国立市</div></div>
+    </div>
+    <p class="profile-text">2023年東京造形大学 グラフィックデザイン専攻を卒業。同年より株式会社LIVNEXにてCCO佐藤可士和氏監修のもと、グラフィックデザイン、UI/UX、ブランディング、アートディレクション、製品企画、社内MVV新設浸透 etc... の幅広い業務を一貫して行う。</p>
+    <p class="profile-text-accent">大切にしているのは「本質思考」と「ノイズレス」。<br>対話を重ね、情報の優先順位を丁寧に整理しながら、簡潔で洗練された美しさと、モヤモヤのないストレスフリーな心地よさを形にしていきます。<br><br><span class="playful" id="playful">そこに、ちょっぴりの遊び心を添えて。</span></p>
+  </div>
+</section>
+
+<section id="skill">
+  <div class="skill-bg ph">
+    <div class="mesh-container">
+      <div class="color-circle c1"></div>
+      <div class="color-circle c2"></div>
+      <div class="color-circle c3"></div>
+      <div class="color-circle c4"></div>
+      <div class="color-circle c5"></div>
+      <div class="color-circle c6"></div>
+      <div class="color-circle c7"></div>
+      <div class="color-circle c8"></div>
+    </div>
+  </div>
+  <div class="skill-inner">
+    <div class="skill-left">
+      <h2 class="skill-title rv">SKILL</h2>
+      <p class="skill-desc rv">グラフィック制作を中心に、簡単な動画編集まで対応可能です。<br>また、スプレッドシート・Miro・Backlog など、<br>企画進行・チームコラボツールの使用も可能です。</p>
+      <div class="skill-vline"></div>
+    </div>
+    <div class="skill-right">
+      <div class="rv"><div class="sg-head">Tool</div><div class="sk-tool"><span class="sk-pill hi">Illustrator</span><span class="sk-pill hi">Photoshop</span><span class="sk-pill hi">Adobe XD</span><span class="sk-pill hi">Indesign</span><div class="br-row"></div><span class="sk-pill">Premiere Pro</span><span class="sk-pill">Figma</span></div></div>
+      <div class="rv"><div class="sg-head">Design</div><div class="sk-design"><div class="sk-box hi">グラフィックデザイン</div><div class="sk-box hi">WEBデザイン</div><div class="sk-box hi">UI・UXデザイン</div><div class="sk-box hi">ブランディング</div><div class="sk-box hi">ディレクション</div><div class="sk-box">コピーライティング</div></div></div>
+      <div class="rv"><div class="sg-head">Strategy</div><p class="strategy-text">企画提案 ／ 要件定義 ／ IA・情報設計 ／ 業務フロー設計・改善改修 ／ 進行管理<br>SNS運用 ／ CMS運用 ／ GA4運用</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="contact-body">
+    <div class="contact-stack">
+      <h2 class="contact-title rv">CONTACT</h2>
+      <div class="contact-img ph">
+        <div class="mesh-container">
+          <div class="color-circle c1"></div><div class="color-circle c2"></div><div class="color-circle c3"></div><div class="color-circle c4"></div><div class="color-circle c5"></div><div class="color-circle c6"></div><div class="color-circle c7"></div><div class="color-circle c8"></div>
+        </div>
+      </div>
+      <p class="contact-sub">お問い合わせはこちらから</p>
+      <a href="mailto:tattalineart@gmail.com" class="contact-email-btn">tattalineart@gmail.com</a>
+    </div>
+  </div>
+  <footer class="contact-footer">
+    <div class="cf-links"><a href="#top">HOME</a><a href="#works">WORKS</a><a href="#profile">PROFILE</a><a href="#skill">SKILL</a><a href="#contact">CONTACT</a></div>
+    <div class="footer-logo"></div>
+  </footer>
+</section>
 
 <div id="works-all">
-  <a href="javascript:void(0)" class="wa-back" onclick="closeWorksAll()">Back</a>
-  <div class="wa-body" id="waBody"></div>
+  <div class="wa-body" id="waBody">
+    <a href="#" class="wa-back" id="waBack">Back to HOME</a>
+    <div id="waGridContainer"></div>
+  </div>
 </div>
 
 <script>
-/* ══ DATA ══ */
-let SITE_WORKS = [];
-let SITE_PROFILE = {};
+const loader = document.getElementById('loader');
+let isLoading = true;
+const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
 
-async function loadSiteData(){
-  try{
-    const r = await fetch('data.json');
-    const d = await r.json();
-    SITE_WORKS = d.works || [];
-    SITE_PROFILE = d.profile || {};
-  }catch(e){ console.error("Data load error:", e); }
-}
-
-/* ══ CORE & UI ══ */
-const hamburger = document.querySelector('.hamburger');
-const mobMenu = document.querySelector('.mob-menu');
-const cursor = document.querySelector('.cursor');
-
-function closeMenu(){
-  hamburger.classList.remove('open');
-  mobMenu.classList.remove('open');
-}
-
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('open');
-  mobMenu.classList.toggle('open');
-});
-
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top = e.clientY + 'px';
-});
-
-document.querySelectorAll('a, button, .wa-card, .nav-logo').forEach(el => {
-  el.addEventListener('mouseenter', () => cursor.classList.add('expanded'));
-  el.addEventListener('mouseleave', () => cursor.classList.remove('expanded'));
-});
-
-/* ══ BACKGROUND DOTS ══ */
-const canvas = document.getElementById('dotsCanvas');
-const ctx = canvas.getContext('2d');
-let points = [];
-const spacing = 45;
-
-function initCanvas(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  points = [];
-  for(let x=0; x<canvas.width; x+=spacing){
-    for(let y=0; y<canvas.height; y+=spacing){
-      points.push({x, y, ox:x, oy:y});
-    }
-  }
-}
-
-let mx=-1000, my=-1000;
-window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-
-function animateDots(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = 'rgba(225,226,226,0.22)';
-  points.forEach(p => {
-    const dx = mx - p.ox;
-    const dy = my - p.oy;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const f = Math.max(0, (140 - dist)/140);
-    p.x = p.ox - dx*f*0.45;
-    p.y = p.oy - dy*f*0.45;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 0.8, 0, Math.PI*2);
-    ctx.fill();
+if(skipOpening){
+  loader.style.display = 'none';
+  document.body.classList.add('loaded');
+  isLoading = false;
+} else {
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      loader.classList.add('done');
+      document.body.classList.add('loaded');
+      setTimeout(() => {
+        loader.style.display = 'none';
+        isLoading = false;
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+      }, 500);
+    }, 1000);
   });
-  requestAnimationFrame(animateDots);
 }
 
-/* ══ SCROLL OBSERVER ══ */
-function initScrollObserver(){
-  const nav = document.querySelector('.nav-fixed');
-  const sections = document.querySelectorAll('section');
-  
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(en => {
-      if(en.isIntersecting){
-        if(en.target.id === 'top') nav.classList.remove('show');
-        else nav.classList.add('show');
-        
-        if(en.target.id === 'contact') document.body.classList.add('in-contact');
-        else document.body.classList.remove('in-contact');
+const cur = document.getElementById('cur');
+let mx=0,my=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+document.querySelectorAll('a,button,.wa-card,.nav-logo,.playful').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('expanded'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
+});
+
+const navFixed = document.getElementById('navFixed');
+const topSec = document.getElementById('top');
+const getSecs = () => [...document.querySelectorAll('section')];
+const isMobile = () => window.innerWidth <= 900;
+
+new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.target.id === 'top' && !isMobile()){
+      if(worksAll.classList.contains('open')) return;
+      if(e.isIntersecting && e.intersectionRatio > 0.5){
+        navFixed.classList.remove('show');
+      }else{
+        navFixed.classList.add('show');
       }
-    });
-  }, { threshold: 0.12 });
-  
-  sections.forEach(s => obs.observe(s));
-  
-  const revealObs = new IntersectionObserver(entries => {
-    entries.forEach(en => { if(en.isIntersecting) en.target.classList.add('vis'); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.rv').forEach(el => revealObs.observe(el));
+    }
+  });
+}, {threshold:[0, .5, 1]}).observe(topSec);
+
+if(isMobile()) navFixed.classList.add('show');
+window.addEventListener('resize', () => {
+  if(isMobile()) navFixed.classList.add('show');
+});
+
+new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    document.body.classList.toggle('in-contact', e.isIntersecting && e.intersectionRatio > 0.3);
+  });
+}, {threshold:[0,.3,1]}).observe(document.getElementById('contact'));
+
+const ham = document.getElementById('ham');
+const mob = document.getElementById('mobMenu');
+ham.addEventListener('click', () => { const o=mob.classList.toggle('open'); ham.classList.toggle('open',o); });
+function closeMob(){ mob.classList.remove('open'); ham.classList.remove('open'); }
+
+document.getElementById('navLogoBtn').addEventListener('click', () => {
+  if(worksAll && worksAll.classList.contains('open')){
+    worksAll.classList.remove('open');
+    document.body.style.overflow='';
+    document.body.classList.remove('works-open');
+    if(!isMobile()) navFixed.classList.remove('show');
+  }
+  snapTo(topSec.offsetTop);
+});
+
+const htmlEl = document.documentElement;
+const SNAP_DUR = 820;
+const eie = t => t===0?0:t===1?1:t<.5?Math.pow(2,20*t-10)/2:(2-Math.pow(2,-20*t+10))/2;
+function nearest(scrollTop,dir){
+  const ss=getSecs();
+  if(dir>0){ for(let s of ss){if(s.offsetTop>scrollTop+60)return s.offsetTop;} return ss[ss.length-1].offsetTop; }
+  else{ for(let i=ss.length-1;i>=0;i--){if(ss[i].offsetTop<scrollTop-60)return ss[i].offsetTop;} return 0; }
+}
+let snapping=false;
+function snapTo(y,dur=SNAP_DUR){
+  if(snapping)return; snapping=true;
+  const sy=htmlEl.scrollTop, dist=y-sy;
+  if(Math.abs(dist)<4){snapping=false;return;}
+  const t0=performance.now();
+  (function s(now){ const p=Math.min((now-t0)/dur,1); htmlEl.scrollTop=sy+dist*eie(p); if(p<1)requestAnimationFrame(s); else{htmlEl.scrollTop=y;snapping=false;} })(performance.now());
 }
 
-/* ══ PLAYFUL ══ */
-document.querySelectorAll('.playful').forEach(el => {
-  el.addEventListener('click', e => {
-    if(el.classList.contains('poked')) return;
-    el.classList.add('poked');
-    const c = el.dataset.color || '#50F0D2';
-    el.style.setProperty('--playful-c', c);
-    
-    for(let i=0; i<6; i++){
+let wa=0,wt=null;
+htmlEl.addEventListener('wheel', e => {
+  if(worksAll.classList.contains('open'))return;
+  e.preventDefault(); if(snapping)return;
+  wa+=e.deltaY; clearTimeout(wt);
+  wt=setTimeout(()=>{ if(Math.abs(wa)<18){wa=0;return;} const d=wa>0?1:-1; wa=0; snapTo(nearest(htmlEl.scrollTop,d)); },3);
+},{passive:false});
+
+let tys=0,tss=0;
+const isT=()=>window.matchMedia('(hover:none)').matches;
+htmlEl.addEventListener('touchstart',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; tys=e.touches[0].clientY; tss=htmlEl.scrollTop; },{passive:false});
+htmlEl.addEventListener('touchmove',e=>{ if(isLoading){e.preventDefault();return;} if(worksAll.classList.contains('open'))return; if(!isT())return; e.preventDefault(); },{passive:false});
+htmlEl.addEventListener('touchend',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; if(snapping)return; const dy=tys-e.changedTouches[0].clientY; if(Math.abs(dy)<30)return; snapTo(nearest(tss,dy>0?1:-1)); },{passive:true});
+
+document.querySelectorAll('.top-nav a, .cf-links a').forEach(a=>{
+  a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); const t=document.querySelector(h); if(t)snapTo(t.offsetTop); });
+});
+document.querySelectorAll('.mob-link').forEach(a=>{
+  a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); closeMob(); const t=document.querySelector(h); if(t)setTimeout(()=>snapTo(t.offsetTop),60); });
+});
+
+const worksAll = document.getElementById('works-all');
+function openWorksAll(){
+  worksAll.classList.add('open');
+  document.body.style.overflow='hidden';
+  if(!isMobile()) navFixed.classList.add('show');
+}
+document.getElementById('viewAllBtn').addEventListener('click',e=>{ e.preventDefault(); openWorksAll(); });
+document.getElementById('waBack').addEventListener('click',e=>{
+  e.preventDefault();
+  worksAll.classList.remove('open');
+  document.body.style.overflow='';
+  document.body.classList.remove('works-open');
+  const worksSec = document.getElementById('works');
+  if(worksSec) snapTo(worksSec.offsetTop);
+  if(!isMobile()) navFixed.classList.add('show');
+});
+
+if(skipOpening){
+  openWorksAll();
+  document.documentElement.classList.remove('skip-opening');
+}
+
+const rvObs = new IntersectionObserver((entries,obs)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('vis'),i*80);
+      obs.unobserve(e.target);
+    }
+  });
+},{threshold:.15});
+document.querySelectorAll('.rv').forEach(el=>rvObs.observe(el));
+
+const playful = document.getElementById('playful');
+if(playful){
+  const sparkChars = ['✦','✧','＊','✦','◦','✺'];
+  const playfulColors = ['#196ed2','#f04650','#f0eb50','#e6f0e1','#50f0d2'];
+  let playfulIdx = -1;
+  const burst = (e) => {
+    playfulIdx = (playfulIdx + 1) % playfulColors.length;
+    const col = playfulColors[playfulIdx];
+    document.documentElement.style.setProperty('--accent', col);
+    playful.style.setProperty('--playful-c', col);
+    playful.classList.remove('poked');
+    void playful.offsetWidth;
+    playful.classList.add('poked');
+    setTimeout(() => {
+      playful.classList.remove('poked');
+      playful.style.animation = 'none';
+      void playful.offsetWidth;
+      playful.style.animation = '';
+    }, 950);
+    const rect = playful.getBoundingClientRect();
+    const count = 8 + Math.floor(Math.random()*3);
+    for(let i = 0; i < count; i++){
       const s = document.createElement('span');
-      s.className = 'spark fly';
-      s.textContent = ['✦','✧','*','+'][Math.floor(Math.random()*4)];
-      s.style.left = e.clientX + 'px';
-      s.style.top = e.clientY + 'px';
-      s.style.color = c;
-      const ang = Math.random()*Math.PI*2;
-      const len = 40 + Math.random()*60;
-      s.style.setProperty('--dx', Math.cos(ang)*len + 'px');
-      s.style.setProperty('--dy', Math.sin(ang)*len + 'px');
-      s.style.setProperty('--rot', (Math.random()*360) + 'deg');
+      s.className = 'spark';
+      s.textContent = sparkChars[Math.floor(Math.random()*sparkChars.length)];
+      s.style.color = col;
+      const px = rect.left + Math.random() * rect.width;
+      const py = rect.top + Math.random() * rect.height;
+      s.style.left = px + 'px';
+      s.style.top = py + 'px';
+      const angle = (Math.random() * Math.PI * 2);
+      const dist = 30 + Math.random() * 60;
+      s.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      s.style.setProperty('--dy', (Math.sin(angle) * dist - 30) + 'px');
+      s.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+      s.style.fontSize = (10 + Math.random() * 8) + 'px';
+      s.style.transform = 'translate(-50%,-50%) scale(.4)';
       document.body.appendChild(s);
+      requestAnimationFrame(() => s.classList.add('fly'));
       setTimeout(() => s.remove(), 1200);
     }
-    setTimeout(() => el.classList.remove('poked'), 1000);
-  });
-});
+  };
+  playful.addEventListener('click', burst);
+}
 
-/* ══ WORKS RENDER ══ */
-function applyWorksBg(){
-  const container = document.getElementById('worksBg');
-  if(!container) return;
-  const images = SITE_WORKS.map(w => w.thumbnail).filter(Boolean);
-  if(images.length === 0) return;
-  
-  container.innerHTML = '';
-  for(let i=0; i<3; i++){
-    const row = document.createElement('div');
-    row.className = 'works-bg-row';
-    const track = document.createElement('div');
-    track.className = 'works-bg-track ' + (i===1 ? 'dir-right' : 'dir-left');
-    
-    const rowImgs = [...images].sort(() => Math.random() - 0.5);
-    const content = rowImgs.map(src => `<div class="works-bg-cell has-img" style="background-image:url('${src}');background-size:cover;background-position:center;"></div>`).join('');
-    track.innerHTML = content + content;
-    row.appendChild(track);
-    container.appendChild(row);
+/* 背景ドットエフェクト */
+(() => {
+  const canvas = document.getElementById('dotsCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const SPACING = 14;
+  const BASE_RADIUS = 0.9;
+  const MAX_RADIUS = 5.0;
+  const INFLUENCE = 120;
+  const EASE = 0.12;
+  const IDLE_DECAY = 0.85;
+  const STOP_DELAY = 750;
+  const BG_COLOR = '#2D2E2E';
+  const DOT_COLOR = '#3a3b3b';
+  const ACCENT_COLOR = '#4a4b4b';
+  let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  let W = 0, H = 0;
+  let stopTimer = null;
+  const pointer = { x:-9999, y:-9999, tx:-9999, ty:-9999, strength:0, targetStrength:0 };
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
+  resize();
+  window.addEventListener('resize', resize);
+  function resetStopTimer(){
+    pointer.targetStrength = 1;
+    clearTimeout(stopTimer);
+    stopTimer = setTimeout(() => { pointer.targetStrength = 0; }, STOP_DELAY);
+  }
+  window.addEventListener('mousemove', e => {
+    pointer.tx = e.clientX; pointer.ty = e.clientY;
+    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+    resetStopTimer();
+  });
+  window.addEventListener('mouseleave', () => { pointer.targetStrength = 0; clearTimeout(stopTimer); });
+  window.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    pointer.tx = t.clientX; pointer.ty = t.clientY;
+    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+    resetStopTimer();
+  }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    pointer.tx = t.clientX; pointer.ty = t.clientY;
+    resetStopTimer();
+  }, { passive: true });
+  window.addEventListener('touchend', () => { pointer.targetStrength = 0; clearTimeout(stopTimer); });
+  let isTouchDev = window.matchMedia('(hover:none)').matches;
+  window.addEventListener('resize', () => { isTouchDev = window.matchMedia('(hover:none)').matches; });
+  function frame(){
+    if(pointer.tx > -9000){
+      if(isTouchDev){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
+      else { pointer.x += (pointer.tx - pointer.x) * EASE; pointer.y += (pointer.ty - pointer.y) * EASE; }
+    }
+    if(pointer.targetStrength > pointer.strength){ pointer.strength += (pointer.targetStrength - pointer.strength) * 0.1; }
+    else{ pointer.strength *= IDLE_DECAY; if(pointer.strength < 0.001) pointer.strength = 0; }
+    ctx.fillStyle = BG_COLOR; ctx.fillRect(0, 0, W, H);
+    const px = pointer.x, py = pointer.y;
+    const s = pointer.strength;
+    const inflSq = INFLUENCE * INFLUENCE;
+    ctx.fillStyle = DOT_COLOR; ctx.beginPath();
+    let row = 0;
+    for(let y = SPACING/2; y < H; y += SPACING){
+      const offset = (row % 2) ? SPACING/2 : 0;
+      for(let x = SPACING/2 + offset; x < W; x += SPACING){
+        const dx = x - px, dy = y - py;
+        if(s > 0.01 && (dx*dx + dy*dy) < inflSq) continue;
+        ctx.moveTo(x + BASE_RADIUS, y); ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
+      }
+      row++;
+    }
+    ctx.fill();
+    if(s > 0.01){
+      let row2 = 0;
+      for(let y = SPACING/2; y < H; y += SPACING){
+        const offset = (row2 % 2) ? SPACING/2 : 0;
+        for(let x = SPACING/2 + offset; x < W; x += SPACING){
+          const dx = x - px, dy = y - py;
+          const distSq = dx*dx + dy*dy;
+          if(distSq >= inflSq) continue;
+          const dist = Math.sqrt(distSq);
+          let t = 1 - dist / INFLUENCE;
+          t = t * t * (3 - 2 * t) * s;
+          const r = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * t;
+          ctx.fillStyle = (t > 0.6) ? ACCENT_COLOR : DOT_COLOR;
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+        row2++;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+const DEFAULT_WORKS_DATA = [
+  { cat:'Branding', items:[
+    {id:'sotoya-rebrand',  tag:'Branding',        title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'sotoya-logo',     tag:'Branding',        title:'SOTOYA LOGO',                    desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'sotoya-web',      tag:'Branding / Web',  title:'SOTOYA WEB SITE',                desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'sotoya-tools',    tag:'Branding',        title:'SOTOYA コーポレートツール',       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'ec-flame',        tag:'Branding / EC',   title:'EC SITE flame',                  desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'}
+  ]},
+  { cat:'Web', items:[
+    {id:'nasta-hp',        tag:'Web',         title:'Nasta HP',                       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'nasta-post',      tag:'Web',         title:'Nasta Box +POST WEB SITE',       desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'nasta-light',     tag:'Web',         title:'Nasta Box LIGHT　WEB SITE',      desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'nasta-amazon',    tag:'Web / EC',    title:'Nasta Interphone 2　Amazon page',desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'nasta-sns',       tag:'SNS',         title:'Nasta SNS クリエイティブ',         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'}
+  ]},
+  { cat:'POP / Print media', items:[
+    {id:'pamphlet',        tag:'Print',       title:'カテゴリ別 製品一覧パンフレット', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'flyer-poster',    tag:'Print',       title:'各種販促チラシ・ポスター',         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'}
+  ]},
+  { cat:'UI / UX', items:[
+    {id:'box-admin',       tag:'UI/UX',       title:'宅配ボックス管理者用 WEB システム', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'nasta-app',       tag:'UI/UX',       title:'Nasta Box APP',                   desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'}
+  ]},
+  { cat:'Other', items:[
+    {id:'nasta-mvv',       tag:'Project',     title:'Nasta MVV Project',               desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
+    {id:'illusts',         tag:'Illustration',title:'ILLUSTs',                         desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'}
+  ]}
+];
+
+let WORKS_DATA = DEFAULT_WORKS_DATA;
+let SITE_PROFILE = { images: [] };
+let SITE_LOGO = { src: '' };
+
+async function loadSiteData(){
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+  if(isPreview){
+    try {
+      const raw = localStorage.getItem('worksData'); if(raw) WORKS_DATA = JSON.parse(raw);
+      const pRaw = localStorage.getItem('profileData'); if(pRaw) SITE_PROFILE = JSON.parse(pRaw);
+      const lRaw = localStorage.getItem('logoData'); if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+      const hRaw = localStorage.getItem('homeBgData'); if(hRaw) window._SITE_HOMEBG = JSON.parse(hRaw);
+    } catch(e){}
+    applyLogo(); return;
+  }
+  try {
+    const res = await fetch('data.json', { cache: 'no-cache' });
+    if(res.ok){
+      const json = await res.json();
+      if(json.works) WORKS_DATA = json.works;
+      if(json.profile) SITE_PROFILE = json.profile;
+      if(json.logo) SITE_LOGO = json.logo;
+      if(json.homeBg) window._SITE_HOMEBG = json.homeBg;
+      applyLogo(); return;
+    }
+  } catch(e){}
+  try {
+    const raw = localStorage.getItem('worksData'); if(raw) WORKS_DATA = JSON.parse(raw);
+    const pRaw = localStorage.getItem('profileData'); if(pRaw) SITE_PROFILE = JSON.parse(pRaw);
+    const lRaw = localStorage.getItem('logoData'); if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+    const hRaw = localStorage.getItem('homeBgData'); if(hRaw) window._SITE_HOMEBG = JSON.parse(hRaw);
+  } catch(e){}
+  applyLogo();
 }
 
-function openWorksAll(){
-  document.getElementById('works-all').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  renderWorksAll();
-}
-function closeWorksAll(){
-  document.getElementById('works-all').classList.remove('open');
-  document.body.style.overflow = '';
+function applyLogo(){
+  if(!SITE_LOGO || !SITE_LOGO.src) return;
+  const src = SITE_LOGO.src;
+  document.querySelectorAll('.nav-logo, .footer-logo, .ld-logo-box').forEach(el => {
+    el.style.backgroundImage = `url("${src}")`; el.style.backgroundSize = 'contain'; el.style.backgroundPosition = 'center'; el.style.backgroundRepeat = 'no-repeat'; el.style.backgroundColor = 'transparent'; el.classList.add('has-logo');
+  });
+  let link = document.querySelector('link[rel="icon"]');
+  if(!link){ link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+  link.href = src;
 }
 
-function renderWorksAll(){
-  const body = document.getElementById('waBody');
-  if(!body || body.children.length > 0) return;
-  
-  const cats = [...new Set(SITE_WORKS.map(w => w.category))];
-  cats.forEach(cat => {
-    const section = document.createElement('div');
-    section.className = 'wa-category';
-    section.innerHTML = `<div class="wa-cat-label">${cat}</div>`;
-    const grid = document.createElement('div');
-    grid.className = 'wa-grid';
-    
-    SITE_WORKS.filter(w => w.category === cat).forEach(w => {
+function applyWorksBg(){
+  let sources = [];
+  if(window._SITE_HOMEBG && window._SITE_HOMEBG.images && window._SITE_HOMEBG.images.length){ sources = window._SITE_HOMEBG.images.map(i => i.src); }
+  else { WORKS_DATA.forEach(g => g.items.forEach(it => { if(it.images && it.images[0]) sources.push(it.images[0].src); })); }
+  if(sources.length === 0) return;
+  const cells = document.querySelectorAll('.works-bg-cell');
+  cells.forEach((cell, i) => { const src = sources[i % sources.length]; cell.style.backgroundImage = `url("${src}")`; cell.style.backgroundSize = 'cover'; cell.style.backgroundPosition = 'center'; cell.classList.add('has-img'); });
+}
+
+function renderWorksList(){
+  try { localStorage.setItem('worksData', JSON.stringify(WORKS_DATA)); } catch(e){}
+  const waGrid = document.getElementById('waGridContainer');
+  waGrid.innerHTML = '';
+  WORKS_DATA.forEach(group => {
+    const cat = document.createElement('div');
+    cat.className = 'wa-category';
+    cat.innerHTML = `<div class="wa-cat-label wa-fade">${group.cat}</div><div class="wa-grid"></div>`;
+    const grid = cat.querySelector('.wa-grid');
+    group.items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'wa-card wa-fade';
-      card.innerHTML = `
-        ${w.thumbnail ? `<div class="wa-card-img" style="background-image:url('${w.thumbnail}');background-size:cover;background-position:center;"></div>` : `<div class="wa-card-img-ph"></div>`}
-        <div class="wa-card-body">
-          <h4 class="wa-card-title">${w.title}</h4>
-          <p class="wa-card-desc">${w.description}</p>
-        </div>
-        <div class="wa-card-arrow"></div>
-      `;
-      card.onclick = () => {
-        if(window.innerWidth <= 900){
-          if(card.classList.contains('active')) window.location.href = `detail.html?id=${w.id}`;
-          else {
-            document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-          }
-        } else {
-          window.location.href = `detail.html?id=${w.id}`;
-        }
-      };
+      card.dataset.id = item.id;
+      const thumbSrc = item.images && item.images[0] ? item.images[0].src : null;
+      const imgHtml = thumbSrc ? `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<div class="wa-card-img-ph"></div>`;
+      card.innerHTML = `<div class="wa-card-img">${imgHtml}</div><div class="wa-card-body"><div class="wa-card-title">${item.title}</div><div class="wa-card-desc">${item.desc || ''}</div></div><div class="wa-card-arrow"></div>`;
       grid.appendChild(card);
     });
-    section.appendChild(grid);
-    body.appendChild(section);
+    waGrid.appendChild(cat);
   });
-  
-  setTimeout(() => {
-    document.querySelectorAll('.wa-fade').forEach((el, i) => {
-      setTimeout(() => el.classList.add('in'), i * 80);
+  const waFadeObs = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } }); }, { root: document.querySelector('.wa-body'), threshold: 0.12 });
+  document.querySelectorAll('.wa-fade').forEach(el => waFadeObs.observe(el));
+  const isHoverPC = () => window.matchMedia('(hover:hover) and (min-width:901px)').matches;
+  document.querySelectorAll('.wa-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      if(isHoverPC()){ window.location.href = `detail.html?id=${id}`; }
+      else{ if(card.classList.contains('active')){ window.location.href = `detail.html?id=${id}`; }else{ document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active')); card.classList.add('active'); } }
     });
-  }, 100);
+  });
 }
 
 function renderProfileSlideshow(){
@@ -878,45 +1095,22 @@ function renderProfileSlideshow(){
   targets.forEach(target => {
     target.classList.add('has-slides');
     target.querySelectorAll('.profile-slide').forEach(el => el.remove());
-    images.forEach((img, i) => {
-      const s = document.createElement('div');
-      s.className = 'profile-slide' + (i === 0 ? ' active' : '');
-      s.style.backgroundImage = `url("${img.src}")`;
-      target.appendChild(s);
-    });
+    images.forEach((img, i) => { const s = document.createElement('div'); s.className = 'profile-slide' + (i === 0 ? ' active' : ''); s.style.backgroundImage = `url("${img.src}")`; target.appendChild(s); });
   });
   if(images.length > 1){
     let idx = 0;
-    setInterval(() => {
-      idx = (idx + 1) % images.length;
-      targets.forEach(target => {
-        const slides = target.querySelectorAll('.profile-slide');
-        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
-      });
-    }, 4000);
+    setInterval(() => { idx = (idx + 1) % images.length; targets.forEach(target => { const slides = target.querySelectorAll('.profile-slide'); slides.forEach((s, i) => s.classList.toggle('active', i === idx)); }); }, 4000);
   }
 }
 
-/* ══ INIT ══ */
-window.addEventListener('load', () => {
-  initCanvas();
-  animateDots();
-  initScrollObserver();
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('done');
-    document.body.classList.remove('is-loading');
-    document.body.classList.add('loaded');
-  }, 800);
-});
-
-window.addEventListener('resize', initCanvas);
-
 (async () => {
   await loadSiteData();
-  applyWorksBg();
+  renderWorksList();
   renderProfileSlideshow();
+  applyWorksBg();
 })();
-</script>
 
+document.querySelector('.wa-body').addEventListener('click', e => { if(!e.target.closest('.wa-card')){ document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active')); } });
+</script>
 </body>
 </html>
