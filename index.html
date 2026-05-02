@@ -40,8 +40,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   pointer-events: none;
   z-index: 0;
   background: #000;
-  /* filter: blur を削除（これがフチのぼやけの原因） */
-  will-change: auto; /* 重い時は一旦リセット */
+  will-change: transform; /* GPU レイヤーに昇格させてスクロール時の再描画を防ぐ */
 }
 
 .mesh-container .color-circle {
@@ -498,7 +497,7 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .pm-val{font-size:12px}
   .profile-text{font-size:11px;line-height:1.6;margin-bottom:.9rem}
   .profile-text-accent{font-size:11px;line-height:1.6}
-  .skill-bg{top:0;bottom:0}
+  .skill-bg{top:0;bottom:0;background:#1a2a28}
   .skill-inner{display:flex;flex-direction:column;min-height:100dvh;justify-content:center;padding-top:0;}
   .skill-left{padding:2.6rem 6vw 2.4rem;justify-content:flex-start;border-bottom:none;position:relative;}
   .skill-left::after{content:'';position:absolute;left:6vw;right:6vw;bottom:0;height:1px;background:var(--text-dim);}
@@ -517,7 +516,7 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .sk-tool .sk-pill{padding:5px 8px}
   .sk-design .sk-box{padding:6px 2px;letter-spacing:-.02em;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .strategy-text{font-size:10.5px;line-height:1.65}
-  .contact-img{width:min(320px,75vw);position:relative}
+  .contact-img{width:min(320px,75vw);position:relative;background:#1a2a28}
   .contact-title{font-size:clamp(2rem,8vw,3rem)}
   .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;padding:20px 38px;gap:.7rem;font-weight:500;letter-spacing:.05em;border-radius:60px;opacity:1;pointer-events:auto;}
   .contact-stack{position:relative}
@@ -528,8 +527,8 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
   .footer-logo::after{font-size:5.5px}
 
-  /* SPでのぼかし強度を下げて負荷軽減 */
-  .mesh-container{filter:blur(60px);will-change: auto;}
+  /* SPではmesh-containerを非表示にして負荷軽減 */
+  .mesh-container{display:none;}
   
   .wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
   #works-all{display:block; overflow-y:scroll; overflow-x:hidden}
