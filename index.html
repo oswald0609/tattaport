@@ -7,7 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@200;300;400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+/* 全要素の余白をリセットし、paddingやborderをwidthに含める計算方法に統一 */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* ─── サイト全体で使いまわすデザイン変数 ───
+   色・フォント・イージング（アニメの加速曲線）・セーフエリア幅などをここで一括管理
+   --safe-x: ロゴとハンバーガーメニューが置かれる左右の余白幅 ─── */
 :root{
   --bg:#2D2E2E;
   --bg2:#252626;
@@ -24,15 +28,22 @@
   --ph:linear-gradient(135deg,#3a3b3b 0%,#2a2b2b 40%,#323333 100%);
   --safe-x:calc((3.5rem + 48px) * 1.5);
 }
+/* 縦スクロールは常に表示（スクロールバーが消えてレイアウトがズレるのを防ぐ）*/
 html{overflow-y:scroll;height:100%;scroll-behavior:auto}
+/* 背景は透明（dotsCanvasのハーフトーン背景が透けて見える）。カーソルはCSSカスタム */
 body{background:transparent;color:var(--text);font-family:var(--ff-jp);overflow-x:hidden;cursor:none;position:relative}
 
+/* 各セクションを画面1枚分の高さに固定。dvhはブラウザのタブバー・アドレスバーを除いた実際の表示領域 */
 section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;background:transparent}
 
+/* 画像未設定の箇所に表示するグレーのプレースホルダー。::afterでPHOTOの文字を薄く表示 */
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
 .ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
 
 /* MESH GRADIENT — フィルターを使わない軽量版 */
+/* ─── メッシュグラデーション（SKILLとCONTACTの背景装飾） ───
+   filterのblurを使わず、放射状グラデーションの端を透明にすることで軽量にぼかしを表現
+   will-changeでGPUに描画を任せてスクロール時のカクつきを防ぐ ─── */
 .mesh-container {
   position: absolute;
   inset: 0;
@@ -71,6 +82,9 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 }
 
 /* LOADER */
+/* ─── オープニングローダー ───
+   最前面（z-index:10000）に固定。ロゴボックスがscale(0)からscale(1)にズームインして登場
+   ロード完了後は.doneクラスでフェードアウト ─── */
 #loader{position:fixed;inset:0;background:#2D2E2E;z-index:10000;display:flex;align-items:center;justify-content:center}
 .ld-logo-box{
   width:64px;height:64px;
@@ -92,11 +106,14 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 #loader.done{pointer-events:none;animation:ldOut .45s var(--eio) forwards}
 @keyframes ldOut{to{opacity:0}}
 
+/* CMSでロゴ画像をアップロードした時、LOGOのプレースホルダー文字を非表示にする */
 .ld-logo-box.has-logo::after,
 .nav-logo.has-logo::after,
 .footer-logo.has-logo::after{display:none}
 
 /* 背景ドットキャンバス */
+/* ─── 背景ハーフトーンドットのキャンバス ───
+   全画面固定・z-index:0（最背面）。マウス/タッチに追従してドットが波紋のように膨らむ ─── */
 #dotsCanvas{
   position:fixed;inset:0;
   width:100%;height:100%;
@@ -105,11 +122,18 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 }
 
 /* CURSOR */
+/* ─── カスタムカーソル（PC専用） ───
+   アクセントカラーの小さな丸。リンク等にホバーすると.expandedで大きく膨張する ─── */
 .cursor{position:fixed;width:10px;height:10px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s var(--eoe),height .2s var(--eoe),background .2s,opacity .2s}
 .cursor.expanded{width:36px;height:36px;background:rgba(255,255,255,.15)}
 @media(hover:none){.cursor{display:none}body{cursor:auto}}
 
-/* NAV BAR */
+/* ══════════════════════════════════════
+   ナビゲーション全体
+══════════════════════════════════════ *//* NAV BAR */
+/* ─── PC版の固定ナビ（ロゴ＋ハンバーガー）のコンテナ ───
+   inset:0（全画面を覆う透明レイヤー）にして、子要素を viewport 基準で絶対配置できるようにする
+   pointer-events:none で自身はクリックを透過、子要素（> *）だけクリックを受け付ける ─── */
 .nav-fixed{
   position:fixed;inset:0;
   z-index:501;
@@ -120,6 +144,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .nav-fixed.show{opacity:1;visibility:visible}
 .nav-fixed > *{pointer-events:auto}
 
+/* ロゴ：左セーフエリアの中央・画面の垂直中央（top:50dvh）に配置 */
 .nav-logo{
   position:absolute;
   left:calc(var(--safe-x) / 2);
@@ -140,6 +165,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 }
 .nav-logo:hover{transform:translate(-50%,-50%) scale(1.05)}
 
+/* ハンバーガーボタン：右セーフエリアの中央・画面の垂直中央（top:50dvh）に配置 */
 .hamburger{
   position:absolute;
   right:calc(var(--safe-x) / 2);
@@ -149,6 +175,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   width:48px;height:48px;
   z-index:501;
 }
+/* ハンバーガーの3本線。.openクラスで上下の線が45度回転して×印になる */
 .hamburger span{
   display:block;width:34px;height:1.8px;background:var(--text);
   position:absolute;left:7px;
@@ -161,6 +188,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){top:24px;transform:rotate(-45deg);background:var(--accent)}
 
+/* PC版HOMEの右側ナビリンク（Works/Profile/Skill/Contact）。HOMEセクションのみ表示 */
 .top-nav{
   position:absolute;
   right:14vw;top:50dvh;
@@ -178,6 +206,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   opacity:0;
   transform:translateY(8px);
 }
+/* ローダー完了後に上から順番にフェードアップして登場（0.06秒ずつずらしてスタッガー） */
 body.loaded .top-nav a{
   animation:tnFadeUp .45s var(--eoe) forwards;
 }
@@ -190,6 +219,8 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 }
 .top-nav a:hover{letter-spacing:.16em}
 
+/* ─── SPのフルスクリーンメニュー ───
+   ハンバーガーを押すと.openでフェードイン。backdrop-filterで背景をぼかす。z-index:500 ─── */
 .mob-menu{
   display:flex;
   position:fixed;inset:0;
@@ -217,14 +248,19 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 .mob-menu.open a:nth-child(5){transition-delay:.5s}
 .mob-menu a:hover{color:var(--accent);letter-spacing:.22em}
 
-/* ═══ TOP ═══ */
+/* ══════════════════════════════════════
+   HOMEセクション
+══════════════════════════════════════ *//* ═══ TOP ═══ */
+/* 背景写真のエリア（未設定なら透明） */
 .top-photo{position:absolute;inset:0}
+/* SHOTA INOUE＋タグテキストのブロック。左端はセーフエリア、垂直は50dvhで中央に */
 .top-content{
   position:absolute;
   left:var(--safe-x);top:50dvh;
   transform:translateY(-50%);
   z-index:2;
 }
+/* 名前テキスト。MuseoModerno ウェイト200で細く上品に */
 .top-name{
   font-family:var(--ff-disp);
   font-weight:200;
@@ -234,8 +270,10 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 }
 .top-name .lw{overflow:hidden;display:block}
 .top-name .li{display:block;transform:translateY(110%)}
+/* ローダー完了（body.loaded付与）後、テキストが下からスライドアップして登場 */
 body.loaded .top-name .li{animation:lineUp .7s var(--eoe) .1s forwards}
 body.loaded .top-name .li.d2{animation-delay:.18s}
+/* 肩書きタグ群（Graphic・Branding等）。ローダー後にフェードイン */
 .top-tags{margin-top:1.4rem;opacity:0}
 body.loaded .top-tags{animation:fadeIn .45s ease .35s forwards}
 .top-tags p{
@@ -246,6 +284,7 @@ body.loaded .top-tags{animation:fadeIn .45s ease .35s forwards}
 .top-tags p.main{color:var(--accent)}
 .top-tags p.italic{font-style:italic;color:var(--text);font-weight:300}
 
+/* 「SCROLL」の文字と縦の光るバー。画面下端に固定。ローダー後にフェードイン */
 .scroll-ind{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.55rem;z-index:2;opacity:0}
 body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .scroll-ind span{font-family:var(--ff-disp);font-weight:300;font-size:11px;letter-spacing:.18em;color:var(--text);text-transform:uppercase}
@@ -255,13 +294,17 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 @keyframes lineUp{from{transform:translateY(110%)}to{transform:translateY(0)}}
 @keyframes fadeIn{to{opacity:1}}
 
-/* ═══ WORKS ═══ */
+/* ══════════════════════════════════════
+   WORKSセクション
+══════════════════════════════════════ *//* ═══ WORKS ═══ */
+/* 背景の3行スライドショーエリア */
 .works-bg{
   position:absolute;inset:0;z-index:1;
   display:grid;grid-template-rows:1fr 1fr 1fr;
 }
 .works-bg-row{overflow:hidden;position:relative;display:flex;}
 .works-bg-track{display:flex;flex-shrink:0;width:max-content;}
+/* 1行目と3行目は左方向、2行目は右方向に流れて奥行きを演出 */
 .works-bg-track.dir-left{animation:slideLeft 40s linear infinite}
 .works-bg-track.dir-right{animation:slideRight 40s linear infinite}
 .works-bg-cell{
@@ -278,11 +321,14 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .works-bg-cell.has-img::after{display:none}
 @keyframes slideLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes slideRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+/* 背景画像の上に重ねる半透明オーバーレイ。テキストを読みやすくする */
 .works-dark{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,.62)}
+/* WORKS見出し・テキスト・View allボタンの中央コンテンツエリア */
 .works-center{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16dvh 0 16dvh}
 .works-upper{display:flex;flex-direction:column;align-items:center;gap:1.1rem}
 .works-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1}
 .works-sub{font-family:var(--ff-jp);font-weight:300;font-size:12.5px;letter-spacing:.08em;color:var(--text);text-align:center;line-height:2.05}
+/* View allボタン。ホバーで白い背景が下からスライドアップ。マウスを離すと0.5秒遅延で戻る */
 .works-viewall{
   display:inline-block;border:1px solid var(--text);
   color:var(--text);font-family:var(--ff-sm);font-weight:400;
@@ -301,10 +347,14 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .works-viewall:hover{color:var(--bg);transition:color .3s ease 0s}
 .works-viewall:hover::before{transform:translateY(0);transition:transform .35s var(--eoe) 0s}
 
-/* ═══ PROFILE ═══ */
+/* ══════════════════════════════════════
+   PROFILEセクション
+══════════════════════════════════════ *//* ═══ PROFILE ═══ */
 #profile{position:relative}
+/* PC版の左半分の写真エリア。右50%は本文エリア */
 .profile-bg{position:absolute;left:0;top:0;bottom:0;width:50%;z-index:1}
 .profile-bg.has-slides::after,.profile-sp-bg.has-slides::after{display:none}
+/* CMSでアップロードした複数枚の写真をクロスフェードで切り替えるスライドショー */
 .profile-slide{
   position:absolute;inset:0;
   background-size:cover;background-position:center;
@@ -313,6 +363,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   z-index:1;
 }
 .profile-slide.active{opacity:1;z-index:2}
+/* PC版の縦書き「PROFILE」タイトル。左右の境界に重なるように配置 */
 .profile-title-center{
   position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -324,6 +375,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   color:var(--accent);line-height:1;
   padding:0 .3rem;
 }
+/* PC版の右半分の本文エリア。右端はセーフエリア分の余白を確保 */
 .profile-right{
   position:absolute;right:0;top:0;bottom:0;
   width:50%;z-index:2;
@@ -340,6 +392,8 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .profile-text{font-family:var(--ff-jp);font-size:12.5px;line-height:2.05;color:var(--text);margin-bottom:1.3rem}
 .profile-text-accent{font-family:var(--ff-jp);font-size:12.5px;line-height:2.05;color:var(--text)}
 
+/* 「そこに、ちょっぴりの遊び心を添えて。」のインタラクティブなテキスト
+   3秒ごとに自動でゆらゆらして「押せるよ」とヒント。タップするとアクセントカラーが変わり花火が散る */
 .playful{
   display:inline-block;
   position:relative;
@@ -353,6 +407,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .playful:hover{letter-spacing:.04em;}
 .playful.poked{animation:playfulPoke .9s var(--eoe) forwards;pointer-events:none;}
 
+/* タップ時：色を変えながらぷるぷる揺れてから元に戻るアニメーション */
 @keyframes playfulPoke{
   0%  {color:var(--text);  transform:rotate(0) scale(1)}
   10% {color:var(--playful-c, var(--accent));transform:rotate(-1.5deg) scale(1.04)}
@@ -361,6 +416,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   60% {color:var(--playful-c, var(--accent));transform:rotate(0) scale(1)}
   100%{color:var(--text);  transform:rotate(0) scale(1)}
 }
+/* 3秒周期で自動的にかすかに揺れる「ヒント」アニメーション */
 @keyframes playfulHint{
   0%,82%,100%{transform:rotate(0)}
   85% {transform:rotate(-.9deg)}
@@ -368,6 +424,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   91% {transform:rotate(-.4deg)}
   95% {transform:rotate(0)}
 }
+/* タップ時に飛び散る✦などのパーティクル。CSS変数で方向・角度をランダムに設定 */
 .spark{position:fixed;pointer-events:none;z-index:9000;font-size:14px;color:var(--accent);opacity:0;user-select:none;will-change:transform,opacity;}
 .spark.fly{animation:sparkFly 1.1s var(--eoe) forwards;}
 @keyframes sparkFly{
@@ -380,10 +437,14 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 }
 .profile-sp-hero{display:none}
 
-/* ═══ SKILL ═══ */
+/* ══════════════════════════════════════
+   SKILLセクション
+══════════════════════════════════════ *//* ═══ SKILL ═══ */
 #skill{position:relative}
+/* SKILLの背景。上下に余白を空けた中央帯にメッシュグラデーションを配置 */
 .skill-bg{position:absolute;left:0;right:0;top:15vh;bottom:15vh;z-index:1;}
 .skill-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.55)}
+/* SKILLの全コンテンツ。PCは左右2列グリッド、SPは縦並びで dvh 基準の垂直中央 */
 .skill-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:1fr 1fr;}
 .skill-left{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 3vw 0 14vw;}
 .skill-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;margin-bottom:1.5rem;}
@@ -391,17 +452,23 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .skill-vline{position:absolute;right:0;top:50%;transform:translateY(-50%);width:1px;height:60%;background:var(--text);opacity:.65;}
 .skill-right{display:flex;flex-direction:column;justify-content:center;align-items:stretch;padding:0 var(--safe-x) 0 4vw;gap:1.8rem;}
 .sg-head{font-family:var(--ff-sm);font-weight:400;font-size:clamp(18px,1.7vw,24px);letter-spacing:.04em;color:var(--accent);margin-bottom:.85rem;text-transform:none;}
+/* Tool：カプセル型スキルの横並びリスト */
 .sk-tool{display:flex;flex-wrap:wrap;gap:8px 10px;width:100%}
+/* Design：四角型スキルの3列グリッド */
 .sk-design{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+/* pillとboxの共通スタイル：フォント・枠線・高さ30pxを統一 */
 .sk-tool .sk-pill,.sk-design .sk-box{font-family:var(--ff-sm);font-weight:400;font-size:12px;letter-spacing:.04em;border:1.5px solid rgba(225,226,226,.4);color:var(--text);background:none;height:30px;display:flex;align-items:center;justify-content:center;}
 .sk-tool .sk-pill{letter-spacing:.06em;padding:0 10px;border-radius:40px;flex:0 0 auto;width:calc(25% - 7.5px);min-width:0;}
 .sk-design .sk-box{padding:0 8px;text-align:center;}
 .sk-tool .br-row ~ .sk-pill{width:calc(25% - 7.5px);}
 .sk-tool .br-row{flex-basis:100%;height:0}
+/* .hiクラス（得意スキル）：枠線と文字色がアクセントカラーに */
 .sk-tool .sk-pill.hi,.sk-design .sk-box.hi{border-color:var(--accent);color:var(--accent);}
 .strategy-text{font-family:var(--ff-jp);font-size:12px;line-height:2.05;color:var(--text)}
 
-/* ═══ CONTACT ═══ */
+/* ══════════════════════════════════════
+   CONTACTセクション
+══════════════════════════════════════ *//* ═══ CONTACT ═══ */
 #contact{display:flex;flex-direction:column;position:relative}
 .contact-body{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:center;padding:5vh 5vw 0;}
 .contact-stack{position:relative;display:flex;flex-direction:column;align-items:center;width:min(460px,88vw);}
@@ -410,9 +477,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 .contact-img{width:min(420px,82vw);aspect-ratio:1/1;background:var(--ph);position:relative;z-index:2;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .contact-img::before{content:'';position:absolute;inset:0;background:rgba(35,36,36,.55);z-index:1}
 .contact-img::after{content:'PHOTO';position:relative;z-index:2;font-family:var(--ff-sm);font-size:12px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.3);text-transform:uppercase;}
+/* メールボタン。PCはCONTACT表示中（body.in-contact）のみ表示。SPは常時表示 */
 .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;gap:1.1rem;font-family:var(--ff-sm);font-weight:300;font-size:clamp(20px,2.2vw,30px);letter-spacing:.03em;padding:30px 80px;border-radius:90px;text-decoration:none;transition:background .25s,color .25s,transform .25s,opacity .3s;white-space:nowrap;opacity:0;pointer-events:none;}
+/* CONTACTセクションが画面に入ったら（IntersectionObserverで検知）ボタンを表示 */
 body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .contact-email-btn:hover{background:var(--accent);transform:translate(-50%,-50%) scale(1.04)}
+/* フッター：フッター背景色bg2で下に貼り付く */
 .contact-footer{position:relative;z-index:3;flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3vw;}
 .cf-links{display:flex;gap:3rem}
 .cf-links a{font-family:var(--ff-disp);font-weight:400;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);text-decoration:none;transition:color .2s;}
@@ -420,21 +490,28 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .footer-logo{width:34px;height:34px;background:#3a3b3b;position:relative;overflow:hidden;}
 .footer-logo::after{content:'LOGO';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--ff-sm);font-size:7px;font-weight:400;letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;}
 
-/* ═══ ALL WORKS OVERLAY ═══ */
+/* ══════════════════════════════════════
+   WORKS一覧オーバーレイ
+══════════════════════════════════════ *//* ═══ ALL WORKS OVERLAY ═══ */
+/* View allを押すと表示される全画面オーバーレイ。.openクラスでフェードイン。SPはblock+scroll */
 #works-all{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;overflow:hidden;min-height:100dvh;}
 #works-all.open{opacity:1;visibility:visible}
+/* PCは「< Back to HOME」を左上に固定。SPは static（スクロールに乗る、固定なし）*/
 .wa-back{position:fixed;top:1.6rem;left:var(--safe-x);z-index:50;display:inline-flex;align-items:center;gap:.6rem;font-family:var(--ff-disp);font-weight:400;font-size:13px;letter-spacing:.16em;color:var(--text-dim);text-decoration:none;transition:color .25s,gap .3s var(--eoe);}
 .wa-back:hover{color:var(--accent);gap:.9rem}
 .wa-back::before{content:'';width:8px;height:8px;border-left:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:border-color .25s;}
 .wa-body{flex:1;overflow-y:scroll;padding:5rem 0 3rem;scrollbar-width:thin;scrollbar-color:var(--text-dim) transparent;}
 .wa-category{margin-bottom:0;padding-top:3.2rem}
+/* カテゴリ名（Branding/Web等）。左端からアクセントカラーの線が伸びて始まる */
 .wa-cat-label{display:flex;align-items:center;gap:1.2rem;font-family:var(--ff-sm);font-size:clamp(13px,1.5vw,17px);font-weight:500;letter-spacing:.04em;color:var(--text);margin-bottom:1rem;text-transform:none;}
 .wa-cat-label::before{content:'';width:calc(var(--safe-x) - 1rem);height:1.5px;background:var(--accent);flex-shrink:0;}
+/* 作品カードのグリッド。PCは2列、SPは1列 */
 .wa-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;}
 .wa-card{position:relative;overflow:hidden;background:var(--ph);border:none;aspect-ratio:21/9;cursor:pointer;}
 .wa-card-img{position:absolute;inset:0}
 .wa-card-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--ph);}
 .wa-card-img-ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;letter-spacing:.22em;color:rgba(225,226,226,.2);text-transform:uppercase;}
+/* カードのテキストオーバーレイ。PCはホバー、SPはタップで表示 */
 .wa-card-body{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,0);display:flex;flex-direction:column;justify-content:flex-end;padding:1.2rem 1.4rem;opacity:0;transition:background .3s,opacity .3s;}
 @media (hover:hover) and (min-width:901px){
   .wa-card:hover .wa-card-body{background:rgba(35,36,36,.82);opacity:1;}
@@ -449,12 +526,16 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 @media (max-width:900px){.wa-card.active .wa-card-body{padding-right:4.2rem;padding-bottom:1rem;}.wa-card.active .wa-card-desc{padding-right:0;}}
 .wa-card-title{font-family:var(--ff-jp);font-size:clamp(15px,1.8vw,22px);font-weight:300;color:var(--text);line-height:1.45;margin-bottom:.55rem;}
 .wa-card-desc{font-family:var(--ff-jp);font-size:11.5px;line-height:1.7;color:var(--text);}
+/* 一覧カードの登場アニメーション：ぼかし＋拡大から鮮明＋等倍にフォーカスが合う演出 */
 .wa-fade{opacity:0;filter:blur(18px);transform:scale(1.06);transition:opacity .7s ease,filter .9s var(--eoe),transform 1s var(--eoe);will-change:filter,transform,opacity;}
 .wa-fade.in{opacity:1;filter:blur(0);transform:scale(1);}
+/* スクロールで画面に入った時の登場アニメーション：下からふわっと浮き上がる */
 .rv{opacity:0;transform:translateY(16px);transition:opacity .65s ease,transform .65s var(--eoe)}
 .rv.vis{opacity:1;transform:translateY(0)}
 
-/* ═══ RESPONSIVE ═══ */
+/* ══════════════════════════════════════
+   レスポンシブ（900px以下 = スマホ版）
+══════════════════════════════════════ *//* ═══ RESPONSIVE ═══ */
 @media(max-width:900px){
   .nav-fixed{position:fixed;inset:auto;top:0;left:0;right:0;bottom:auto;transform:none;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;height:auto;z-index:501;opacity:1;visibility:visible;}
   .nav-logo{all:unset;display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#3a3b3b;cursor:pointer;overflow:hidden;position:relative;flex-shrink:0;pointer-events:auto;z-index:501;transform:none !important;}
@@ -527,10 +608,11 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
   .footer-logo::after{font-size:5.5px}
 
-  /* SPではmesh-containerを非表示にして負荷軽減 */
+  /* SKILL/CONTACTの背景メッシュグラデーション：SPではアニメが重いため非表示 */  /* SPではmesh-containerを非表示にして負荷軽減 */
   .mesh-container{display:none;}
   
-  .wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
+  /* SP：Back to HOMEはスクロールに乗る（固定なし）。staticで通常フローに */
+.wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
   #works-all{display:block; overflow-y:scroll; overflow-x:hidden}
   .wa-body{padding-top:0; overflow-y:visible; overflow-x:hidden; padding-bottom:9rem}
   .wa-grid{grid-template-columns:1fr;gap:3px}
@@ -541,6 +623,8 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .wa-cat-label::before{width:4vw;min-width:24px;height:2.5px}
 }
 @media(max-width:520px){.cf-links{gap:1.4rem}.contact-img{width:min(240px,65vw)}}
+/* ─── WORKS一覧から戻った時のHOMEちらつき防止 ───
+   ?works=1のURLでアクセスされた時、WORKS一覧が開くまでHOMEを非表示にする ─── */
 html.skip-opening{background:var(--bg)}
 html.skip-opening body > *:not(#works-all):not(canvas):not(.cursor):not(.nav-fixed):not(.mob-menu){visibility:hidden}
 html.skip-opening #works-all{opacity:1 !important;visibility:visible !important;transition:none}
@@ -687,6 +771,9 @@ if(new URLSearchParams(window.location.search).get('works') === '1'){
 </div>
 
 <script>
+/* ─── ローダー制御 ───
+   ?works=1のURLの場合はローダーをスキップしてWORKS一覧を即表示（HOMEチラつき防止）
+   通常アクセスは1秒後にローダーをフェードアウトしてサイトを表示 ─── */
 const loader = document.getElementById('loader');
 let isLoading = true;
 const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
@@ -712,22 +799,26 @@ if(skipOpening){
   });
 }
 
+/* ─── カスタムカーソルの追従処理 ─── */
 const cur = document.getElementById('cur');
 let mx=0,my=0;
 document.addEventListener('mousemove', e => {
   mx=e.clientX; my=e.clientY;
   cur.style.left=mx+'px'; cur.style.top=my+'px';
 });
+/* リンク・ボタン等にホバーした時にカーソルを拡大 */
 document.querySelectorAll('a,button,.wa-card,.nav-logo,.playful').forEach(el => {
   el.addEventListener('mouseenter', () => cur.classList.add('expanded'));
   el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
 });
 
+/* ─── スクロールスナップとナビの表示制御に使う要素を取得 ─── */
 const navFixed = document.getElementById('navFixed');
 const topSec = document.getElementById('top');
 const getSecs = () => [...document.querySelectorAll('section')];
 const isMobile = () => window.innerWidth <= 900;
 
+/* HOMEセクションの表示/非表示を監視。PCではHOMEが見えている時はナビを非表示にする */
 new IntersectionObserver(entries => {
   entries.forEach(e => {
     if(e.target.id === 'top' && !isMobile()){
@@ -741,22 +832,26 @@ new IntersectionObserver(entries => {
   });
 }, {threshold:[0, .5, 1]}).observe(topSec);
 
+/* SP（900px以下）では常時ナビを表示。リサイズ時も再確認 */
 if(isMobile()) navFixed.classList.add('show');
 window.addEventListener('resize', () => {
   if(isMobile()) navFixed.classList.add('show');
 });
 
+/* CONTACTセクションが30%以上見えたらbody.in-contactを付与→メールボタンが表示される */
 new IntersectionObserver(entries => {
   entries.forEach(e => {
     document.body.classList.toggle('in-contact', e.isIntersecting && e.intersectionRatio > 0.3);
   });
 }, {threshold:[0,.3,1]}).observe(document.getElementById('contact'));
 
+/* ─── ハンバーガーメニューの開閉処理 ─── */
 const ham = document.getElementById('ham');
 const mob = document.getElementById('mobMenu');
 ham.addEventListener('click', () => { const o=mob.classList.toggle('open'); ham.classList.toggle('open',o); });
 function closeMob(){ mob.classList.remove('open'); ham.classList.remove('open'); }
 
+/* ロゴクリック：WORKS一覧が開いていれば閉じてからHOMEへスナップスクロール */
 document.getElementById('navLogoBtn').addEventListener('click', () => {
   if(worksAll && worksAll.classList.contains('open')){
     worksAll.classList.remove('open');
@@ -767,6 +862,9 @@ document.getElementById('navLogoBtn').addEventListener('click', () => {
   snapTo(topSec.offsetTop);
 });
 
+/* ─── スクロールスナップ処理 ───
+   マウスホイール/タッチスワイプで、次/前のセクションへなめらかにジャンプする
+   eie（exponentialInOut）関数でイージングを計算 ─── */
 const htmlEl = document.documentElement;
 const SNAP_DUR = 820;
 const eie = t => t===0?0:t===1?1:t<.5?Math.pow(2,20*t-10)/2:(2-Math.pow(2,-20*t+10))/2;
@@ -784,6 +882,8 @@ function snapTo(y,dur=SNAP_DUR){
   (function s(now){ const p=Math.min((now-t0)/dur,1); htmlEl.scrollTop=sy+dist*eie(p); if(p<1)requestAnimationFrame(s); else{htmlEl.scrollTop=y;snapping=false;} })(performance.now());
 }
 
+/* ─── マウスホイールでのスクロールスナップ ───
+   deltaY（スクロール量）を蓄積し、閾値(18)を超えたら次/前セクションへスナップ ─── */
 let wa=0,wt=null;
 htmlEl.addEventListener('wheel', e => {
   if(worksAll.classList.contains('open'))return;
@@ -792,26 +892,33 @@ htmlEl.addEventListener('wheel', e => {
   wt=setTimeout(()=>{ if(Math.abs(wa)<18){wa=0;return;} const d=wa>0?1:-1; wa=0; snapTo(nearest(htmlEl.scrollTop,d)); },3);
 },{passive:false});
 
+/* ─── タッチ（スマホ）でのスクロールスナップ ───
+   スワイプ量が30px以上で次/前セクションへスナップ。WORKS一覧が開いている間は無効 ─── */
 let tys=0,tss=0;
 const isT=()=>window.matchMedia('(hover:none)').matches;
 htmlEl.addEventListener('touchstart',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; tys=e.touches[0].clientY; tss=htmlEl.scrollTop; },{passive:false});
 htmlEl.addEventListener('touchmove',e=>{ if(isLoading){e.preventDefault();return;} if(worksAll.classList.contains('open'))return; if(!isT())return; e.preventDefault(); },{passive:false});
 htmlEl.addEventListener('touchend',e=>{ if(isLoading)return; if(worksAll.classList.contains('open'))return; if(!isT())return; if(snapping)return; const dy=tys-e.changedTouches[0].clientY; if(Math.abs(dy)<30)return; snapTo(nearest(tss,dy>0?1:-1)); },{passive:true});
 
+/* フッターリンク・右ナビのリンクをクリックした時、対象セクションへスナップスクロール */
 document.querySelectorAll('.top-nav a, .cf-links a').forEach(a=>{
   a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); const t=document.querySelector(h); if(t)snapTo(t.offsetTop); });
 });
+/* SPモバイルメニューのリンク：メニューを閉じてから0.06秒後にスナップスクロール */
 document.querySelectorAll('.mob-link').forEach(a=>{
   a.addEventListener('click',e=>{ const h=a.getAttribute('href'); if(!h||!h.startsWith('#'))return; e.preventDefault(); closeMob(); const t=document.querySelector(h); if(t)setTimeout(()=>snapTo(t.offsetTop),60); });
 });
 
+/* ─── WORKS一覧オーバーレイの開閉処理 ─── */
 const worksAll = document.getElementById('works-all');
 function openWorksAll(){
   worksAll.classList.add('open');
   document.body.style.overflow='hidden';
   if(!isMobile()) navFixed.classList.add('show');
 }
+/* View allボタン：WORKS一覧を開く */
 document.getElementById('viewAllBtn').addEventListener('click',e=>{ e.preventDefault(); openWorksAll(); });
+/* Back to HOMEボタン：WORKS一覧を閉じてWORKSセクションへスナップスクロール */
 document.getElementById('waBack').addEventListener('click',e=>{
   e.preventDefault();
   worksAll.classList.remove('open');
@@ -822,11 +929,13 @@ document.getElementById('waBack').addEventListener('click',e=>{
   if(!isMobile()) navFixed.classList.add('show');
 });
 
+/* ?works=1のURLの場合：即WORKS一覧を開き、skip-openingクラスを解除して通常表示に戻す */
 if(skipOpening){
   openWorksAll();
   document.documentElement.classList.remove('skip-opening');
 }
 
+/* ─── スクロールで要素が画面に入った時の登場アニメーション（.rv要素） ─── */
 const rvObs = new IntersectionObserver((entries,obs)=>{
   entries.forEach((e,i)=>{
     if(e.isIntersecting){
@@ -837,6 +946,9 @@ const rvObs = new IntersectionObserver((entries,obs)=>{
 },{threshold:.15});
 document.querySelectorAll('.rv').forEach(el=>rvObs.observe(el));
 
+/* ─── 「そこに、ちょっぴりの遊び心を添えて。」のインタラクション処理 ───
+   タップするたびにアクセントカラーを5色サイクル。サイト全体の色が変わる
+   キラキラパーティクルが飛び散るアニメーションも合わせて発動 ─── */
 const playful = document.getElementById('playful');
 if(playful){
   const sparkChars = ['✦','✧','＊','✦','◦','✺'];
@@ -882,7 +994,9 @@ if(playful){
   playful.addEventListener('click', burst);
 }
 
-/* 背景ドットエフェクト */
+/* ─── 背景ハーフトーンドットエフェクト（Canvas描画） ───
+   マウス/タッチの位置に反応してドットが膨らむ波紋エフェクト
+   PC：0.12のイージングで滑らかに追従。SP：遅延なしで即時反映 ─── *//* 背景ドットエフェクト */
 (() => {
   const canvas = document.getElementById('dotsCanvas');
   if(!canvas) return;
@@ -981,6 +1095,9 @@ if(playful){
   requestAnimationFrame(frame);
 })();
 
+/* ─── データ管理 ───
+   data.jsonが読めない場合のフォールバック用デフォルトデータ（作品一覧）
+   実際の表示はloadSiteData()でdata.jsonまたはlocalStorageから上書きされる ─── */
 const DEFAULT_WORKS_DATA = [
   { cat:'Branding', items:[
     {id:'sotoya-rebrand',  tag:'Branding',        title:'SOTOYA リブランディング CI 開発', desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'},
@@ -1014,6 +1131,12 @@ let WORKS_DATA = DEFAULT_WORKS_DATA;
 let SITE_PROFILE = { images: [] };
 let SITE_LOGO = { src: '' };
 
+/* ─── サイトデータの読み込み処理 ───
+   優先順位：
+   1. ?preview=1のURL → localStorageのCMS編集中データ（最新のプレビュー）
+   2. data.json（本番データ）
+   3. localStorage（フォールバック）
+   ─── */
 async function loadSiteData(){
   const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
   if(isPreview){
@@ -1045,6 +1168,9 @@ async function loadSiteData(){
   applyLogo();
 }
 
+/* ─── ロゴ画像の適用処理 ───
+   CMSでアップロードしたロゴをナビ・フッター・ローダー・ファビコン全てに反映
+   ─── */
 function applyLogo(){
   if(!SITE_LOGO || !SITE_LOGO.src) return;
   const src = SITE_LOGO.src;
@@ -1056,6 +1182,8 @@ function applyLogo(){
   link.href = src;
 }
 
+/* ─── WORKSセクション背景スライドへの画像適用 ───
+   CMSのHome BG Slidesが設定されていればそれを使用。なければ各作品の1枚目を使用 ─── */
 function applyWorksBg(){
   let sources = [];
   if(window._SITE_HOMEBG && window._SITE_HOMEBG.images && window._SITE_HOMEBG.images.length){ sources = window._SITE_HOMEBG.images.map(i => i.src); }
@@ -1065,6 +1193,9 @@ function applyWorksBg(){
   cells.forEach((cell, i) => { const src = sources[i % sources.length]; cell.style.backgroundImage = `url("${src}")`; cell.style.backgroundSize = 'cover'; cell.style.backgroundPosition = 'center'; cell.classList.add('has-img'); });
 }
 
+/* ─── WORKS一覧カードの生成処理 ───
+   WORKS_DATAをもとにカテゴリ→カードの順で動的にHTMLを生成
+   サムネイルはCMSでアップロードした画像の1枚目を使用 ─── */
 function renderWorksList(){
   try { localStorage.setItem('worksData', JSON.stringify(WORKS_DATA)); } catch(e){}
   const waGrid = document.getElementById('waGridContainer');
@@ -1097,6 +1228,8 @@ function renderWorksList(){
   });
 }
 
+/* ─── PROFILEスライドショーの処理 ───
+   CMSのProfile画像を4秒ごとにクロスフェードで切り替え。PC・SP両エリアに適用 ─── */
 function renderProfileSlideshow(){
   const images = SITE_PROFILE.images || [];
   if(images.length === 0) return;
@@ -1112,6 +1245,7 @@ function renderProfileSlideshow(){
   }
 }
 
+/* ─── 初期化：データ読み込み後に各表示処理を実行 ─── */
 (async () => {
   await loadSiteData();
   renderWorksList();
@@ -1119,6 +1253,7 @@ function renderProfileSlideshow(){
   applyWorksBg();
 })();
 
+/* WORKS一覧のカード以外をタップしたらactiveクラス（ホバー表示）を解除 */
 document.querySelector('.wa-body').addEventListener('click', e => { if(!e.target.closest('.wa-card')){ document.querySelectorAll('.wa-card.active').forEach(c => c.classList.remove('active')); } });
 </script>
 </body>
