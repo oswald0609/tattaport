@@ -38,7 +38,6 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 
 /* 画像未設定の箇所に表示するグレーのプレースホルダー。::afterでPHOTOの文字を薄く表示 */
 .ph{background:var(--ph);position:relative;display:flex;align-items:center;justify-content:center}
-.ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:11px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.22);text-transform:uppercase;position:absolute}
 
 /* MESH GRADIENT — フィルターを使わない軽量版 */
 /* ─── メッシュグラデーション（SKILLとCONTACTの背景装飾） ───
@@ -93,23 +92,12 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
   transform:scale(0);
   animation:ldZoomIn .55s var(--eoe) .1s forwards;
 }
-.ld-logo-box::after{
-  content:'LOGO';
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:var(--ff-sm);font-size:9px;font-weight:400;
-  letter-spacing:.22em;color:rgba(225,226,226,.25);text-transform:uppercase;
-}
 @keyframes ldZoomIn{
   from{transform:scale(0)}
   to{transform:scale(1)}
 }
 #loader.done{pointer-events:none;animation:ldOut .45s var(--eio) forwards}
 @keyframes ldOut{to{opacity:0}}
-
-/* CMSでロゴ画像をアップロードした時、LOGOのプレースホルダー文字を非表示にする */
-.ld-logo-box.has-logo::after,
-.nav-logo.has-logo::after,
-.footer-logo.has-logo::after{display:none}
 
 /* 背景ドットキャンバス */
 /* ─── 背景ハーフトーンドットのキャンバス ───
@@ -191,7 +179,7 @@ section{height:100vh;height:100dvh;position:relative;overflow:hidden;z-index:1;b
 /* PC版HOMEの右側ナビリンク（Works/Profile/Skill/Contact）。HOMEセクションのみ表示 */
 .top-nav{
   position:absolute;
-  right:14vw;top:50dvh;
+  right:13vw;top:50dvh;
   transform:translateY(-50%);
   z-index:50;
   display:flex;flex-direction:column;align-items:flex-end;gap:.9rem;
@@ -287,7 +275,7 @@ body.loaded .top-tags{animation:fadeIn .45s ease .35s forwards}
 /* 「SCROLL」の文字と縦の光るバー。画面下端に固定。ローダー後にフェードイン */
 .scroll-ind{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.55rem;z-index:2;opacity:0}
 body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
-.scroll-ind span{font-family:var(--ff-disp);font-weight:300;font-size:11px;letter-spacing:.18em;color:var(--text);text-transform:uppercase}
+.scroll-ind span{font-family:var(--ff-disp);font-weight:400;font-size:12px;letter-spacing:.12em;color:var(--text);text-transform:uppercase}
 .scroll-line-v{width:2px;height:54px;background:rgba(80,240,210,.18);position:relative;overflow:hidden}
 .scroll-line-v::after{content:'';position:absolute;inset:0;background:var(--accent);animation:slideV 2s ease-in-out infinite 1.4s}
 @keyframes slideV{0%{transform:translateY(-100%)}100%{transform:translateY(220%)}}
@@ -314,10 +302,6 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   display:flex;align-items:center;justify-content:center;
   position:relative;
 }
-.works-bg-cell::after{
-  content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;
-  letter-spacing:.22em;color:rgba(225,226,226,.18);text-transform:uppercase;
-}
 .works-bg-cell.has-img::after{display:none}
 @keyframes slideLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes slideRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -331,7 +315,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 /* View allボタン。ホバーで白い背景が下からスライドアップ。マウスを離すと0.5秒遅延で戻る */
 .works-viewall{
   display:inline-block;border:1px solid var(--text);
-  color:var(--text);font-family:var(--ff-sm);font-weight:400;
+  color:var(--text);font-family:var(--ff-sm);font-weight:460;
   font-size:13px;letter-spacing:.22em;text-transform:uppercase;
   text-decoration:none;padding:18px 72px;
   position:relative;overflow:hidden;
@@ -385,7 +369,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 }
 .profile-right::-webkit-scrollbar{display:none}
 .profile-name{font-family:var(--ff-jp);font-weight:500;font-size:clamp(1.4rem,2.6vw,1.9rem);letter-spacing:.08em;margin-bottom:.3rem;line-height:1}
-.profile-name-en{font-family:var(--ff-sm);font-weight:400;font-size:12px;letter-spacing:.2em;color:var(--accent);margin-bottom:2rem}
+.profile-name-en{font-family:var(--ff-sm);font-weight:400;font-size:12px;letter-spacing:.06em;color:var(--accent);margin-bottom:2rem}
 .profile-meta{display:grid;grid-template-columns:repeat(3,auto);gap:.7rem 2.5rem;margin-bottom:2rem;width:fit-content}
 .pm-label{font-family:var(--ff-sm);font-size:10px;letter-spacing:.1em;color:var(--accent);margin-bottom:.3rem;text-transform:none}
 .pm-val{font-family:var(--ff-jp);font-size:15px;color:var(--text);font-weight:300}
@@ -404,7 +388,7 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
   transform-origin:center;
   animation:playfulHint 3s ease-in-out infinite;
 }
-.playful:hover{letter-spacing:.04em;}
+.playful:hover{letter-spacing:.02em;}
 .playful.poked{animation:playfulPoke .9s var(--eoe) forwards;pointer-events:none;}
 
 /* タップ時：色を変えながらぷるぷる揺れてから元に戻るアニメーション */
@@ -472,13 +456,12 @@ body.loaded .scroll-ind{animation:fadeIn .45s ease .8s forwards}
 #contact{display:flex;flex-direction:column;position:relative}
 .contact-body{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:center;padding:5vh 5vw 0;}
 .contact-stack{position:relative;display:flex;flex-direction:column;align-items:center;width:min(460px,88vw);}
-.contact-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5vw,4.4rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;position:relative;z-index:3;margin-bottom:-0.55em;}
-.contact-sub{position:absolute;top:19%;left:50%;transform:translateX(-50%);font-family:var(--ff-jp);font-size:12.5px;letter-spacing:.08em;color:var(--text);z-index:5;white-space:nowrap;line-height:2.05;margin:0;}
-.contact-img{width:min(420px,82vw);aspect-ratio:1/1;background:var(--ph);position:relative;z-index:2;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.contact-title{font-family:var(--ff-disp);font-weight:200;font-size:clamp(2.4rem,5.5vw,4.6rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;position:relative;z-index:3;margin-bottom:-0.55em;}
+.contact-sub{position:absolute;top:22%;left:50%;transform:translateX(-50%);font-family:var(--ff-jp);font-size:14px;letter-spacing:.08em;color:var(--text);z-index:5;white-space:nowrap;line-height:2.05;margin:0;}
+.contact-img{width:min(400px,82vw);aspect-ratio:1/1;background:var(--ph);position:relative;z-index:2;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .contact-img::before{content:'';position:absolute;inset:0;background:rgba(35,36,36,.55);z-index:1}
-.contact-img::after{content:'PHOTO';position:relative;z-index:2;font-family:var(--ff-sm);font-size:12px;font-weight:400;letter-spacing:.28em;color:rgba(225,226,226,.3);text-transform:uppercase;}
 /* メールボタン。PCはCONTACT表示中（body.in-contact）のみ表示。SPは常時表示 */
-.contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;gap:1.1rem;font-family:var(--ff-sm);font-weight:300;font-size:clamp(20px,2.2vw,30px);letter-spacing:.03em;padding:30px 80px;border-radius:90px;text-decoration:none;transition:background .25s,color .25s,transform .25s,opacity .3s;white-space:nowrap;opacity:0;pointer-events:none;}
+.contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;gap:1.1rem;font-family:var(--ff-sm);font-weight:300;font-size:clamp(25px,2.4vw,40px);letter-spacing:.03em;padding:30px 80px;border-radius:90px;text-decoration:none;transition:background .25s,color .25s,transform .25s,opacity .3s;white-space:nowrap;opacity:0;pointer-events:none;}
 /* CONTACTセクションが画面に入ったら（IntersectionObserverで検知）ボタンを表示 */
 body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .contact-email-btn:hover{background:var(--accent);transform:translate(-50%,-50%) scale(1.04)}
@@ -488,7 +471,6 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .cf-links a{font-family:var(--ff-disp);font-weight:400;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);text-decoration:none;transition:color .2s;}
 .cf-links a:hover{color:var(--accent)}
 .footer-logo{width:34px;height:34px;background:#3a3b3b;position:relative;overflow:hidden;}
-.footer-logo::after{content:'LOGO';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--ff-sm);font-size:7px;font-weight:400;letter-spacing:.2em;color:rgba(225,226,226,.25);text-transform:uppercase;}
 
 /* ══════════════════════════════════════
    WORKS一覧オーバーレイ
@@ -510,7 +492,6 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .wa-card{position:relative;overflow:hidden;background:var(--ph);border:none;aspect-ratio:21/9;cursor:pointer;}
 .wa-card-img{position:absolute;inset:0}
 .wa-card-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--ph);}
-.wa-card-img-ph::after{content:'PHOTO';font-family:var(--ff-sm);font-size:10px;font-weight:400;letter-spacing:.22em;color:rgba(225,226,226,.2);text-transform:uppercase;}
 /* カードのテキストオーバーレイ。PCはホバー、SPはタップで表示 */
 .wa-card-body{position:absolute;inset:0;z-index:2;background:rgba(35,36,36,0);display:flex;flex-direction:column;justify-content:flex-end;padding:1.2rem 1.4rem;opacity:0;transition:background .3s,opacity .3s;}
 @media (hover:hover) and (min-width:901px){
@@ -530,7 +511,7 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
 .wa-fade{opacity:0;filter:blur(18px);transform:scale(1.06);transition:opacity .7s ease,filter .9s var(--eoe),transform 1s var(--eoe);will-change:filter,transform,opacity;}
 .wa-fade.in{opacity:1;filter:blur(0);transform:scale(1);}
 /* スクロールで画面に入った時の登場アニメーション：下からふわっと浮き上がる */
-.rv{opacity:0;transform:translateY(16px);transition:opacity .65s ease,transform .65s var(--eoe)}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .85s ease,transform .85s var(--eoe)}
 .rv.vis{opacity:1;transform:translateY(0)}
 
 /* ══════════════════════════════════════
@@ -557,7 +538,7 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .scroll-ind span{font-size:8.5px}
   .scroll-line-v{height:52px}
   .works-bg-cell{width:50vw}
-  .works-title{font-size:clamp(2rem,8vw,3rem);font-weight:300}
+  .works-title{font-size:clamp(2rem,10vw,3.5rem);font-weight:280}
   .works-sub{font-size:11px;line-height:1.6;padding:0 2rem}
   .works-center{padding:0;justify-content:space-between;display:flex;flex-direction:column;}
   .works-upper{padding-top:22dvh}
@@ -569,47 +550,45 @@ body.in-contact .contact-email-btn{opacity:1;pointer-events:auto}
   .profile-sp-hero{display:flex;flex-shrink:0;height:45dvh;position:relative;overflow:visible}
   .profile-sp-bg{position:absolute;inset:0;overflow:hidden}
   .profile-sp-bg::after{content:'';position:absolute;inset:0;background:rgba(35,36,36,.25)}
-  .profile-sp-title{position:absolute;left:6vw;bottom:0;transform:translateY(50%);z-index:5;font-family:var(--ff-disp);font-weight:300;font-size:clamp(2rem,8vw,3rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;}
+  .profile-sp-title{position:absolute;left:6vw;bottom:0;transform:translateY(50%);z-index:5;font-family:var(--ff-disp);font-weight:280;font-size:clamp(2rem,10vw,3.5rem);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);line-height:1;}
   .profile-right{position:static;width:100%;flex:1;padding:2.6rem 6vw 1.5rem;justify-content:flex-start;overflow-y:auto;}
-  .profile-name{font-size:clamp(1.1rem,5vw,1.45rem);margin-bottom:.2rem}
-  .profile-name-en{font-size:11px;margin-bottom:1rem}
+  .profile-name{font-size:clamp(1.1rem,5vw,1.45rem);letter-spacing:.14em;margin-bottom:.2rem}
+  .profile-name-en{font-size:12px;margin-bottom:1rem}
   .profile-meta{gap:.5rem 1.5rem;margin-bottom:1rem}
   .pm-label{font-size:9px}
   .pm-val{font-size:12px}
-  .profile-text{font-size:11px;line-height:1.6;margin-bottom:.9rem}
-  .profile-text-accent{font-size:11px;line-height:1.6}
+  .profile-text{font-size:12px;line-height:1.6;margin-bottom:.9rem}
+  .profile-text-accent{font-size:12px;line-height:1.6}
   .skill-bg{top:0;bottom:0;background:#1a2a28}
   .skill-inner{display:flex;flex-direction:column;min-height:100dvh;justify-content:center;padding-top:0;}
   .skill-left{padding:2.6rem 6vw 2.4rem;justify-content:flex-start;border-bottom:none;position:relative;}
   .skill-left::after{content:'';position:absolute;left:6vw;right:6vw;bottom:0;height:1px;background:var(--text-dim);}
   .skill-vline{display:none}
-  .skill-title{font-size:clamp(1.8rem,8vw,2.5rem);margin-bottom:.5rem;line-height:1}
-  .skill-desc{font-size:11px;line-height:1.6}
+  .skill-title{font-size:clamp(2rem,10vw,3.5rem);font-weight:280;margin-bottom:.7rem;line-height:1}
+  .skill-desc{font-size:12px;letter-spacing:-.02em;line-height:1.6}
   .skill-right{padding:2.8rem 6vw 1.4rem;gap:1.6rem;justify-content:flex-start;overflow-y:auto}
   .skill-right .rv{width:100%}
-  .sg-head{font-size:18px;margin-bottom:.45rem;line-height:1.2}
+  .sg-head{font-size:18px;margin-bottom:.60rem;line-height:1.2}
   .sk-tool{gap:6px;width:100%}
   .sk-tool .sk-pill{flex:1;min-width:0;justify-content:center}
   .sk-tool .br-row ~ .sk-pill{flex:0 0 auto !important;width:calc(25% - 4.5px) !important;min-width:0 !important;padding:0 !important;justify-content:center;}
   .sk-tool .br-row{flex-basis:100%;height:0}
   .sk-design{grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:none !important;}
-  .sk-tool .sk-pill,.sk-design .sk-box{font-size:10.5px;border-width:1px;line-height:1.3;min-width:0;}
+  .sk-tool .sk-pill,.sk-design .sk-box{font-size:12px;border-width:1px;letter-spacing:-.02em;line-height:1.3;min-width:0;}
   .sk-tool .sk-pill{padding:5px 8px}
-  .sk-design .sk-box{padding:6px 2px;letter-spacing:-.02em;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .strategy-text{font-size:10.5px;line-height:1.65}
+  .sk-design .sk-box{padding:1px 1px;letter-spacing:-.04em;font-size:11px;transform:scaleX(0.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .strategy-text{font-size:12px;line-height:1.65}
   .contact-img{width:min(320px,75vw);position:relative;background:#1a2a28}
-  .contact-title{font-size:clamp(2rem,8vw,3rem)}
-  .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;padding:20px 38px;gap:.7rem;font-weight:500;letter-spacing:.05em;border-radius:60px;opacity:1;pointer-events:auto;}
+  .contact-title{font-size:clamp(2rem,10vw,3.5rem);font-weight:280;}
+  .contact-email-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;padding:22px 36px;gap:.7rem;font-weight:380;letter-spacing:.05em;border-radius:60px;opacity:1;pointer-events:auto;}
   .contact-stack{position:relative}
-  .contact-sub{position:absolute;top:19%;left:50%;transform:translateX(-50%);bottom:auto;z-index:5;text-align:center;white-space:nowrap;font-size:11px;line-height:1.6;margin:0;}
+  .contact-sub{position:absolute;top:20%;left:50%;transform:translateX(-50%);bottom:auto;z-index:5;text-align:center;white-space:nowrap;font-size:12px;line-height:1.6;margin:0;}
   .contact-footer{flex-direction:column;gap:.8rem;padding:1.4rem 5vw 2rem}
   .cf-links{gap:2rem}
-  .cf-links a{font-size:10px;letter-spacing:.14em}
-  .footer-logo{width:20px;height:20px;margin-bottom:.2rem}
-  .footer-logo::after{font-size:5.5px}
+  .cf-links a{font-size:12px;transform:scaleX(0.95);letter-spacing:.06em}
+  .footer-logo{width:20px;height:20px;margin-top:.2rem;margin-bottom:.2rem}
 
-  /* SKILL/CONTACTの背景メッシュグラデーション：SPではアニメが重いため非表示 */  /* SPではmesh-containerを非表示にして負荷軽減 */
-  .mesh-container{display:none;}
+
   
   /* SP：Back to HOMEはスクロールに乗る（固定なし）。staticで通常フローに */
 .wa-back{position:static;top:auto;left:auto;display:inline-flex;margin:5rem 0 1rem 6vw;}
