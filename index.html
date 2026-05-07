@@ -1191,7 +1191,13 @@ function renderWorksList(){
       card.className = 'wa-card wa-fade';
       card.dataset.id = item.id;
       const thumbSrc = item.images && item.images[0] ? item.images[0].src : null;
-      const imgHtml = thumbSrc ? `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<div class="wa-card-img-ph"></div>`;
+      const thumbType = item.images && item.images[0] ? (item.images[0].type || '') : '';
+      const isVideo = thumbType.startsWith('video/');
+      const imgHtml = thumbSrc
+        ? (isVideo
+            ? `<video src="${thumbSrc}" muted loop playsinline autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>`
+            : `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`)
+        : `<div class="wa-card-img-ph"></div>`;
       card.innerHTML = `<div class="wa-card-img">${imgHtml}</div><div class="wa-card-body"><div class="wa-card-title">${item.title}</div><div class="wa-card-desc">${item.desc || ''}</div></div><div class="wa-card-arrow"></div>`;
       grid.appendChild(card);
     });

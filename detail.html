@@ -520,12 +520,26 @@ async function loadAndRender(){
         currentCols = cols;
       }
       const cell = document.createElement('div');
-      const im = document.createElement('img');
-      im.src = img.src;
-      im.alt = '';
-      im.style.cssText = 'width:100%;height:auto;display:block';
+      const mediaType = img.type || '';
+      const isVideo = mediaType.startsWith('video/');
+      let mediaEl;
+      if(isVideo){
+        mediaEl = document.createElement('video');
+        mediaEl.src = img.src;
+        mediaEl.muted = true;
+        mediaEl.loop = true;
+        mediaEl.playsInline = true;
+        mediaEl.autoplay = true;
+        mediaEl.controls = true;
+        mediaEl.style.cssText = 'width:100%;height:auto;display:block';
+      } else {
+        mediaEl = document.createElement('img');
+        mediaEl.src = img.src;
+        mediaEl.alt = '';
+        mediaEl.style.cssText = 'width:100%;height:auto;display:block';
+      }
       cell.style.cssText = 'position:relative';
-      cell.appendChild(im);
+      cell.appendChild(mediaEl);
       row.appendChild(cell);
     });
     /* 新規ロード分のスクロールリビールを再観測 */

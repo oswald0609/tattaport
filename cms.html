@@ -811,7 +811,7 @@ function renderHomeBgImages(){
   up.innerHTML = '＋ Upload';
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,video/*,.gif,.mp4,.webm,.mov';
   input.multiple = true;
   input.style.display = 'none';
   up.appendChild(input);
@@ -821,14 +821,19 @@ function renderHomeBgImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
-        HOME_BG.images.push({src: dataUrl});
+        let dataUrl;
+        if(isAnimatedOrVideo(file)){
+          dataUrl = await readFileAsDataURL(file);
+        } else {
+          dataUrl = await readImageAsResizedDataURL(file, 1600, 0.85);
+        }
+        HOME_BG.images.push({src: dataUrl, type: file.type});
       } catch(err){ toast(`${file.name}失敗`,'error'); }
     }
     save();
     renderHomeBgImages();
     updateHomeBgCount();
-    toast(`${files.length}枚追加しました`);
+    toast(`${files.length}件追加しました`);
   });
 }
 
@@ -864,8 +869,12 @@ function renderProfileImages(){
     card.className = 'img-card';
     card.draggable = true;
     card.dataset.idx = idx;
+    const isVideo = img.type && img.type.startsWith('video/');
+    const mediaPrev = isVideo
+      ? `<video src="${img.src}" muted loop playsinline autoplay style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"></video>`
+      : `<img src="${img.src}" alt="">`;
     card.innerHTML = `
-      <img src="${img.src}" alt="">
+      ${mediaPrev}
       <div class="img-actions">
         <button data-action="del">×</button>
       </div>
@@ -909,7 +918,7 @@ function renderProfileImages(){
   up.innerHTML = '＋ Upload';
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,video/*,.gif,.mp4,.webm,.mov';
   input.multiple = true;
   input.style.display = 'none';
   up.appendChild(input);
@@ -919,8 +928,13 @@ function renderProfileImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
-        PROFILE.images.push({src: dataUrl});
+        let dataUrl;
+        if(isAnimatedOrVideo(file)){
+          dataUrl = await readFileAsDataURL(file);
+        } else {
+          dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
+        }
+        PROFILE.images.push({src: dataUrl, type: file.type});
       } catch(err){
         toast(`${file.name}の読み込み失敗`,'error');
       }
@@ -928,7 +942,7 @@ function renderProfileImages(){
     save();
     renderProfileImages();
     updateProfileCount();
-    toast(`${files.length}枚追加しました`);
+    toast(`${files.length}件追加しました`);
   });
 }
 
@@ -1087,9 +1101,17 @@ function renderImages(){
     card.className = 'img-card';
     card.draggable = true;
     card.dataset.idx = idx;
+    /* GIF・動画はvideoタグ、それ以外はimg */
+    const isVideo = img.type && img.type.startsWith('video/');
+    const mediaPrev = isVideo
+      ? `<video src="${img.src}" muted loop playsinline autoplay style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"></video>`
+      : `<img src="${img.src}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+    const typeBadge = (img.type === 'image/gif') ? '<div class="img-thumb-badge" style="background:#f0c84a;color:#1a1a1a">GIF</div>'
+      : isVideo ? '<div class="img-thumb-badge" style="background:#7c6fff;color:#fff">VIDEO</div>' : '';
     card.innerHTML = `
-      <img src="${img.src}" alt="">
+      ${mediaPrev}
       ${idx === 0 ? '<div class="img-thumb-badge">Thumb</div>' : ''}
+      ${typeBadge}
       <div class="img-actions">
         <button data-action="del">×</button>
       </div>
@@ -1146,7 +1168,7 @@ function renderImages(){
   up.innerHTML = '＋ Upload';
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,video/*,.gif,.mp4,.webm,.mov';
   input.multiple = true;
   input.style.display = 'none';
   up.appendChild(input);
@@ -1156,19 +1178,31 @@ function renderImages(){
     const files = Array.from(e.target.files || []);
     for(const file of files){
       try {
-        const dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
-        it.images.push({src: dataUrl, cols: 1});
+        let dataUrl;
+        if(isAnimatedOrVideo(file)){
+          dataUrl = await readFileAsDataURL(file);  /* GIF・動画はそのまま保存 */
+        } else {
+          dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
+        }
+        it.images.push({src: dataUrl, cols: 1, type: file.type});
       } catch(err){
         toast(`${file.name}の読み込み失敗`,'error');
       }
     }
     save();
     renderImages();
-    toast(`${files.length}枚追加しました`);
+    toast(`${files.length}件追加しました`);
   });
 }
 
 /* 画像をリサイズしてBase64で保存 (WebP優先、未対応ならJPEG) */
+/* GIF・動画はそのまま保存（isAnimatedOrVideo を先に確認すること） */
+function isAnimatedOrVideo(file){
+  /* GIF・動画ファイルはCanvas変換しない（アニメーションが消えるため）*/
+  return file.type === 'image/gif'
+    || file.type.startsWith('video/')
+    || /\.(gif|mp4|webm|mov|avi)$/i.test(file.name);
+}
 function readImageAsResizedDataURL(file, maxW, quality){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1277,7 +1311,11 @@ async function exportZip(){
     if(!m) return;
     const mime = m[1];
     const b64 = m[2];
-    const ext = mime.split('/')[1].replace('jpeg','jpg').replace('svg+xml','svg');
+    let ext = mime.split('/')[1]
+      .replace('jpeg','jpg')
+      .replace('svg+xml','svg')
+      .replace('quicktime','mov');
+    /* video/mp4 → mp4、video/webm → webm、image/gif → gif */
     imgCounter++;
     const fileName = `${prefix}-${imgCounter}.${ext}`;
     imgFolder.file(fileName, b64, {base64: true});
@@ -1341,8 +1379,10 @@ async function importData(file){
         if(!f) return;
         const b64 = await f.async('base64');
         const ext = path.split('.').pop().toLowerCase();
-        const mime = ext === 'jpg' ? 'image/jpeg' : (ext === 'svg' ? 'image/svg+xml' : `image/${ext}`);
+        const mimeMap = {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime',avi:'video/x-msvideo'};
+        const mime = mimeMap[ext] || `image/${ext}`;
         entry.src = `data:${mime};base64,${b64}`;
+        entry.type = mime;
       }
       for(const g of newData){
         for(const it of g.items){
