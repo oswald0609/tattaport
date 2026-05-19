@@ -914,6 +914,8 @@ document.getElementById('waBack').addEventListener('click',e=>{
 if(skipOpening){
   openWorksAll();
   document.documentElement.classList.remove('skip-opening');
+  /* URLから?works=1を削除（リロードで再び開かないように） */
+  history.replaceState(null, '', location.pathname);
 }
 
 /* ─── スクロールで要素が画面に入った時の登場アニメーション（.rv要素） ─── */
