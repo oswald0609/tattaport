@@ -2109,3 +2109,54 @@ body.loaded .top-title-line:nth-child(2) .top-title-image.has-art{
   opacity:.55;
   cursor:wait;
 }
+
+/* =========================================
+   SITE ACCESS：認証済み時のちらつき防止
+   ========================================= */
+
+/* sessionStorageに認証情報がある場合、HTML読込直後からゲートを隠す */
+html.access-session-hint .site-access-gate{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+/* =========================================
+   SITE ACCESS：パスワード表示切替
+   ========================================= */
+
+.site-access-password-wrap{
+  position:relative;
+}
+
+.site-access-password-wrap .site-access-input{
+  padding-right:72px;
+}
+
+.site-access-toggle{
+  position:absolute;
+  top:50%;
+  right:0;
+  width:62px;
+  height:100%;
+  transform:translateY(-50%);
+  border:0;
+  border-left:1px solid rgba(225,226,226,.18);
+  background:transparent;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-family:var(--ff-sm);
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:.08em;
+  transition:color .2s,background .2s;
+}
+
+.site-access-toggle:hover{
+  background:rgba(80,240,210,.08);
+  color:var(--accent);
+}
+
+.site-access-toggle.is-visible{
+  color:var(--accent);
+}
