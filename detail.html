@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Work — SHOTA INOUE</title>
+
+<!-- 認証済みタブでは、読み込み直後のパスワード画面ちらつきを防ぐ -->
+<script>
+try{
+  if(sessionStorage.getItem('portfolioAccessHash')){
+    document.documentElement.classList.add('access-session-hint');
+  }
+}catch(e){}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@200;300;400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/detail.css">
@@ -23,14 +33,25 @@
       PASSWORD
     </label>
 
-    <input
-      class="site-access-input"
-      id="siteAccessPassword"
-      type="password"
-      autocomplete="current-password"
-      placeholder="Password"
-      required
-    >
+    <div class="site-access-password-wrap">
+     <input
+       class="site-access-input"
+       id="siteAccessPassword"
+       type="password"
+       autocomplete="current-password"
+       placeholder="Password"
+       required
+     >
+   
+     <button
+       class="site-access-toggle"
+       type="button"
+       aria-label="パスワードを表示"
+       aria-pressed="false"
+     >
+       SHOW
+     </button>
+   </div>
 
     <p class="site-access-error" id="siteAccessError" aria-live="polite"></p>
 
