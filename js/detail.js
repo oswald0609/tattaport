@@ -110,7 +110,7 @@ async function initSiteAccessGate(){
 
         input.type = isVisible ? 'password' : 'text';
 
-        toggle.textContent = isVisible ? 'SHOW' : 'HIDE';
+        toggle.textContent = isVisible ? '表示' : '非表示';
         toggle.classList.toggle('is-visible', !isVisible);
         toggle.setAttribute('aria-pressed', String(!isVisible));
         toggle.setAttribute(
@@ -197,7 +197,7 @@ async function initSiteAccessGate(){
           input.type = 'password';
 
           if(toggle){
-            toggle.textContent = 'SHOW';
+            toggle.textContent = '表示';
             toggle.classList.remove('is-visible');
             toggle.setAttribute('aria-pressed', 'false');
             toggle.setAttribute('aria-label', 'パスワードを表示');
