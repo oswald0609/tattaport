@@ -10,7 +10,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#1d1e1e;
+  --bg:#181919;
   --panel:#2a2b2b;
   --panel-2:#323333;
   --accent:#50F0D2;
@@ -177,74 +177,57 @@ body{padding-bottom:6rem}
 .btn-danger:hover{background:#c8323c}
 .btn-sm{padding:.4rem .8rem;font-size:10px}
 
-/* IMAGES */
-.images-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:.8rem;
-  margin-top:1rem;
-}
-.img-card{
-  position:relative;
-  aspect-ratio:1/1;
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:4px;
-  overflow:hidden;
-  cursor:grab;
-}
-.img-card.dragging{opacity:.4}
-.img-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-.img-card img{
-  width:100%;height:100%;object-fit:cover;
-  pointer-events:none;
-}
-.img-card .img-actions{
-  position:absolute;top:6px;right:6px;
-  display:flex;gap:4px;opacity:0;
-  transition:opacity .2s;
-}
-.img-card:hover .img-actions{opacity:1}
-.img-card .img-actions button{
-  background:rgba(0,0,0,.7);color:var(--text);
-  border:none;width:26px;height:26px;border-radius:3px;
-  cursor:pointer;font-size:13px;
-  display:flex;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);
-}
-.img-card .img-actions button:hover{background:rgba(240,70,80,.85)}
-.img-card .img-thumb-badge{
-  position:absolute;bottom:6px;left:6px;
-  background:var(--accent);color:var(--bg);
-  font-family:var(--ff-sm);font-size:9px;font-weight:600;
-  letter-spacing:.1em;padding:3px 7px;border-radius:2px;
-  text-transform:uppercase;
-}
-.img-card .img-cols-select{
-  position:absolute;bottom:6px;right:6px;
-  background:rgba(0,0,0,.7);color:var(--text);
-  border:1px solid var(--border);
-  font-size:10px;padding:2px 4px;border-radius:3px;
-  font-family:var(--ff-sm);
-  cursor:pointer;
-}
-
+/* IMAGES — detailページと同じ列構成で編集する */
+.images-grid{display:flex;flex-direction:column;gap:1rem;margin-top:1rem}
+.cms-image-row{display:grid;gap:1rem;align-items:start}
+.cms-image-row.cols-1{grid-template-columns:1fr}
+.cms-image-row.cols-2{grid-template-columns:1fr 1fr}
+.cms-image-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.cms-image-row.incomplete{display:flex;justify-content:center}
+.cms-image-row.cols-2.incomplete > *{width:calc((100% - 1rem) / 2)}
+.cms-image-row.cols-3.incomplete > *{width:calc((100% - 2rem) / 3)}
+.cms-image-cell,.cms-scroll-slide{position:relative;min-width:0;background:var(--bg);border:1px solid var(--border)}
+.cms-image-cell.dragging,.cms-scroll-slide.dragging{opacity:.4}
+.cms-image-cell.drag-over,.cms-scroll-slide.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.cms-scroll-block.dragging{opacity:.4}
+.cms-drop-zone{height:26px;position:relative;display:flex;align-items:center;justify-content:center;cursor:copy;flex-shrink:0}
+.cms-drop-zone::before{content:'';position:absolute;left:0;right:0;top:50%;border-top:1px dashed rgba(225,226,226,.25)}
+.cms-drop-zone::after{content:'この位置へブロックを移動';position:relative;background:var(--panel);padding:0 .65rem;color:var(--text-dim);font:10px var(--ff-sm);letter-spacing:.08em;opacity:.7}
+.cms-drop-zone.drag-over::before{border-color:var(--accent);border-width:2px}
+.cms-drop-zone.drag-over::after{color:var(--accent);opacity:1}
+.cms-image-cell img,.cms-image-cell video,.cms-scroll-slide img,.cms-scroll-slide video{width:100%;height:auto;display:block}
+.cms-image-tools{position:absolute;right:6px;bottom:6px;display:flex;gap:4px;align-items:center;z-index:2}
+.cms-image-tools button,.cms-scroll-tools button{background:rgba(0,0,0,.72);color:var(--text);border:1px solid var(--border);height:27px;border-radius:3px;cursor:pointer;padding:0 8px;font-family:var(--ff-sm);font-size:10px}
+.cms-image-tools button:hover,.cms-scroll-tools button:hover{border-color:var(--accent);color:var(--accent)}
+.cms-image-tools button[data-action="del"]:hover{border-color:var(--danger);color:var(--danger)}
+.cms-image-tools select{background:rgba(0,0,0,.72);color:var(--text);border:1px solid var(--border);font:10px var(--ff-sm);height:27px;border-radius:3px;padding:0 4px;cursor:pointer}
+.cms-image-badge{position:absolute;top:6px;left:6px;background:var(--accent);color:var(--bg);font:600 9px var(--ff-sm);letter-spacing:.1em;padding:3px 7px;border-radius:2px;text-transform:uppercase;z-index:1}
+.cms-scroll-block{position:relative;overflow:hidden;border:1px solid var(--border)}
+.cms-scroll-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.cms-scroll-track::-webkit-scrollbar{display:none}
+.cms-scroll-slide{flex:0 0 100%;scroll-snap-align:start;border:0;border-right:1px solid var(--border)}
+.cms-scroll-tools{position:absolute;left:6px;bottom:6px;display:flex;gap:4px;z-index:3}
+.cms-scroll-count{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.72);color:var(--accent);font:10px var(--ff-sm);letter-spacing:.1em;padding:4px 7px;border-radius:2px;z-index:3}
 .img-upload{
-  display:flex;align-items:center;justify-content:center;
-  aspect-ratio:1/1;
-  background:var(--bg);
-  border:2px dashed var(--border);
-  border-radius:4px;
-  cursor:pointer;
-  font-family:var(--ff-sm);font-size:11px;letter-spacing:.1em;
-  color:var(--text-dim);text-transform:uppercase;
-  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;min-height:120px;
+  background:var(--bg);border:2px dashed var(--border);border-radius:4px;cursor:pointer;
+  font-family:var(--ff-sm);font-size:11px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;transition:all .2s;
 }
+.img-upload button{background:none;border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:1.5rem;width:100%}
 .img-upload:hover{
   border-color:var(--accent);
   color:var(--accent);
   background:rgba(80,240,210,.05);
 }
+/* Profile / Home BG用サムネイル（詳細画像レイアウトとは独立） */
+.img-card{position:relative;aspect-ratio:1/1;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:grab}
+.img-card.dragging{opacity:.4}
+.img-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.img-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.img-card .img-actions{position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:0;transition:opacity .2s}
+.img-card:hover .img-actions{opacity:1}
+.img-card .img-actions button{background:rgba(0,0,0,.7);color:var(--text);border:none;width:26px;height:26px;border-radius:3px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.img-card .img-actions button:hover{background:rgba(240,70,80,.85)}
 
 /* TOAST */
 .toast{
@@ -289,6 +272,25 @@ body{padding-bottom:6rem}
   line-height:1.6;margin-top:.4rem;
 }
 
+/* DnD — リスト行（カテゴリ・作品）共通 */
+.cat-row.dnd-dragging,
+.work-list-item.dnd-dragging{opacity:.35}
+.cat-row.dnd-over,
+.work-list-item.dnd-over{
+  outline:2px solid var(--accent);
+  border-radius:4px;
+  background:rgba(80,240,210,.06);
+}
+/* ドラッグハンドル */
+.dnd-handle{
+  display:flex;align-items:center;justify-content:center;
+  width:18px;flex-shrink:0;
+  color:var(--text-dim);font-size:13px;
+  cursor:grab;user-select:none;
+  padding:0 2px;
+}
+.dnd-handle:active{cursor:grabbing}
+
 /* RESPONSIVE */
 @media(max-width:880px){
   .cms-body{grid-template-columns:1fr;padding:0 1rem}
@@ -297,6 +299,63 @@ body{padding-bottom:6rem}
   .cms-header{padding:1.2rem 1rem}
   .header-actions{gap:.4rem}
   .btn{padding:.55rem .9rem}
+  .images-grid,.cms-image-row{gap:.5rem}
+  .cms-image-row.cols-2{gap:.4rem}
+  .cms-image-row.cols-3{gap:.3rem}
+  .cms-image-row.cols-2.incomplete > *{width:calc((100% - .4rem) / 2)}
+  .cms-image-row.cols-3.incomplete > *{width:calc((100% - .6rem) / 3)}
+}
+/* =========================================
+   TOP TITLE GRAPHIC
+   ========================================= */
+
+.top-title-slots{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;
+}
+
+.top-title-slot{
+  padding:1.2rem;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+}
+
+.top-title-preview{
+  position:relative;
+  min-height:160px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:.8rem;
+  padding:1.2rem;
+  background:#121313;
+  border:1px solid var(--border);
+}
+
+.top-title-preview img{
+  display:block;
+  max-width:100%;
+  max-height:160px;
+  object-fit:contain;
+}
+
+.top-title-empty{
+  min-height:160px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:.8rem;
+  border:1px dashed var(--border);
+  color:var(--text-dim);
+  font-size:12px;
+}
+
+@media(max-width:880px){
+  .top-title-slots{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -325,11 +384,19 @@ body{padding-bottom:6rem}
             Logo <span class="count" id="logoStatus">—</span>
           </button>
         </li>
+        
         <li class="cat-row">
           <button class="cat-item" id="homeBgPageBtn">
             Home BG Slides <span class="count" id="homeBgCount">0</span>
           </button>
         </li>
+
+        <li class="cat-row">
+         <button class="cat-item" id="topTitlePageBtn">
+           Top Title Graphic <span class="count" id="topTitleStatus">0 / 2</span>
+         </button>
+        </li>
+
         <li class="cat-row">
           <button class="cat-item" id="profilePageBtn">
             Profile <span class="count" id="profileImgCount">0</span>
@@ -409,13 +476,28 @@ const STORAGE_KEY = 'worksData';
 const PROFILE_KEY = 'profileData';
 const LOGO_KEY = 'logoData';
 const HOMEBG_KEY = 'homeBgData';
+const TOPTITLE_KEY = 'topTitleData';
+
 let DATA = [];
 let PROFILE = { images: [] };
 let LOGO = { src: '' };
 let HOME_BG = { images: [] };
+
+/* TOPのSHOTA / INOUE作字SVG */
+let TOP_TITLE = {
+  shota: {
+    src:'',
+    type:''
+  },
+  inoue: {
+    src:'',
+    type:''
+  }
+};
+
 let currentCat = null;
 let currentItem = null;
-let currentPage = null;    // 'profile' | 'logo' | 'homebg' | null
+let currentPage = null;    // 'profile' | 'logo' | 'homebg' | 'toptitle' | null
 
 /* ─── UTIL ─── */
 function uid(){
@@ -430,73 +512,263 @@ function toast(msg, type){
   toast._tid = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
+/* ─── IndexedDB ヘルパー ─────────────────────────────────────
+   DB名: portfolioCMS  ストア名: store  キー: string
+   値: any (JSON-serializable)
+   localStorage は使わず全データをここに保存する
+   ──────────────────────────────────────────────────────── */
+const IDB_NAME = 'portfolioCMS';
+const IDB_VER  = 1;
+const IDB_STORE = 'store';
+let _db = null;
+
+function openDB(){
+  if(_db) return Promise.resolve(_db);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => {
+      e.target.result.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function idbGet(key){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function idbSet(key, value){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const req = tx.objectStore(IDB_STORE).put(value, key);
+    req.onsuccess = () => resolve();
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function idbGetAll(){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const store = tx.objectStore(IDB_STORE);
+    const result = {};
+    const reqKeys = store.getAllKeys();
+    reqKeys.onsuccess = () => {
+      const keys = reqKeys.result;
+      let pending = keys.length;
+      if(pending === 0){ resolve(result); return; }
+      keys.forEach(k => {
+        const r = store.get(k);
+        r.onsuccess = () => { result[k] = r.result; if(--pending === 0) resolve(result); };
+        r.onerror   = e => reject(e.target.error);
+      });
+    };
+    reqKeys.onerror = e => reject(e.target.error);
+  });
+}
+
 /* ─── ストレージ ─── */
-function load(){
+async function load(){
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = await idbGet(STORAGE_KEY);
+    const pRaw = await idbGet(PROFILE_KEY);
+    const lRaw = await idbGet(LOGO_KEY);
+    const hRaw = await idbGet(HOMEBG_KEY);
+    const tRaw = await idbGet(TOPTITLE_KEY);
+
+    let migrated = false;
+
+    /* WORKS */
     if(raw){
-      DATA = JSON.parse(raw);
-      DATA.forEach(g => g.items.forEach(it => {
-        if(!it.images) it.images = [];
-        if(!it.meta) it.meta = {};
-        if(!('lead' in it)) it.lead = it.desc || '';
-      }));
+      DATA = raw;
+
+      DATA.forEach(group => {
+        group.items.forEach(item => {
+          if(!item.images) item.images = [];
+          if(!item.meta) item.meta = {};
+          if(!('lead' in item)) item.lead = item.desc || '';
+        });
+      });
     } else {
-      DATA = getDefaultData();
+      const lsRaw = localStorage.getItem(STORAGE_KEY);
+
+      if(lsRaw){
+        DATA = JSON.parse(lsRaw);
+
+        DATA.forEach(group => {
+          group.items.forEach(item => {
+            if(!item.images) item.images = [];
+            if(!item.meta) item.meta = {};
+            if(!('lead' in item)) item.lead = item.desc || '';
+          });
+        });
+
+        migrated = true;
+      } else {
+        DATA = getDefaultData();
+      }
     }
-    const pRaw = localStorage.getItem(PROFILE_KEY);
+
+    /* PROFILE */
     if(pRaw){
-      PROFILE = JSON.parse(pRaw);
-      if(!PROFILE.images) PROFILE.images = [];
+      PROFILE = pRaw;
+    } else {
+      const lsPRaw = localStorage.getItem(PROFILE_KEY);
+
+      if(lsPRaw){
+        PROFILE = JSON.parse(lsPRaw);
+        migrated = true;
+      }
     }
-    const lRaw = localStorage.getItem(LOGO_KEY);
+
+    if(!PROFILE.images) PROFILE.images = [];
+
+    /* LOGO */
     if(lRaw){
-      LOGO = JSON.parse(lRaw);
-      if(!LOGO.src) LOGO.src = '';
+      LOGO = lRaw;
+    } else {
+      const lsLRaw = localStorage.getItem(LOGO_KEY);
+
+      if(lsLRaw){
+        LOGO = JSON.parse(lsLRaw);
+        migrated = true;
+      }
     }
-    const hRaw = localStorage.getItem(HOMEBG_KEY);
+
+    if(!LOGO.src) LOGO.src = '';
+
+    /* HOME BG */
     if(hRaw){
-      HOME_BG = JSON.parse(hRaw);
-      if(!HOME_BG.images) HOME_BG.images = [];
+      HOME_BG = hRaw;
+    } else {
+      const lsHRaw = localStorage.getItem(HOMEBG_KEY);
+
+      if(lsHRaw){
+        HOME_BG = JSON.parse(lsHRaw);
+        migrated = true;
+      }
     }
+
+    if(!HOME_BG.images) HOME_BG.images = [];
+
+    /* TOP TITLE */
+    if(tRaw){
+      TOP_TITLE = tRaw;
+    } else {
+      const lsTRaw = localStorage.getItem(TOPTITLE_KEY);
+
+      if(lsTRaw){
+        TOP_TITLE = JSON.parse(lsTRaw);
+        migrated = true;
+      }
+    }
+
+    if(!TOP_TITLE || typeof TOP_TITLE !== 'object'){
+      TOP_TITLE = {};
+    }
+
+    if(!TOP_TITLE.shota){
+      TOP_TITLE.shota = {
+        src:'',
+        type:''
+      };
+    }
+
+    if(!TOP_TITLE.inoue){
+      TOP_TITLE.inoue = {
+        src:'',
+        type:''
+      };
+    }
+
+    /* 旧localStorageからの移行が発生した場合 */
+    if(migrated){
+      await save(true);
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PROFILE_KEY);
+      localStorage.removeItem(LOGO_KEY);
+      localStorage.removeItem(HOMEBG_KEY);
+      localStorage.removeItem(TOPTITLE_KEY);
+
+      toast('localStorage からデータを移行しました');
+    }
+
   } catch(e){
-    console.error(e);
+    console.error('load error:', e);
+
     DATA = getDefaultData();
     PROFILE = { images: [] };
     LOGO = { src: '' };
     HOME_BG = { images: [] };
+
+    TOP_TITLE = {
+      shota: {
+        src:'',
+        type:''
+      },
+      inoue: {
+        src:'',
+        type:''
+      }
+    };
   }
 }
-function save(){
+ 
+
+async function save(silent){
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE));
-    localStorage.setItem(LOGO_KEY, JSON.stringify(LOGO));
-    localStorage.setItem(HOMEBG_KEY, JSON.stringify(HOME_BG));
-    updateStorageUsage();
+    await idbSet(STORAGE_KEY, DATA);
+    await idbSet(PROFILE_KEY, PROFILE);
+    await idbSet(LOGO_KEY, LOGO);
+    await idbSet(HOMEBG_KEY, HOME_BG);
+    await idbSet(TOPTITLE_KEY, TOP_TITLE);
+
+    if(!silent){
+      updateStorageUsage();
+    }
   } catch(e){
-    updateStorageUsage();
-    toast('容量超過しました。Export ZIP でバックアップして、不要画像を減らしてください', 'error');
+    console.error('save error:', e);
+
+    if(!silent){
+      toast('保存に失敗しました: ' + (e.message || e), 'error');
+    }
   }
 }
 
-function updateStorageUsage(){
+async function updateStorageUsage(){
   const el = document.getElementById('storageUsage');
   if(!el) return;
-  let total = 0;
-  for(const key of [STORAGE_KEY, PROFILE_KEY, LOGO_KEY, HOMEBG_KEY]){
-    const v = localStorage.getItem(key);
-    if(v) total += v.length;
+  try {
+    /* StorageManager API で実際の IndexedDB 使用量を取得 */
+    if(navigator.storage && navigator.storage.estimate){
+      const est = await navigator.storage.estimate();
+      const used = est.usage  || 0;
+      const quot = est.quota  || 0;
+      const usedMb = (used / 1024 / 1024).toFixed(1);
+      const quotMb = (quot / 1024 / 1024 / 1024).toFixed(1); /* GB */
+      const pct = quot > 0 ? Math.round((used / quot) * 100) : 0;
+      let color = 'var(--text-dim)';
+      if(pct > 80) color = 'var(--danger)';
+      else if(pct > 60) color = '#f0c84a';
+      el.style.color = color;
+      el.textContent = `STORAGE: ${usedMb}MB / ${quotMb}GB (${pct}%)`;
+    } else {
+      el.textContent = 'STORAGE: IndexedDB';
+      el.style.color = 'var(--text-dim)';
+    }
+  } catch(e){
+    el.textContent = 'STORAGE: IndexedDB';
+    el.style.color = 'var(--text-dim)';
   }
-  /* localStorageの実際の上限はブラウザにより異なる(5〜10MB)。5MBを目安に */
-  const mb = (total / 1024 / 1024).toFixed(1);
-  const limit = 5;
-  const pct = Math.round((total / 1024 / 1024 / limit) * 100);
-  let color = 'var(--text-dim)';
-  if(pct > 80) color = 'var(--danger)';
-  else if(pct > 60) color = '#f0c84a';
-  el.style.color = color;
-  el.textContent = `STORAGE: ${mb}MB / ~${limit}MB (${pct}%)`;
 }
 
 function getDefaultData(){
@@ -537,7 +809,9 @@ function renderCategories(){
   DATA.forEach(group => {
     const li = document.createElement('li');
     li.className = 'cat-row';
+    li.dataset.cat = group.cat;
     li.innerHTML = `
+      <span class="dnd-handle" title="ドラッグして並び替え">⠿</span>
       <button class="cat-item ${group.cat === currentCat ? 'active' : ''}" data-cat="${escapeAttr(group.cat)}">
         ${escapeHtml(group.cat)} <span class="count">${group.items.length}</span>
       </button>
@@ -545,12 +819,53 @@ function renderCategories(){
       <button class="cat-icon-btn danger" data-action="delete-cat" data-cat="${escapeAttr(group.cat)}" title="Delete">×</button>
     `;
     list.appendChild(li);
+
+    /* ── DnD: ハンドルを掴んだときだけ li を draggable にする ── */
+    const handle = li.querySelector('.dnd-handle');
+    handle.addEventListener('mousedown', () => { li.draggable = true; });
+    li.addEventListener('dragstart', e => {
+      li.classList.add('dnd-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', group.cat);
+      window._dndCatFrom = group.cat;
+    });
+    li.addEventListener('dragend', () => {
+      li.draggable = false;
+      li.classList.remove('dnd-dragging');
+      list.querySelectorAll('.cat-row').forEach(r => r.classList.remove('dnd-over'));
+    });
+    li.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if(window._dndCatFrom !== group.cat){
+        list.querySelectorAll('.cat-row').forEach(r => r.classList.remove('dnd-over'));
+        li.classList.add('dnd-over');
+      }
+    });
+    li.addEventListener('dragleave', () => li.classList.remove('dnd-over'));
+    li.addEventListener('drop', e => {
+      e.preventDefault();
+      li.classList.remove('dnd-over');
+      const fromCat = window._dndCatFrom;
+      const toCat = group.cat;
+      if(fromCat === toCat) return;
+      const fromIdx = DATA.findIndex(g => g.cat === fromCat);
+      const toIdx   = DATA.findIndex(g => g.cat === toCat);
+      if(fromIdx < 0 || toIdx < 0) return;
+      const [moved] = DATA.splice(fromIdx, 1);
+      DATA.splice(toIdx, 0, moved);
+      save();
+      renderCategories();
+      renderWorks();
+    });
   });
 
   list.querySelectorAll('.cat-item').forEach(b => {
     b.addEventListener('click', () => {
       currentCat = b.dataset.cat;
       currentItem = null;
+      currentPage = null;
+      document.querySelectorAll('.cat-item:not([data-cat])').forEach(btn => btn.classList.remove('active'));
       renderCategories();
       renderWorks();
       renderContent();
@@ -639,14 +954,57 @@ function renderWorks(){
   group.items.forEach((item, idx) => {
     const li = document.createElement('li');
     li.className = 'work-list-item';
+    li.dataset.idx = idx;
     li.innerHTML = `
+      <span class="dnd-handle" title="ドラッグして並び替え">⠿</span>
       <button class="work-btn ${currentItem && currentItem.item === item ? 'active' : ''}" data-idx="${idx}">
         ${escapeHtml(item.title || '(無題)')}
       </button>
       <button class="cat-icon-btn danger" data-action="delete-work" data-idx="${idx}" title="Delete">×</button>
     `;
     list.appendChild(li);
+
+    /* ── DnD: ハンドルを掴んだときだけ li を draggable にする ── */
+    const handle = li.querySelector('.dnd-handle');
+    handle.addEventListener('mousedown', () => { li.draggable = true; });
+    li.addEventListener('dragstart', e => {
+      li.classList.add('dnd-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(idx));
+      window._dndWorkFrom = idx;
+    });
+    li.addEventListener('dragend', () => {
+      li.draggable = false;
+      li.classList.remove('dnd-dragging');
+      list.querySelectorAll('.work-list-item').forEach(r => r.classList.remove('dnd-over'));
+    });
+    li.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if(window._dndWorkFrom !== idx){
+        list.querySelectorAll('.work-list-item').forEach(r => r.classList.remove('dnd-over'));
+        li.classList.add('dnd-over');
+      }
+    });
+    li.addEventListener('dragleave', () => li.classList.remove('dnd-over'));
+    li.addEventListener('drop', e => {
+      e.preventDefault();
+      li.classList.remove('dnd-over');
+      const fromIdx = window._dndWorkFrom;
+      const toIdx = idx;
+      if(fromIdx === toIdx) return;
+      const [moved] = group.items.splice(fromIdx, 1);
+      group.items.splice(toIdx, 0, moved);
+      /* currentItem の参照を更新 */
+      if(currentItem){
+        const newIdx = group.items.indexOf(currentItem.item);
+        if(newIdx >= 0) currentItem.idx = newIdx;
+      }
+      save();
+      renderWorks();
+    });
   });
+
   list.querySelectorAll('.work-btn').forEach(b => {
     b.addEventListener('click', () => {
       const idx = parseInt(b.dataset.idx);
@@ -842,6 +1200,165 @@ function updateHomeBgCount(){
   if(el) el.textContent = (HOME_BG.images || []).length;
 }
 
+/* ─── TOP TITLE GRAPHIC ページ ─── */
+function updateTopTitleStatus(){
+  const el = document.getElementById('topTitleStatus');
+
+  if(!el) return;
+
+  let count = 0;
+
+  if(TOP_TITLE?.shota?.src) count++;
+  if(TOP_TITLE?.inoue?.src) count++;
+
+  el.textContent = `${count} / 2`;
+}
+
+function renderTopTitleContent(root){
+
+  if(!TOP_TITLE || typeof TOP_TITLE !== 'object'){
+    TOP_TITLE = {};
+  }
+
+  if(!TOP_TITLE.shota){
+    TOP_TITLE.shota = {
+      src:'',
+      type:''
+    };
+  }
+
+  if(!TOP_TITLE.inoue){
+    TOP_TITLE.inoue = {
+      src:'',
+      type:''
+    };
+  }
+
+  function makeSlot(key, label){
+    const asset = TOP_TITLE[key] || {
+      src:'',
+      type:''
+    };
+
+    const hasAsset = !!asset.src;
+
+    return `
+      <div class="top-title-slot">
+
+        <div class="field-label" style="margin-bottom:.75rem;color:var(--accent)">
+          ${label}
+        </div>
+
+        <div class="help-text" style="margin-bottom:.8rem">
+          SVG推奨。Illustratorで文字をアウトライン化し、
+          アートボードの余白をなるべく少なくしてください。
+        </div>
+
+        ${
+          hasAsset
+            ? `
+              <div class="top-title-preview">
+                <img src="${escapeAttr(asset.src)}" alt="${label}">
+
+                <button
+                  class="btn btn-danger btn-sm"
+                  type="button"
+                  data-title-delete="${key}"
+                  style="position:absolute;top:.6rem;right:.6rem"
+                >Delete</button>
+              </div>
+            `
+            : `
+              <div class="top-title-empty">
+                ${label} は未登録です
+              </div>
+            `
+        }
+
+        <label class="img-upload" style="min-height:76px">
+          ＋ ${hasAsset ? 'Replace' : 'Upload'} ${label}
+
+          <input
+            type="file"
+            accept=".svg,image/svg+xml,image/png,image/webp,image/jpeg"
+            data-title-upload="${key}"
+            style="display:none"
+          >
+        </label>
+
+      </div>
+    `;
+  }
+
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-title">Top Title Graphic</div>
+
+      <div class="help-text" style="margin-bottom:1.2rem">
+        ・TOPページの「SHOTA」「INOUE」を別々に管理します<br>
+        ・SVG / PNG / WebP / JPG を登録できます<br>
+        ・SVGは背景透過・アウトライン化済み・余白少なめを推奨します<br>
+        ・画像が未登録の場合は、従来のテキスト表示に戻ります
+      </div>
+
+      <div class="top-title-slots">
+        ${makeSlot('shota', 'SHOTA')}
+        ${makeSlot('inoue', 'INOUE')}
+      </div>
+    </div>
+  `;
+
+  root.querySelectorAll('[data-title-upload]').forEach(input => {
+    input.addEventListener('change', async e => {
+      const file = e.target.files && e.target.files[0];
+      const key = e.target.dataset.titleUpload;
+
+      if(!file || !key) return;
+
+      try {
+        const src = await readFileAsDataURL(file);
+
+        TOP_TITLE[key] = {
+          src,
+          type: file.type || (
+            file.name.toLowerCase().endsWith('.svg')
+              ? 'image/svg+xml'
+              : ''
+          )
+        };
+
+        await save();
+
+        updateTopTitleStatus();
+        renderTopTitleContent(root);
+
+        toast(`${key.toUpperCase()} をアップロードしました`);
+      } catch(err){
+        console.error(err);
+        toast('画像の読み込みに失敗しました', 'error');
+      }
+    });
+  });
+
+  root.querySelectorAll('[data-title-delete]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const key = button.dataset.titleDelete;
+
+      TOP_TITLE[key] = {
+        src:'',
+        type:''
+      };
+
+      await save();
+
+      updateTopTitleStatus();
+      renderTopTitleContent(root);
+
+      toast(`${key.toUpperCase()} を削除しました`);
+    });
+  });
+}
+
 /* ─── PROFILE ページ ─── */
 function renderProfileContent(root){
   root.innerHTML = `
@@ -966,6 +1483,12 @@ function renderContent(){
     renderHomeBgContent(root);
     return;
   }
+
+  if(currentPage === 'toptitle'){
+    renderTopTitleContent(root);
+    return;
+  }
+
   if(!currentItem){
     root.innerHTML = '<div class="content-empty">作品を選択するか、新規作成してください。</div>';
     return;
@@ -1005,8 +1528,10 @@ function renderContent(){
       <div class="section-title">Images</div>
       <div class="help-text" style="margin-bottom:.6rem">
         ・1枚目はWORKS一覧のサムネイル / HOMEのスライド画像になります<br>
-        ・各画像の右下のセレクトで「1列/2列/3列」(詳細ページの表示列数)を切替<br>
-        ・ドラッグ＆ドロップで並び替え可能
+        ・ここでは詳細ページと同じ1列／2列／3列の配置と画像サイズで編集できます<br>
+        ・画像右下で <strong style="color:var(--accent)">Scroll 1列／2列／3列</strong> を選ぶと独立したスクロールブロックになります。ブロック右下の「＋ 画像を追加」から同じ枠へ複数枚追加できます<br>
+        ・画像はドラッグ＆ドロップで並び替え可能です。Scroll内の画像をドラッグすると、Scrollブロック全体が移動します<br>
+        ・ブロック間の点線にドロップすると、その位置へ移動できます
       </div>
       <div class="images-grid" id="imagesGrid"></div>
     </div>
@@ -1095,104 +1620,131 @@ function renderImages(){
   grid.innerHTML = '';
   const it = currentItem.item;
   if(!it.images) it.images = [];
-
-  it.images.forEach((img, idx) => {
-    const card = document.createElement('div');
-    card.className = 'img-card';
-    card.draggable = true;
-    card.dataset.idx = idx;
-    /* GIF・動画はvideoタグ、それ以外はimg */
-    const isVideo = img.type && img.type.startsWith('video/');
-    const mediaPrev = isVideo
-      ? `<video src="${img.src}" muted loop playsinline autoplay style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"></video>`
-      : `<img src="${img.src}" alt="" style="width:100%;height:100%;object-fit:cover">`;
-    const typeBadge = (img.type === 'image/gif') ? '<div class="img-thumb-badge" style="background:#f0c84a;color:#1a1a1a">GIF</div>'
-      : isVideo ? '<div class="img-thumb-badge" style="background:#7c6fff;color:#fff">VIDEO</div>' : '';
-    card.innerHTML = `
-      ${mediaPrev}
-      ${idx === 0 ? '<div class="img-thumb-badge">Thumb</div>' : ''}
-      ${typeBadge}
-      <div class="img-actions">
-        <button data-action="del">×</button>
-      </div>
-      <select class="img-cols-select" data-action="cols">
-        <option value="1" ${img.cols === 1 ? 'selected' : ''}>1col</option>
-        <option value="2" ${img.cols === 2 ? 'selected' : ''}>2col</option>
-        <option value="3" ${img.cols === 3 ? 'selected' : ''}>3col</option>
-      </select>
-    `;
-    grid.appendChild(card);
-
-    card.querySelector('[data-action="del"]').addEventListener('click', e => {
-      e.stopPropagation();
-      it.images.splice(idx, 1);
-      save();
-      renderImages();
-    });
-    card.querySelector('[data-action="cols"]').addEventListener('change', e => {
-      img.cols = parseInt(e.target.value);
-      save();
-    });
-    card.querySelector('[data-action="cols"]').addEventListener('click', e => e.stopPropagation());
-
-    // DnD
-    card.addEventListener('dragstart', () => {
-      card.classList.add('dragging');
-      window._draggingIdx = idx;
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      grid.querySelectorAll('.img-card').forEach(c => c.classList.remove('drag-over'));
-    });
-    card.addEventListener('dragover', e => {
-      e.preventDefault();
-      card.classList.add('drag-over');
-    });
-    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-    card.addEventListener('drop', e => {
-      e.preventDefault();
-      card.classList.remove('drag-over');
-      const fromIdx = window._draggingIdx;
-      const toIdx = idx;
-      if(fromIdx === toIdx) return;
-      const moved = it.images.splice(fromIdx, 1)[0];
-      it.images.splice(toIdx, 0, moved);
-      save();
-      renderImages();
-    });
+  const newScrollGroupId = () => `scroll-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  /* 既存データの連続Scrollは、初回編集時に同じブロックIDへ移行 */
+  let legacyGroupId = null;
+  it.images.forEach(img => {
+    if(!img.scrollGroup){ legacyGroupId = null; return; }
+    if(img.scrollGroupId){ legacyGroupId = null; return; }
+    legacyGroupId ||= newScrollGroupId();
+    img.scrollGroupId = legacyGroupId;
+    img.scrollCols = img.scrollCols || 1;
   });
-
-  // アップロード枠
-  const up = document.createElement('label');
-  up.className = 'img-upload';
-  up.innerHTML = '＋ Upload';
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*,video/*,.gif,.mp4,.webm,.mov';
-  input.multiple = true;
-  input.style.display = 'none';
-  up.appendChild(input);
-  grid.appendChild(up);
-
-  input.addEventListener('change', async e => {
-    const files = Array.from(e.target.files || []);
+  const addFiles = async (files, insertAt, scrollGroup = false, scrollGroupId = '', scrollCols = 1) => {
+    const entries = [];
     for(const file of files){
       try {
-        let dataUrl;
-        if(isAnimatedOrVideo(file)){
-          dataUrl = await readFileAsDataURL(file);  /* GIF・動画はそのまま保存 */
-        } else {
-          dataUrl = await readImageAsResizedDataURL(file, 1400, 0.78);
-        }
-        it.images.push({src: dataUrl, cols: 1, type: file.type});
-      } catch(err){
-        toast(`${file.name}の読み込み失敗`,'error');
-      }
+        const src = isAnimatedOrVideo(file) ? await readFileAsDataURL(file) : await readImageAsResizedDataURL(file, 1400, 0.78);
+        entries.push({src, cols:1, scrollGroup, scrollGroupId, scrollCols, type:file.type});
+      } catch(err){ toast(`${file.name}の読み込み失敗`, 'error'); }
     }
-    save();
-    renderImages();
-    toast(`${files.length}件追加しました`);
+    if(entries.length){ it.images.splice(insertAt, 0, ...entries); save(); renderImages(); toast(`${entries.length}件追加しました`); }
+  };
+  const media = img => (img.type || '').startsWith('video/')
+    ? `<video src="${img.src}" muted loop playsinline autoplay controls></video>` : `<img src="${img.src}" alt="">`;
+  const moveRange = (range, insertAt) => {
+    if(!range || (insertAt >= range.start && insertAt <= range.end)) return;
+    const moved = it.images.splice(range.start, range.end - range.start);
+    const target = insertAt > range.start ? insertAt - moved.length : insertAt;
+    it.images.splice(target, 0, ...moved);
+    save(); renderImages();
+  };
+  const getDragRange = idx => {
+    const image = it.images[idx];
+    if(!image || !image.scrollGroup) return {start:idx, end:idx + 1};
+    const groupId = image.scrollGroupId;
+    let start = idx, end = idx + 1;
+    while(start > 0 && it.images[start - 1].scrollGroup && it.images[start - 1].scrollGroupId === groupId) start--;
+    while(end < it.images.length && it.images[end].scrollGroup && it.images[end].scrollGroupId === groupId) end++;
+    return {start, end};
+  };
+  const attachCellEvents = (cell, idx) => {
+    cell.draggable = true;
+    cell.addEventListener('dragstart', () => { cell.classList.add('dragging'); window._draggingRange = getDragRange(idx); });
+    cell.addEventListener('dragend', () => { cell.classList.remove('dragging'); grid.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); });
+    cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+    cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+    cell.addEventListener('drop', e => {
+      e.preventDefault(); cell.classList.remove('drag-over');
+      moveRange(window._draggingRange, idx);
+    });
+    cell.querySelector('[data-action="del"]').addEventListener('click', e => { e.stopPropagation(); it.images.splice(idx, 1); save(); renderImages(); });
+    const select = cell.querySelector('[data-action="cols"]');
+    select.addEventListener('click', e => e.stopPropagation());
+    select.addEventListener('change', e => {
+      const img = it.images[idx];
+      if(e.target.value.startsWith('scroll-')){
+        const scrollCols = parseInt(e.target.value.split('-')[1]);
+        const groupId = img.scrollGroupId || newScrollGroupId();
+        img.scrollGroup = true; img.scrollGroupId = groupId; img.scrollCols = scrollCols; img.cols = 1;
+        /* 同じScrollブロック内の画像は幅設定も揃える */
+        it.images.forEach(entry => { if(entry.scrollGroupId === groupId){ entry.scrollGroup = true; entry.scrollCols = scrollCols; } });
+      } else {
+        img.scrollGroup = false; img.cols = parseInt(e.target.value);
+        delete img.scrollGroupId; delete img.scrollCols;
+      }
+      save(); renderImages();
+    });
+  };
+  const makeCell = (img, idx, scroll = false) => {
+    const cell = document.createElement('div'); cell.className = scroll ? 'cms-scroll-slide' : 'cms-image-cell';
+    cell.innerHTML = `${media(img)}${idx === 0 ? '<span class="cms-image-badge">Thumb</span>' : ''}<div class="cms-image-tools"><button data-action="del" title="削除">×</button><select data-action="cols"><option value="1" ${(!img.scrollGroup && img.cols === 1) ? 'selected' : ''}>1列</option><option value="2" ${(!img.scrollGroup && img.cols === 2) ? 'selected' : ''}>2列</option><option value="3" ${(!img.scrollGroup && img.cols === 3) ? 'selected' : ''}>3列</option><option value="scroll-1" ${img.scrollGroup && (img.scrollCols || 1) === 1 ? 'selected' : ''}>Scroll 1列</option><option value="scroll-2" ${img.scrollGroup && img.scrollCols === 2 ? 'selected' : ''}>Scroll 2列</option><option value="scroll-3" ${img.scrollGroup && img.scrollCols === 3 ? 'selected' : ''}>Scroll 3列</option></select></div>`;
+    attachCellEvents(cell, idx); return cell;
+  };
+  let i = 0, row = null, currentCols = null;
+  const getRow = (cols, startIndex) => {
+    if(currentCols !== cols || (row && row.children.length >= cols)){
+      row = document.createElement('div'); row.className = `cms-image-row cols-${cols}`;
+      row.dataset.insertAt = startIndex;
+      grid.appendChild(row); currentCols = cols;
+    }
+    return row;
+  };
+  while(i < it.images.length){
+    const image = it.images[i];
+    if(image.scrollGroup){
+      const start = i, groupId = image.scrollGroupId, cols = Math.max(1, Math.min(3, image.scrollCols || 1));
+      const block = document.createElement('div'), track = document.createElement('div');
+      block.className = 'cms-scroll-block'; track.className = 'cms-scroll-track';
+      while(i < it.images.length && it.images[i].scrollGroup && it.images[i].scrollGroupId === groupId) track.appendChild(makeCell(it.images[i], i++, true));
+      const insertAt = i;
+      block.append(track);
+      block.insertAdjacentHTML('beforeend', `<span class="cms-scroll-count">SCROLL ${cols}列 · ${i - start}枚</span><div class="cms-scroll-tools"><button type="button" class="cms-scroll-add-btn">＋ 画像を追加</button><input type="file" multiple accept="image/*,video/*,.gif,.mp4,.webm,.mov" style="display:none"></div>`);
+      const input = block.querySelector('input');
+      block.querySelector('.cms-scroll-add-btn').addEventListener('click', () => input.click());
+      input.addEventListener('change', e => addFiles(Array.from(e.target.files || []), insertAt, true, groupId, cols));
+      getRow(cols, start).appendChild(block);
+      continue;
+    }
+    const cols = image.cols || 1;
+    const targetRow = getRow(cols, i);
+    do { targetRow.appendChild(makeCell(it.images[i], i)); i++; }
+    while(i < it.images.length && !it.images[i].scrollGroup && (it.images[i].cols || 1) === cols && targetRow.children.length < cols);
+  }
+  grid.querySelectorAll('.cms-image-row.cols-2, .cms-image-row.cols-3').forEach(rowEl => {
+    const cols = rowEl.classList.contains('cols-2') ? 2 : 3;
+    if(rowEl.children.length < cols) rowEl.classList.add('incomplete');
   });
+  /* 行と行の間に、ブロック全体の移動先を示すドロップラインを置く */
+  const rows = Array.from(grid.querySelectorAll('.cms-image-row'));
+  const addDropZone = (insertAt, before) => {
+    const zone = document.createElement('div');
+    zone.className = 'cms-drop-zone';
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); moveRange(window._draggingRange, insertAt); });
+    grid.insertBefore(zone, before);
+  };
+  if(rows.length){
+    addDropZone(parseInt(rows[0].dataset.insertAt), rows[0]);
+    rows.forEach((rowEl, idx) => addDropZone(idx + 1 < rows.length ? parseInt(rows[idx + 1].dataset.insertAt) : it.images.length, idx + 1 < rows.length ? rows[idx + 1] : null));
+  }
+  const up = document.createElement('div');
+  up.className = 'img-upload'; up.innerHTML = '<button type="button">＋ 画像を追加</button>';
+  const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,video/*,.gif,.mp4,.webm,.mov'; input.multiple = true; input.style.display = 'none';
+  up.appendChild(input); grid.appendChild(up);
+  up.querySelector('button').addEventListener('click', () => input.click());
+  input.addEventListener('change', e => addFiles(Array.from(e.target.files || []), it.images.length));
 }
 
 /* 画像をリサイズしてBase64で保存 (WebP優先、未対応ならJPEG) */
@@ -1276,13 +1828,29 @@ function addWork(){
 
 /* ─── Export / Import ─── */
 function exportData(){
-  const exportObj = { works: DATA, profile: PROFILE, logo: LOGO, homeBg: HOME_BG };
-  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const exportObj = {
+    works: DATA,
+    profile: PROFILE,
+    logo: LOGO,
+    homeBg: HOME_BG,
+    topTitle: TOP_TITLE
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(exportObj, null, 2)],
+    {
+      type:'application/json'
+    }
+  );
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
+
   a.href = url;
   a.download = `portfolio-data-${new Date().toISOString().slice(0,10)}.json`;
+
   a.click();
+
   URL.revokeObjectURL(url);
 }
 
@@ -1290,177 +1858,357 @@ function exportData(){
    画像のBase64 → 物理ファイルに変換し、JSON内のパスを書き換え */
 async function exportZip(){
   if(typeof JSZip === 'undefined'){
-    toast('JSZip読み込み失敗（ネット接続を確認）','error');
+    toast('JSZip読み込み失敗（ネット接続を確認）', 'error');
     return;
   }
+
   toast('ZIP生成中...');
+
   const zip = new JSZip();
   const imgFolder = zip.folder('images');
 
-  /* ディープコピーしてパス書き換え用に */
   const works = JSON.parse(JSON.stringify(DATA));
   const profile = JSON.parse(JSON.stringify(PROFILE));
   const logo = JSON.parse(JSON.stringify(LOGO));
   const homeBg = JSON.parse(JSON.stringify(HOME_BG));
+  const topTitle = JSON.parse(JSON.stringify(TOP_TITLE));
 
   let imgCounter = 0;
+
   function processImageEntry(entry, prefix){
-    if(!entry.src) return;
+    if(!entry || !entry.src) return;
     if(!entry.src.startsWith('data:')) return;
-    const m = entry.src.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-    if(!m) return;
-    const mime = m[1];
-    const b64 = m[2];
+
+    const match = entry.src.match(/^data:([^;]+);base64,(.+)$/);
+
+    if(!match) return;
+
+    const mime = match[1];
+    const base64 = match[2];
+
     let ext = mime.split('/')[1]
-      .replace('jpeg','jpg')
-      .replace('svg+xml','svg')
-      .replace('quicktime','mov');
-    /* video/mp4 → mp4、video/webm → webm、image/gif → gif */
+      .replace('jpeg', 'jpg')
+      .replace('svg+xml', 'svg')
+      .replace('quicktime', 'mov');
+
     imgCounter++;
+
     const fileName = `${prefix}-${imgCounter}.${ext}`;
-    imgFolder.file(fileName, b64, {base64: true});
+
+    imgFolder.file(fileName, base64, {
+      base64:true
+    });
+
     entry.src = `images/${fileName}`;
+    entry.type = mime;
   }
 
   works.forEach(group => {
     group.items.forEach(item => {
       if(item.images){
-        item.images.forEach(img => processImageEntry(img, `work-${item.id}`));
+        item.images.forEach(image => {
+          processImageEntry(image, `work-${item.id}`);
+        });
       }
     });
   });
+
   if(profile.images){
-    profile.images.forEach(img => processImageEntry(img, 'profile'));
+    profile.images.forEach(image => {
+      processImageEntry(image, 'profile');
+    });
   }
+
   if(homeBg.images){
-    homeBg.images.forEach(img => processImageEntry(img, 'homebg'));
+    homeBg.images.forEach(image => {
+      processImageEntry(image, 'homebg');
+    });
   }
+
   if(logo.src){
     processImageEntry(logo, 'logo');
   }
 
-  zip.file('data.json', JSON.stringify({works, profile, logo, homeBg}, null, 2));
+  if(topTitle.shota && topTitle.shota.src){
+    processImageEntry(topTitle.shota, 'top-title-shota');
+  }
 
-  const blob = await zip.generateAsync({type:'blob'});
+  if(topTitle.inoue && topTitle.inoue.src){
+    processImageEntry(topTitle.inoue, 'top-title-inoue');
+  }
+
+  zip.file(
+    'data.json',
+    JSON.stringify(
+      {
+        works,
+        profile,
+        logo,
+        homeBg,
+        topTitle
+      },
+      null,
+      2
+    )
+  );
+
+  const blob = await zip.generateAsync({
+    type:'blob'
+  });
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
+
   a.href = url;
   a.download = `portfolio-bundle-${new Date().toISOString().slice(0,10)}.zip`;
+
   a.click();
+
   URL.revokeObjectURL(url);
+
   toast('ZIP生成完了');
 }
+
 async function importData(file){
-  /* ZIPの場合: 解凍して画像をBase64化、data.json を読む */
-  if(file.name.endsWith('.zip')){
+  const isZip = file.name.toLowerCase().endsWith('.zip');
+
+  /* ZIP Import */
+  if(isZip){
     if(typeof JSZip === 'undefined'){
-      toast('JSZip読み込み失敗','error');
+      toast('JSZip読み込み失敗', 'error');
       return;
     }
+
     try {
       const zip = await JSZip.loadAsync(file);
       const dataFile = zip.file('data.json');
+
       if(!dataFile){
-        toast('data.jsonがZIPに含まれていません','error');
+        toast('data.jsonがZIPに含まれていません', 'error');
         return;
       }
+
       const dataText = await dataFile.async('string');
       const data = JSON.parse(dataText);
+
       const newData = data.works || [];
       const newProfile = data.profile || { images: [] };
       const newLogo = data.logo || { src: '' };
       const newHomeBg = data.homeBg || { images: [] };
 
-      /* images/ フォルダの画像をBase64に戻す（編集中はBase64で扱う） */
+      const newTopTitle = data.topTitle || {
+        shota: {
+          src:'',
+          type:''
+        },
+        inoue: {
+          src:'',
+          type:''
+        }
+      };
+
+      if(!newTopTitle.shota){
+        newTopTitle.shota = {
+          src:'',
+          type:''
+        };
+      }
+
+      if(!newTopTitle.inoue){
+        newTopTitle.inoue = {
+          src:'',
+          type:''
+        };
+      }
+
       async function pathToBase64(entry){
-        if(!entry.src || entry.src.startsWith('data:')) return;
+        if(!entry || !entry.src) return;
+        if(entry.src.startsWith('data:')) return;
+
         const path = entry.src;
-        const f = zip.file(path);
-        if(!f) return;
-        const b64 = await f.async('base64');
+        const zipFile = zip.file(path);
+
+        if(!zipFile) return;
+
+        const base64 = await zipFile.async('base64');
         const ext = path.split('.').pop().toLowerCase();
-        const mimeMap = {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime',avi:'video/x-msvideo'};
+
+        const mimeMap = {
+          jpg:'image/jpeg',
+          jpeg:'image/jpeg',
+          png:'image/png',
+          gif:'image/gif',
+          webp:'image/webp',
+          svg:'image/svg+xml',
+          mp4:'video/mp4',
+          webm:'video/webm',
+          mov:'video/quicktime',
+          avi:'video/x-msvideo'
+        };
+
         const mime = mimeMap[ext] || `image/${ext}`;
-        entry.src = `data:${mime};base64,${b64}`;
+
+        entry.src = `data:${mime};base64,${base64}`;
         entry.type = mime;
       }
-      for(const g of newData){
-        for(const it of g.items){
-          if(it.images){
-            for(const img of it.images) await pathToBase64(img);
+
+      for(const group of newData){
+        for(const item of group.items){
+          if(item.images){
+            for(const image of item.images){
+              await pathToBase64(image);
+            }
           }
         }
       }
+
       if(newProfile.images){
-        for(const img of newProfile.images) await pathToBase64(img);
+        for(const image of newProfile.images){
+          await pathToBase64(image);
+        }
       }
+
       if(newHomeBg.images){
-        for(const img of newHomeBg.images) await pathToBase64(img);
+        for(const image of newHomeBg.images){
+          await pathToBase64(image);
+        }
       }
+
       if(newLogo.src){
         await pathToBase64(newLogo);
       }
 
-      confirmAction('現在のデータを上書きします。よろしいですか？', () => {
+      if(newTopTitle.shota && newTopTitle.shota.src){
+        await pathToBase64(newTopTitle.shota);
+      }
+
+      if(newTopTitle.inoue && newTopTitle.inoue.src){
+        await pathToBase64(newTopTitle.inoue);
+      }
+
+      confirmAction('現在のデータを上書きします。よろしいですか？', async () => {
         DATA = newData;
         PROFILE = newProfile;
         LOGO = newLogo;
         HOME_BG = newHomeBg;
-        currentCat = null; currentItem = null; currentPage = null;
-        save();
+        TOP_TITLE = newTopTitle;
+
+        currentCat = null;
+        currentItem = null;
+        currentPage = null;
+
+        await save();
+
         updateProfileCount();
         updateLogoStatus();
         updateHomeBgCount();
+        updateTopTitleStatus();
+
         renderCategories();
         renderWorks();
         renderContent();
+
         toast('インポート完了');
       });
+
     } catch(err){
       console.error(err);
-      toast('ZIPの読み込みに失敗','error');
+      toast('ZIPの読み込みに失敗しました', 'error');
     }
+
     return;
   }
 
-  /* JSONの場合（従来通り） */
+  /* JSON Import */
   const reader = new FileReader();
+
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      let newData, newProfile, newLogo, newHomeBg;
+
+      let newData;
+      let newProfile;
+      let newLogo;
+      let newHomeBg;
+      let newTopTitle;
+
+      /* 古いworks配列だけのJSONにも対応 */
       if(Array.isArray(data)){
         newData = data;
         newProfile = PROFILE;
         newLogo = LOGO;
         newHomeBg = HOME_BG;
-      } else if(data.works){
+        newTopTitle = TOP_TITLE;
+      }
+
+      /* 新しいJSON形式 */
+      else if(data.works){
         newData = data.works;
         newProfile = data.profile || { images: [] };
         newLogo = data.logo || { src: '' };
         newHomeBg = data.homeBg || { images: [] };
-      } else {
-        throw new Error('Invalid');
+
+        newTopTitle = data.topTitle || {
+          shota: {
+            src:'',
+            type:''
+          },
+          inoue: {
+            src:'',
+            type:''
+          }
+        };
       }
-      confirmAction('現在のデータを上書きします。よろしいですか？', () => {
+
+      else {
+        throw new Error('Invalid JSON');
+      }
+
+      if(!newTopTitle.shota){
+        newTopTitle.shota = {
+          src:'',
+          type:''
+        };
+      }
+
+      if(!newTopTitle.inoue){
+        newTopTitle.inoue = {
+          src:'',
+          type:''
+        };
+      }
+
+      confirmAction('現在のデータを上書きします。よろしいですか？', async () => {
         DATA = newData;
         PROFILE = newProfile;
         LOGO = newLogo;
         HOME_BG = newHomeBg;
-        currentCat = null; currentItem = null; currentPage = null;
-        save();
+        TOP_TITLE = newTopTitle;
+
+        currentCat = null;
+        currentItem = null;
+        currentPage = null;
+
+        await save();
+
         updateProfileCount();
         updateLogoStatus();
         updateHomeBgCount();
+        updateTopTitleStatus();
+
         renderCategories();
         renderWorks();
         renderContent();
+
         toast('インポート完了');
       });
+
     } catch(err){
-      toast('JSONの読み込みに失敗','error');
+      console.error(err);
+      toast('JSONの読み込みに失敗しました', 'error');
     }
   };
+
   reader.readAsText(file);
 }
 
@@ -1469,75 +2217,96 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;',
 function escapeAttr(s){ return escapeHtml(s); }
 
 /* ─── INIT ─── */
-load();
-updateProfileCount();
-updateLogoStatus();
-updateHomeBgCount();
-updateStorageUsage();
-renderCategories();
-renderWorks();
-renderContent();
+(async () => {
+  await load();
 
-/* Logo ページ選択 */
-document.getElementById('logoPageBtn').addEventListener('click', () => {
-  currentPage = 'logo';
-  currentCat = null;
-  currentItem = null;
-  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('logoPageBtn').classList.add('active');
+  updateProfileCount();
+  updateLogoStatus();
+  updateHomeBgCount();
+  updateTopTitleStatus();
+  updateStorageUsage();
+
+  renderCategories();
   renderWorks();
   renderContent();
-});
 
-/* HomeBG ページ選択 */
-document.getElementById('homeBgPageBtn').addEventListener('click', () => {
-  currentPage = 'homebg';
-  currentCat = null;
-  currentItem = null;
-  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('homeBgPageBtn').classList.add('active');
-  renderWorks();
-  renderContent();
-});
+  function openPage(pageName, buttonId){
+    currentPage = pageName;
+    currentCat = null;
+    currentItem = null;
 
-/* Profile ページ選択 */
-document.getElementById('profilePageBtn').addEventListener('click', () => {
-  currentPage = 'profile';
-  currentCat = null;
-  currentItem = null;
-  document.querySelectorAll('.cat-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('profilePageBtn').classList.add('active');
-  renderWorks();
-  renderContent();
-});
-
-/* カテゴリ選択時にPROFILEモードを解除（renderCategories内のクリックを上書き） */
-const _origRenderCategories = renderCategories;
-renderCategories = function(){
-  _origRenderCategories();
-  // クリックでprofileBtn を非active化
-  document.querySelectorAll('.cat-item[data-cat]').forEach(b => {
-    b.addEventListener('click', () => {
-      currentPage = null;
-      const pBtn = document.getElementById('profilePageBtn');
-      if(pBtn) pBtn.classList.remove('active');
+    document.querySelectorAll('.cat-item').forEach(button => {
+      button.classList.remove('active');
     });
-  });
-};
-renderCategories();
 
-document.getElementById('addCatBtn').addEventListener('click', () => openCatModal());
-document.getElementById('catCancelBtn').addEventListener('click', closeCatModal);
-document.getElementById('catSaveBtn').addEventListener('click', saveCatModal);
-document.getElementById('catName').addEventListener('keydown', e => { if(e.key === 'Enter') saveCatModal(); });
-document.getElementById('addWorkBtn').addEventListener('click', addWork);
-document.getElementById('exportBtn').addEventListener('click', exportData);
-document.getElementById('exportZipBtn').addEventListener('click', exportZip);
-document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
-document.getElementById('importFile').addEventListener('change', e => {
-  if(e.target.files[0]) importData(e.target.files[0]);
-  e.target.value = '';
-});
+    document.getElementById(buttonId).classList.add('active');
+
+    renderWorks();
+    renderContent();
+  }
+
+  /* Logo */
+  document.getElementById('logoPageBtn').addEventListener('click', () => {
+    openPage('logo', 'logoPageBtn');
+  });
+
+  /* Home BG */
+  document.getElementById('homeBgPageBtn').addEventListener('click', () => {
+    openPage('homebg', 'homeBgPageBtn');
+  });
+
+  /* Top Title Graphic */
+  document.getElementById('topTitlePageBtn').addEventListener('click', () => {
+    openPage('toptitle', 'topTitlePageBtn');
+  });
+
+  /* Profile */
+  document.getElementById('profilePageBtn').addEventListener('click', () => {
+    openPage('profile', 'profilePageBtn');
+  });
+
+  document.getElementById('addCatBtn').addEventListener('click', () => {
+    openCatModal();
+  });
+
+  document.getElementById('catCancelBtn').addEventListener('click', () => {
+    closeCatModal();
+  });
+
+  document.getElementById('catSaveBtn').addEventListener('click', () => {
+    saveCatModal();
+  });
+
+  document.getElementById('catName').addEventListener('keydown', e => {
+    if(e.key === 'Enter'){
+      saveCatModal();
+    }
+  });
+
+  document.getElementById('addWorkBtn').addEventListener('click', () => {
+    addWork();
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    exportData();
+  });
+
+  document.getElementById('exportZipBtn').addEventListener('click', () => {
+    exportZip();
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', e => {
+    if(e.target.files[0]){
+      importData(e.target.files[0]);
+    }
+
+    e.target.value = '';
+  });
+})();
 </script>
 </body>
 </html>
