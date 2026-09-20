@@ -1441,7 +1441,7 @@ body.in-contact .contact-email-btn{
   }
 
   .top-content{
-    left:6vw;
+    left:10vw;
     top:50dvh;
     transform:translateY(-50%);
   }
@@ -1562,13 +1562,13 @@ body.in-contact .contact-email-btn{
     position:static;
     width:100%;
     flex:1;
-    padding:4.2rem 6vw 1.5rem;
+    padding:2.8rem 6vw 1.5rem;
     justify-content:flex-start;
     overflow-y:auto;
   }
 
   .profile-name{
-    font-size:clamp(1.1rem,6vw,1.6rem);
+    font-size:clamp(1.0rem,6vw,1.6rem);
     font-weight:400;
     letter-spacing:.14em;
     margin-bottom:.4rem;
@@ -1619,7 +1619,7 @@ body.in-contact .contact-email-btn{
   }
 
   .skill-left{
-    padding:3.2rem 6vw 2.4rem;
+    padding:3.2rem 6vw 1.2rem;
     justify-content:flex-start;
     border-bottom:none;
     position:relative;
@@ -1640,7 +1640,7 @@ body.in-contact .contact-email-btn{
   }
 
   .skill-title{
-    font-size:clamp(2rem,10vw,3.5rem);
+    font-size:clamp(2rem,9.5vw,3.5rem);
     font-weight:280;
     margin-bottom:.7rem;
     line-height:1;
@@ -1653,8 +1653,8 @@ body.in-contact .contact-email-btn{
   }
 
   .skill-right{
-    padding:1.6rem 6vw .95rem;
-    gap:1.6rem;
+    padding:1.2rem 6vw .95rem;
+    gap:1.2rem;
     justify-content:flex-start;
     overflow-y:auto;
   }
@@ -1664,8 +1664,8 @@ body.in-contact .contact-email-btn{
   }
 
   .sg-head{
-    font-size:18px;
-    margin-bottom:.60rem;
+    font-size:14px;
+    margin-bottom:.4rem;
     line-height:1.2;
   }
 
@@ -1695,7 +1695,8 @@ body.in-contact .contact-email-btn{
 
   .sk-design{
     grid-template-columns:repeat(3,1fr);
-    gap:6px;
+    column-gap:6px; /* 横：3つのボックス間 */
+    row-gap:6px;    /* 縦：上下段の間 */
     width:100%;
     max-width:none!important;
   }
@@ -1726,10 +1727,16 @@ body.in-contact .contact-email-btn{
     padding:0 1px;
     letter-spacing:-.04em;
     font-size:11px;
-    transform:scaleX(.95);
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+  }
+  
+  /* 枠は縮めず、中の文字だけ横幅95%にする */
+  .sk-design .sk-box span{
+    display:inline-block;
+    transform:scaleX(.95);
+    transform-origin:center;
   }
 
   .strategy-text{
@@ -1756,7 +1763,7 @@ body.in-contact .contact-email-btn{
     font-size:20px;
     padding:22px 36px;
     gap:.7rem;
-    font-weight:380;
+    font-weight:400;
     letter-spacing:.05em;
     border-radius:60px;
     opacity:1;
@@ -1784,7 +1791,7 @@ body.in-contact .contact-email-btn{
   .contact-footer{
     flex-direction:column;
     gap:.8rem;
-    padding:1.4rem 5vw 2rem;
+    padding:1rem 5vw 1rem;
   }
 
   .cf-links{
@@ -1801,7 +1808,7 @@ body.in-contact .contact-email-btn{
     width:20px;
     height:20px;
     margin-top:.2rem;
-    margin-bottom:.2rem;
+    margin-bottom:.05rem;
   }
 
   .wa-back{
@@ -2029,7 +2036,7 @@ body.loaded .top-title-line:nth-child(2) .top-title-image.has-art{
   margin-bottom:1.1rem;
   color:var(--text);
   font-family:var(--ff-disp);
-  font-size:clamp(1.8rem,4vw,2.6rem);
+  font-size:clamp(1.8rem,3vw,2.6rem);
   font-weight:300;
   letter-spacing:.1em;
   line-height:1.2;
@@ -2159,4 +2166,20 @@ html.access-session-hint .site-access-gate{
 
 .site-access-toggle.is-visible{
   color:var(--accent);
+}
+
+/* =========================================
+   SITE ACCESS：パスワード画面上では通常カーソルを表示
+   ========================================= */
+
+.site-access-gate{
+  cursor:default;
+}
+
+.site-access-gate .site-access-input{
+  cursor:text;
+}
+
+.site-access-gate .site-access-submit{
+  cursor:pointer;
 }
