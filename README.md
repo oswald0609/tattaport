@@ -1,6 +1,7 @@
 # SHOTA INOUE — Portfolio
 
 グラフィックデザイナー 井上翔太のポートフォリオサイト。
+アクセスパスワードはCMSで変更：Tattaport_Access26
 
 ## ファイル構成
 
