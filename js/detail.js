@@ -94,81 +94,117 @@ async function initSiteAccessGate(){
   const input = document.getElementById('siteAccessPassword');
   const error = document.getElementById('siteAccessError');
 
-  if(!gate || !form || !input) return;
-
-  const closeGate = () => {
-    gate.classList.add('is-hidden');
-    gate.setAttribute('aria-hidden', 'true');
-
-    setTimeout(() => {
-      gate.style.display = 'none';
-    }, 500);
-  };
-
-  if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
-    closeGate();
-    return;
-  }
-
-  try {
-    const savedHash = sessionStorage.getItem('portfolioAccessHash');
-
-    if(savedHash === SITE_ACCESS.passwordHash){
-      closeGate();
-      return;
-    }
-  } catch(e){}
-
-  gate.setAttribute('aria-hidden', 'false');
-
-  setTimeout(() => input.focus(), 80);
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const submit = form.querySelector('.site-access-submit');
-    const password = input.value;
-
-    error.textContent = '';
-
-    if(!password){
-      error.textContent = 'パスワードを入力してください。';
-      input.focus();
+  /*
+    Promiseを返すことで、
+    正しいパスワードを入力するまで
+    後続のサイト処理を進めない
+  */
+  return new Promise(resolve => {
+    if(!gate || !form || !input){
+      resolve();
       return;
     }
 
+    let isClosed = false;
+
+    const closeGate = (withAnimation = true) => {
+      if(isClosed) return;
+
+      isClosed = true;
+
+      gate.classList.add('is-hidden');
+      gate.setAttribute('aria-hidden', 'true');
+
+      const finish = () => {
+        gate.style.display = 'none';
+        resolve();
+      };
+
+      if(withAnimation){
+        setTimeout(finish, 450);
+      } else {
+        finish();
+      }
+    };
+
+    /*
+      CMSでパスワード保護をOFFにしている場合、
+      すぐにゲートを閉じてサイトへ進む
+    */
+    if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+      closeGate(false);
+      return;
+    }
+
+    /*
+      同じブラウザタブで認証済みなら、
+      再入力なしでサイトへ進む
+    */
     try {
-      submit.disabled = true;
-      submit.textContent = 'CHECKING...';
+      const savedHash = sessionStorage.getItem('portfolioAccessHash');
 
-      const inputHash = await sha256(password);
+      if(savedHash === SITE_ACCESS.passwordHash){
+        closeGate(false);
+        return;
+      }
+    } catch(e){}
 
-      if(inputHash !== SITE_ACCESS.passwordHash){
-        error.textContent = 'パスワードが正しくありません。';
-        input.value = '';
+    gate.setAttribute('aria-hidden', 'false');
+
+    setTimeout(() => input.focus(), 80);
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const submit = form.querySelector('.site-access-submit');
+      const password = input.value;
+
+      error.textContent = '';
+
+      if(!password){
+        error.textContent = 'パスワードを入力してください。';
         input.focus();
-
-        submit.disabled = false;
-        submit.textContent = 'ENTER';
         return;
       }
 
       try {
-        sessionStorage.setItem(
-          'portfolioAccessHash',
-          SITE_ACCESS.passwordHash
-        );
-      } catch(e){}
+        submit.disabled = true;
+        submit.textContent = 'CHECKING...';
 
-      closeGate();
+        const inputHash = await sha256(password);
 
-    } catch(err){
-      console.error(err);
-      error.textContent = '認証処理に失敗しました。ページを再読み込みしてください。';
+        if(inputHash !== SITE_ACCESS.passwordHash){
+          error.textContent = 'パスワードが正しくありません。';
 
-      submit.disabled = false;
-      submit.textContent = 'ENTER';
-    }
+          input.value = '';
+          input.focus();
+
+          submit.disabled = false;
+          submit.textContent = 'ENTER';
+
+          return;
+        }
+
+        try {
+          sessionStorage.setItem(
+            'portfolioAccessHash',
+            SITE_ACCESS.passwordHash
+          );
+        } catch(e){}
+
+        /* 正しいパスワードならここで初めて先へ進む */
+        closeGate(true);
+
+      } catch(err){
+        console.error(err);
+
+        error.textContent =
+          '認証処理に失敗しました。ページを再読み込みしてください。';
+
+        submit.disabled = false;
+        submit.textContent = 'ENTER';
+      }
+    });
   });
 }
 
@@ -236,7 +272,7 @@ async function loadAndRender(){
   }
   /* パスワード認証が完了するまで詳細内容を表示しない */
   await initSiteAccessGate();
-  
+
   /* ロゴ適用 */
   if(SITE_LOGO && SITE_LOGO.src){
     const src = SITE_LOGO.src;

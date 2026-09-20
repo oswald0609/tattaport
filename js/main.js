@@ -2,28 +2,88 @@
 const loader = document.getElementById('loader');
 let isLoading = true;
 const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
+let openingStarted = false;
 
+/*
+  パスワード認証が終わるまで、
+  ローダーを開始しないように初期状態では隠しておく
+*/
 if(skipOpening){
   loader.style.display = 'none';
   document.body.classList.add('loaded');
   isLoading = false;
 } else {
+  loader.style.display = 'none';
+
+  const loaderLogo = loader.querySelector('.ld-logo-box');
+
+  if(loaderLogo){
+    loaderLogo.style.animation = 'none';
+  }
+}
+
+/* 指定ミリ秒待つための関数 */
+function wait(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/*
+  パスワード認証後に実行するオープニング
+*/
+async function startOpeningSequence(){
+  if(openingStarted) return;
+
+  openingStarted = true;
+
+  /* Works一覧へ直接アクセスした場合はオープニングなし */
+  if(skipOpening){
+    loader.style.display = 'none';
+    document.body.classList.add('loaded');
+    isLoading = false;
+    return;
+  }
+
+  /* ページの読み込み完了を待つ */
+  if(document.readyState !== 'complete'){
+    await new Promise(resolve => {
+      window.addEventListener('load', resolve, { once:true });
+    });
+  }
+
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      loader.classList.add('done');
-      document.body.classList.add('loaded');
+  /* ローダーを表示 */
+  loader.style.display = 'flex';
+  loader.style.visibility = 'visible';
+  loader.classList.remove('done');
 
-      setTimeout(() => {
-        loader.style.display = 'none';
-        isLoading = false;
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
-      }, 500);
-    }, 1000);
-  });
+  /* ロゴアニメーションを認証後に改めて開始 */
+  const loaderLogo = loader.querySelector('.ld-logo-box');
+
+  if(loaderLogo){
+    loaderLogo.style.animation = 'none';
+
+    void loaderLogo.offsetWidth;
+
+    loaderLogo.style.animation = '';
+  }
+
+  /* ロゴが表示される時間 */
+  await wait(1000);
+
+  loader.classList.add('done');
+  document.body.classList.add('loaded');
+
+  /* フェードアウト完了を待つ */
+  await wait(500);
+
+  loader.style.display = 'none';
+
+  isLoading = false;
+
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
 }
 
 /* ─── カスタムカーソル ─── */
@@ -1312,14 +1372,22 @@ function renderProfileSlideshow(){
 
 /* ─── 初期化 ─── */
 (async () => {
+  /* data.json / CMSの設定を読み込む */
   await loadSiteData();
 
-  /* パスワード認証が完了するまで公開コンテンツを見せない */
+  /*
+    パスワード認証を待つ。
+    正しいパスワードを入れるまで、この次へ進まない。
+  */
   await initSiteAccessGate();
 
+  /* パスワード通過後にページ内容を構築 */
   renderWorksList();
   renderProfileSlideshow();
   applyWorksBg();
+
+  /* 最後にオープニングアニメーションを開始 */
+  await startOpeningSequence();
 })();
 
 document.querySelector('.wa-body').addEventListener('click', e => {
