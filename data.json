@@ -2671,5 +2671,9 @@
       "src": "images/top-title-inoue-298.svg",
       "type": "image/svg+xml"
     }
+  },
+  "siteAccess": {
+    "enabled": true,
+    "passwordHash": "892837ca8e20cc4b795259a0f20a05ba49d2f1f9a0d286986b9fa1fe2f48a2cd"
   }
 }
