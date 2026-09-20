@@ -896,83 +896,125 @@ async function initSiteAccessGate(){
   const input = document.getElementById('siteAccessPassword');
   const error = document.getElementById('siteAccessError');
 
-  if(!gate || !form || !input) return;
+  /*
+    Promiseを返す。
+    正しいパスワードを入力するまで resolve() されないため、
+    await initSiteAccessGate() の次の処理へ進まない。
+  */
+  return new Promise(resolve => {
+    if(!gate || !form || !input){
+      resolve();
+      return;
+    }
 
-  const closeGate = () => {
-    gate.classList.add('is-hidden');
-    gate.setAttribute('aria-hidden', 'true');
+    let isClosed = false;
+
+    const closeGate = (withAnimation = true) => {
+      if(isClosed) return;
+
+      isClosed = true;
+
+      gate.classList.add('is-hidden');
+      gate.setAttribute('aria-hidden', 'true');
+
+      const finish = () => {
+        gate.style.display = 'none';
+        resolve();
+      };
+
+      if(withAnimation){
+        setTimeout(finish, 450);
+      } else {
+        finish();
+      }
+    };
+
+    /*
+      パスワード設定がOFF、
+      またはdata.jsonにパスワード情報がない場合はそのまま通す。
+    */
+    if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+      closeGate(false);
+      return;
+    }
+
+    /*
+      同じタブで認証済みの場合は再入力不要。
+      テスト時にはシークレットウィンドウを使うか、
+      sessionStorageを削除してください。
+    */
+    try {
+      const savedHash = sessionStorage.getItem('portfolioAccessHash');
+
+      if(savedHash === SITE_ACCESS.passwordHash){
+        closeGate(false);
+        return;
+      }
+    } catch(e){}
+
+    gate.setAttribute('aria-hidden', 'false');
 
     setTimeout(() => {
-      gate.style.display = 'none';
-    }, 500);
-  };
-
-  /* CMS側で保護をOFFにしている場合は、そのまま閲覧可能 */
-  if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
-    closeGate();
-    return;
-  }
-
-  /* 同じタブ内で既に認証済みなら、再入力不要 */
-  try {
-    const savedHash = sessionStorage.getItem('portfolioAccessHash');
-
-    if(savedHash === SITE_ACCESS.passwordHash){
-      closeGate();
-      return;
-    }
-  } catch(e){}
-
-  gate.setAttribute('aria-hidden', 'false');
-
-  setTimeout(() => input.focus(), 80);
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const submit = form.querySelector('.site-access-submit');
-    const password = input.value;
-
-    error.textContent = '';
-
-    if(!password){
-      error.textContent = 'パスワードを入力してください。';
       input.focus();
-      return;
-    }
+    }, 80);
 
-    try {
-      submit.disabled = true;
-      submit.textContent = 'CHECKING...';
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
 
-      const inputHash = await sha256(password);
+      const submit = form.querySelector('.site-access-submit');
+      const password = input.value;
 
-      if(inputHash !== SITE_ACCESS.passwordHash){
-        error.textContent = 'パスワードが正しくありません。';
-        input.value = '';
+      error.textContent = '';
+
+      if(!password){
+        error.textContent = 'パスワードを入力してください。';
         input.focus();
-
-        submit.disabled = false;
-        submit.textContent = 'ENTER';
         return;
       }
 
       try {
-        sessionStorage.setItem(
-          'portfolioAccessHash',
-          SITE_ACCESS.passwordHash
-        );
-      } catch(e){}
+        submit.disabled = true;
+        submit.textContent = 'CHECKING...';
 
-      closeGate();
+        const inputHash = await sha256(password);
 
-    } catch(err){
-      console.error(err);
-      error.textContent = '認証処理に失敗しました。ページを再読み込みしてください。';
+        if(inputHash !== SITE_ACCESS.passwordHash){
+          error.textContent = 'パスワードが正しくありません。';
+          input.value = '';
+          input.focus();
 
-      submit.disabled = false;
-      submit.textContent = 'ENTER';
-    }
+          submit.disabled = false;
+          submit.textContent = 'ENTER';
+          return;
+        }
+
+        /*
+          同じタブ内でだけ認証状態を保存。
+          ブラウザ／タブを閉じれば基本的に消える。
+        */
+        try {
+          sessionStorage.setItem(
+            'portfolioAccessHash',
+            SITE_ACCESS.passwordHash
+          );
+        } catch(e){}
+
+        /*
+          正しいパスワードが入った時だけ、
+          ここでresolveされてオープニングへ進む。
+        */
+        closeGate(true);
+
+      } catch(err){
+        console.error(err);
+
+        error.textContent =
+          '認証処理に失敗しました。ページを再読み込みしてください。';
+
+        submit.disabled = false;
+        submit.textContent = 'ENTER';
+      }
+    });
   });
 }
 
