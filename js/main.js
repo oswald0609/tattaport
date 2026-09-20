@@ -763,6 +763,12 @@ let SITE_TOP_TITLE = {
   }
 };
 
+/* CMS管理：サイト閲覧パスワード */
+let SITE_ACCESS = {
+  enabled:false,
+  passwordHash:''
+};
+
 /* ─── IndexedDB ヘルパー ─── */
 const _MAIN_IDB_NAME = 'portfolioCMS';
 const _MAIN_IDB_VER = 1;
@@ -807,6 +813,109 @@ async function _mainIdbGet(key){
   }
 }
 
+/* ─── SITE ACCESS ─── */
+function normalizeSiteAccess(data){
+  return {
+    enabled: !!(data && data.enabled),
+    passwordHash: (data && data.passwordHash) ? data.passwordHash : ''
+  };
+}
+
+async function sha256(value){
+  const bytes = new TextEncoder().encode(value);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+
+  return [...new Uint8Array(hashBuffer)]
+    .map(value => value.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function initSiteAccessGate(){
+  const gate = document.getElementById('siteAccessGate');
+  const form = document.getElementById('siteAccessForm');
+  const input = document.getElementById('siteAccessPassword');
+  const error = document.getElementById('siteAccessError');
+
+  if(!gate || !form || !input) return;
+
+  const closeGate = () => {
+    gate.classList.add('is-hidden');
+    gate.setAttribute('aria-hidden', 'true');
+
+    setTimeout(() => {
+      gate.style.display = 'none';
+    }, 500);
+  };
+
+  /* CMS側で保護をOFFにしている場合は、そのまま閲覧可能 */
+  if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+    closeGate();
+    return;
+  }
+
+  /* 同じタブ内で既に認証済みなら、再入力不要 */
+  try {
+    const savedHash = sessionStorage.getItem('portfolioAccessHash');
+
+    if(savedHash === SITE_ACCESS.passwordHash){
+      closeGate();
+      return;
+    }
+  } catch(e){}
+
+  gate.setAttribute('aria-hidden', 'false');
+
+  setTimeout(() => input.focus(), 80);
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const submit = form.querySelector('.site-access-submit');
+    const password = input.value;
+
+    error.textContent = '';
+
+    if(!password){
+      error.textContent = 'パスワードを入力してください。';
+      input.focus();
+      return;
+    }
+
+    try {
+      submit.disabled = true;
+      submit.textContent = 'CHECKING...';
+
+      const inputHash = await sha256(password);
+
+      if(inputHash !== SITE_ACCESS.passwordHash){
+        error.textContent = 'パスワードが正しくありません。';
+        input.value = '';
+        input.focus();
+
+        submit.disabled = false;
+        submit.textContent = 'ENTER';
+        return;
+      }
+
+      try {
+        sessionStorage.setItem(
+          'portfolioAccessHash',
+          SITE_ACCESS.passwordHash
+        );
+      } catch(e){}
+
+      closeGate();
+
+    } catch(err){
+      console.error(err);
+      error.textContent = '認証処理に失敗しました。ページを再読み込みしてください。';
+
+      submit.disabled = false;
+      submit.textContent = 'ENTER';
+    }
+  });
+}
+
 /* ─── CMS / data.json データ読込 ─── */
 async function loadSiteData(){
   const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
@@ -819,12 +928,15 @@ async function loadSiteData(){
       const logo = await _mainIdbGet('logoData');
       const homeBg = await _mainIdbGet('homeBgData');
       const topTitle = await _mainIdbGet('topTitleData');
+      const siteAccess = await _mainIdbGet('siteAccessData');
 
       if(works) WORKS_DATA = works;
       if(profile) SITE_PROFILE = profile;
       if(logo) SITE_LOGO = logo;
       if(homeBg) window._SITE_HOMEBG = homeBg;
       if(topTitle) SITE_TOP_TITLE = topTitle;
+
+      SITE_ACCESS = normalizeSiteAccess(siteAccess);
     } catch(e){}
 
     if(!WORKS_DATA || WORKS_DATA === DEFAULT_WORKS_DATA){
@@ -834,12 +946,17 @@ async function loadSiteData(){
         const logoRaw = localStorage.getItem('logoData');
         const homeBgRaw = localStorage.getItem('homeBgData');
         const topTitleRaw = localStorage.getItem('topTitleData');
+        const siteAccessRaw = localStorage.getItem('siteAccessData');
 
         if(worksRaw) WORKS_DATA = JSON.parse(worksRaw);
         if(profileRaw) SITE_PROFILE = JSON.parse(profileRaw);
         if(logoRaw) SITE_LOGO = JSON.parse(logoRaw);
         if(homeBgRaw) window._SITE_HOMEBG = JSON.parse(homeBgRaw);
         if(topTitleRaw) SITE_TOP_TITLE = JSON.parse(topTitleRaw);
+
+        if(siteAccessRaw){
+          SITE_ACCESS = normalizeSiteAccess(JSON.parse(siteAccessRaw));
+        }
       } catch(e){}
     }
 
@@ -864,6 +981,8 @@ async function loadSiteData(){
       if(json.homeBg) window._SITE_HOMEBG = json.homeBg;
       if(json.topTitle) SITE_TOP_TITLE = json.topTitle;
 
+      SITE_ACCESS = normalizeSiteAccess(json.siteAccess);
+
       applyLogo();
       applyTopTitle();
 
@@ -878,12 +997,15 @@ async function loadSiteData(){
     const logo = await _mainIdbGet('logoData');
     const homeBg = await _mainIdbGet('homeBgData');
     const topTitle = await _mainIdbGet('topTitleData');
+    const siteAccess = await _mainIdbGet('siteAccessData');
 
     if(works) WORKS_DATA = works;
     if(profile) SITE_PROFILE = profile;
     if(logo) SITE_LOGO = logo;
     if(homeBg) window._SITE_HOMEBG = homeBg;
     if(topTitle) SITE_TOP_TITLE = topTitle;
+
+    SITE_ACCESS = normalizeSiteAccess(siteAccess);
   } catch(e){}
 
   /* IndexedDBがない場合：localStorage */
@@ -894,12 +1016,17 @@ async function loadSiteData(){
       const logoRaw = localStorage.getItem('logoData');
       const homeBgRaw = localStorage.getItem('homeBgData');
       const topTitleRaw = localStorage.getItem('topTitleData');
+      const siteAccessRaw = localStorage.getItem('siteAccessData');
 
       if(worksRaw) WORKS_DATA = JSON.parse(worksRaw);
       if(profileRaw) SITE_PROFILE = JSON.parse(profileRaw);
       if(logoRaw) SITE_LOGO = JSON.parse(logoRaw);
       if(homeBgRaw) window._SITE_HOMEBG = JSON.parse(homeBgRaw);
       if(topTitleRaw) SITE_TOP_TITLE = JSON.parse(topTitleRaw);
+
+      if(siteAccessRaw){
+        SITE_ACCESS = normalizeSiteAccess(JSON.parse(siteAccessRaw));
+      }
     } catch(e){}
   }
 
@@ -1186,6 +1313,9 @@ function renderProfileSlideshow(){
 /* ─── 初期化 ─── */
 (async () => {
   await loadSiteData();
+
+  /* パスワード認証が完了するまで公開コンテンツを見せない */
+  await initSiteAccessGate();
 
   renderWorksList();
   renderProfileSlideshow();

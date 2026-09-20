@@ -38,6 +38,10 @@ document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
 /* ─── URLパラメータ + データ取得 ─── */
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
+let SITE_ACCESS = {
+  enabled:false,
+  passwordHash:''
+};
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -68,6 +72,106 @@ async function _detIdbGet(key){
   } catch(e){ return null; }
 }
 
+function normalizeSiteAccess(data){
+  return {
+    enabled: !!(data && data.enabled),
+    passwordHash: (data && data.passwordHash) ? data.passwordHash : ''
+  };
+}
+
+async function sha256(value){
+  const bytes = new TextEncoder().encode(value);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+
+  return [...new Uint8Array(hashBuffer)]
+    .map(value => value.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function initSiteAccessGate(){
+  const gate = document.getElementById('siteAccessGate');
+  const form = document.getElementById('siteAccessForm');
+  const input = document.getElementById('siteAccessPassword');
+  const error = document.getElementById('siteAccessError');
+
+  if(!gate || !form || !input) return;
+
+  const closeGate = () => {
+    gate.classList.add('is-hidden');
+    gate.setAttribute('aria-hidden', 'true');
+
+    setTimeout(() => {
+      gate.style.display = 'none';
+    }, 500);
+  };
+
+  if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+    closeGate();
+    return;
+  }
+
+  try {
+    const savedHash = sessionStorage.getItem('portfolioAccessHash');
+
+    if(savedHash === SITE_ACCESS.passwordHash){
+      closeGate();
+      return;
+    }
+  } catch(e){}
+
+  gate.setAttribute('aria-hidden', 'false');
+
+  setTimeout(() => input.focus(), 80);
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const submit = form.querySelector('.site-access-submit');
+    const password = input.value;
+
+    error.textContent = '';
+
+    if(!password){
+      error.textContent = 'パスワードを入力してください。';
+      input.focus();
+      return;
+    }
+
+    try {
+      submit.disabled = true;
+      submit.textContent = 'CHECKING...';
+
+      const inputHash = await sha256(password);
+
+      if(inputHash !== SITE_ACCESS.passwordHash){
+        error.textContent = 'パスワードが正しくありません。';
+        input.value = '';
+        input.focus();
+
+        submit.disabled = false;
+        submit.textContent = 'ENTER';
+        return;
+      }
+
+      try {
+        sessionStorage.setItem(
+          'portfolioAccessHash',
+          SITE_ACCESS.passwordHash
+        );
+      } catch(e){}
+
+      closeGate();
+
+    } catch(err){
+      console.error(err);
+      error.textContent = '認証処理に失敗しました。ページを再読み込みしてください。';
+
+      submit.disabled = false;
+      submit.textContent = 'ENTER';
+    }
+  });
+}
+
 async function loadAndRender(){
   const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
   let WORKS_DATA = [];
@@ -78,12 +182,20 @@ async function loadAndRender(){
       /* IndexedDB から読む（CMS が保存した最新データ） */
       const w = await _detIdbGet('worksData'); if(w) WORKS_DATA = w;
       const l = await _detIdbGet('logoData');  if(l) SITE_LOGO  = l;
+      const a = await _detIdbGet('siteAccessData');
+
+      SITE_ACCESS = normalizeSiteAccess(a);
     } catch(e){}
     /* IDB にデータが無ければ localStorage にフォールバック */
     if(!WORKS_DATA.length){
       try {
         const raw  = localStorage.getItem('worksData'); if(raw)  WORKS_DATA = JSON.parse(raw);
         const lRaw = localStorage.getItem('logoData');  if(lRaw) SITE_LOGO  = JSON.parse(lRaw);
+        const aRaw = localStorage.getItem('siteAccessData');
+        
+        if(aRaw){
+          SITE_ACCESS = normalizeSiteAccess(JSON.parse(aRaw));
+        }
       } catch(e){}
     }
   } else {
@@ -93,24 +205,38 @@ async function loadAndRender(){
         const json = await res.json();
         if(json.works) WORKS_DATA = json.works;
         if(json.logo) SITE_LOGO = json.logo;
+        
+        SITE_ACCESS = normalizeSiteAccess(json.siteAccess);
       }
     } catch(e){}
     if(WORKS_DATA.length === 0){
       try {
         const w = await _detIdbGet('worksData'); if(w) WORKS_DATA = w;
         const l = await _detIdbGet('logoData');  if(l) SITE_LOGO  = l;
+        const a = await _detIdbGet('siteAccessData');
+        
+        SITE_ACCESS = normalizeSiteAccess(a);
       } catch(e){}
     }
     if(WORKS_DATA.length === 0){
       try {
         const stored = localStorage.getItem('worksData');
         if(stored) WORKS_DATA = JSON.parse(stored);
+
         const lRaw = localStorage.getItem('logoData');
         if(lRaw) SITE_LOGO = JSON.parse(lRaw);
+
+        const aRaw = localStorage.getItem('siteAccessData');
+
+        if(aRaw){
+          SITE_ACCESS = normalizeSiteAccess(JSON.parse(aRaw));
+        }
       } catch(e){}
     }
   }
-
+  /* パスワード認証が完了するまで詳細内容を表示しない */
+  await initSiteAccessGate();
+  
   /* ロゴ適用 */
   if(SITE_LOGO && SITE_LOGO.src){
     const src = SITE_LOGO.src;
