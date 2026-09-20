@@ -162,7 +162,7 @@
         {
           "id": "sotoya-rebrand",
           "tag": "Branding",
-          "title": "SOTOYA リブランディング CI 開発",
+          "title": "SOTOYA CI",
           "desc": "新しい経営方針における新CIの制定",
           "meta": {},
           "lead": "経営方針刷新を機に曖昧だったブランドの軸を明確化。\nCI・タグライン・コンセプトコピーを制定し、SOTOYAが向かう先を示す指標を設計しました。\n\n経営陣から現場社員まで幅広くヒアリングを実施し、\n社内アンケートや公募で集めた言葉を丁寧に分析。企業の価値観と方向性を抽出しました。\n\n経営の意志と、現場が積み重ねてきた「SOTOYAらしさ」の両者を合わせることで、単なるコピー開発ではなく、社員が自分の仕事の意味と会社の未来を語れる、共通言語としてのCIを実現しました。",
@@ -243,7 +243,7 @@
         {
           "id": "sotoya-web",
           "tag": "Branding / Web",
-          "title": "SOTOYA WEB SITE",
+          "title": "SOTOYA WEB",
           "desc": "リブランディングのシンボルとした公式Webの全面リニューアル",
           "images": [
             {
@@ -311,7 +311,7 @@
         {
           "id": "sotoya-tools",
           "tag": "Branding",
-          "title": "SOTOYA CORPORATE TOOL",
+          "title": "SOTOYA TOOL",
           "desc": "名刺・封筒などのコーポレートツールから店舗看板、Web広告等",
           "meta": {},
           "lead": "名刺・封筒などのコーポレートツールから店舗看板、Web広告まで幅広く刷新。\nブランドの世界観を統一しながら、それぞれの接点でSOTOYAの魅力が伝わる設計を行いました。\n\n店舗看板では、CIの表現に加えて「暮らしと住まいのSOTO空間」というコピーを新たに開発。\n「何の店かわからない」という課題に対し、提供する価値を一目で伝えることで来店のきっかけをつくり、同時に「SOTOYA」の認知向上にもつなげました。\n\n制作にあたっては各店舗に実際に足を運び、各従業員へのヒアリングを実施。現場の特性や設置環境を踏まえ、完成後の見え方までイメージしながら仕上げました。",
@@ -550,7 +550,7 @@
         {
           "id": "nasta-post",
           "tag": "Web",
-          "title": "Nasta Box +POST WEB SITE",
+          "title": "Nasta Box +POST WEB",
           "desc": "戸建向け宅配ボックスのブランドサイト",
           "images": [
             {
@@ -626,7 +626,7 @@
         {
           "id": "nasta-light",
           "tag": "Web",
-          "title": "Nasta Interphone 2 Amazon page",
+          "title": "Nasta Interphone 2 - Amazon",
           "desc": "防犯と音の良さにこだわったインターホン「Nasta Interphone 2」のAmazon商品ページ",
           "images": [
             {
@@ -686,7 +686,7 @@
         {
           "id": "nasta-sns",
           "tag": "SNS",
-          "title": "Nasta SNS CREATIVE FEED",
+          "title": "Nasta SNS",
           "desc": "会社の認知向上を目的にした、SNSのコラム投稿やキャンペーンの企画・デザイン・運用・エンゲージメント分析",
           "images": [
             {
@@ -1479,7 +1479,7 @@
         {
           "id": "flyer-poster",
           "tag": "Print",
-          "title": "各種販促物 ポスター・パンフレット",
+          "title": "各種 販促物",
           "desc": "客先営業や展示会、求人、店頭POP、ポスティングなど、幅広い使用シーンに向けた販促媒体",
           "images": [
             {
@@ -1828,8 +1828,8 @@
         {
           "id": "nasta-app",
           "tag": "UI/UX",
-          "title": "宅配ボックスアプリ『Nasta Box』",
-          "desc": "宅配ボックスの開錠・管理・操作を行う統合アプリ「Nasta Box」",
+          "title": "Nasta Box",
+          "desc": "宅配ボックスの開錠・管理・操作を行う統合アプリ",
           "images": [
             {
               "src": "images/work-nasta-app-179.webp",
@@ -1932,8 +1932,8 @@
         {
           "id": "box-admin",
           "tag": "UI/UX",
-          "title": "宅配ボックス管理者用WEB＆社内用契約管理システム 『Box Manager』",
-          "desc": "オンライン接続型の宅配ボックスを管理するWebシステム「Box Manager」",
+          "title": "Box Manager",
+          "desc": "オンライン接続型の宅配ボックスを管理するWebシステム",
           "images": [
             {
               "src": "images/work-box-admin-191.webp",
@@ -2019,7 +2019,7 @@
         {
           "id": "nasta-mvv",
           "tag": "Project",
-          "title": "Nasta MVV Project “VISION PROJECT”",
+          "title": "VISION PROJECT",
           "desc": "新制定されたMVVの社内浸透を目的としたPJ企画・推進・デザイン制作",
           "images": [
             {
