@@ -5,19 +5,24 @@ const skipOpening = new URLSearchParams(window.location.search).get('works') ===
 let openingStarted = false;
 
 /*
-  パスワード認証が終わるまで、
-  ローダーを開始しないように初期状態では隠しておく
+  ローダーは最初から表示状態で、パスワード画面の裏に待機させる。
+  パスワード画面が消える瞬間に、ドット背景が一瞬見えるのを防ぐ。
 */
 if(skipOpening){
   loader.style.display = 'none';
   document.body.classList.add('loaded');
   isLoading = false;
 } else {
-  loader.style.display = 'none';
+  /* パスワード画面の背面でローダー背景だけを表示 */
+  loader.style.display = 'flex';
+  loader.style.visibility = 'visible';
+  loader.style.opacity = '1';
 
   const loaderLogo = loader.querySelector('.ld-logo-box');
 
   if(loaderLogo){
+    /* 認証前はロゴだけ隠す */
+    loaderLogo.style.visibility = 'hidden';
     loaderLogo.style.animation = 'none';
   }
 }
@@ -53,29 +58,34 @@ async function startOpeningSequence(){
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
-  /* ローダーを表示 */
+  /*
+    ローダーはパスワード画面の背面で既に表示済み。
+    ここでロゴだけを表示・再アニメーションする。
+  */
   loader.style.display = 'flex';
   loader.style.visibility = 'visible';
+  loader.style.opacity = '1';
   loader.classList.remove('done');
 
-  /* ロゴアニメーションを認証後に改めて開始 */
   const loaderLogo = loader.querySelector('.ld-logo-box');
 
   if(loaderLogo){
+    loaderLogo.style.visibility = 'visible';
     loaderLogo.style.animation = 'none';
 
+    /* 強制的に再描画してアニメーションを最初から実行 */
     void loaderLogo.offsetWidth;
 
     loaderLogo.style.animation = '';
   }
 
-  /* ロゴが表示される時間 */
+  /* ロゴを見せる時間 */
   await wait(1000);
 
   loader.classList.add('done');
   document.body.classList.add('loaded');
 
-  /* フェードアウト完了を待つ */
+  /* ローダーフェードアウト完了を待つ */
   await wait(500);
 
   loader.style.display = 'none';
@@ -895,12 +905,8 @@ async function initSiteAccessGate(){
   const form = document.getElementById('siteAccessForm');
   const input = document.getElementById('siteAccessPassword');
   const error = document.getElementById('siteAccessError');
+  const toggle = document.querySelector('.site-access-toggle');
 
-  /*
-    Promiseを返す。
-    正しいパスワードを入力するまで resolve() されないため、
-    await initSiteAccessGate() の次の処理へ進まない。
-  */
   return new Promise(resolve => {
     if(!gate || !form || !input){
       resolve();
@@ -908,6 +914,25 @@ async function initSiteAccessGate(){
     }
 
     let isClosed = false;
+
+    /* SHOW / HIDE ボタン */
+    if(toggle){
+      toggle.addEventListener('click', () => {
+        const isVisible = input.type === 'text';
+
+        input.type = isVisible ? 'password' : 'text';
+
+        toggle.textContent = isVisible ? 'SHOW' : 'HIDE';
+        toggle.classList.toggle('is-visible', !isVisible);
+        toggle.setAttribute('aria-pressed', String(!isVisible));
+        toggle.setAttribute(
+          'aria-label',
+          isVisible ? 'パスワードを表示' : 'パスワードを隠す'
+        );
+
+        input.focus();
+      });
+    }
 
     const closeGate = (withAnimation = true) => {
       if(isClosed) return;
@@ -930,18 +955,19 @@ async function initSiteAccessGate(){
     };
 
     /*
-      パスワード設定がOFF、
-      またはdata.jsonにパスワード情報がない場合はそのまま通す。
+      CMSでパスワード保護がOFFの場合はそのまま通す。
+      session表示ヒントも削除しておく。
     */
     if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+      document.documentElement.classList.remove('access-session-hint');
       closeGate(false);
       return;
     }
 
     /*
-      同じタブで認証済みの場合は再入力不要。
-      テスト時にはシークレットウィンドウを使うか、
-      sessionStorageを削除してください。
+      同タブで認証済みなら、ゲートを表示せずに進む。
+      head内のスクリプトで既に一旦ゲートを隠しているため、
+      再読み込み時にもパスワード画面がちらつかない。
     */
     try {
       const savedHash = sessionStorage.getItem('portfolioAccessHash');
@@ -952,6 +978,14 @@ async function initSiteAccessGate(){
       }
     } catch(e){}
 
+    /*
+      sessionStorage内の値が古い、
+      または認証されていない場合はパスワード画面を見せる。
+      例：CMSでパスワード変更後に再読み込みした場合。
+    */
+    document.documentElement.classList.remove('access-session-hint');
+    gate.classList.remove('is-hidden');
+    gate.style.display = 'flex';
     gate.setAttribute('aria-hidden', 'false');
 
     setTimeout(() => {
@@ -980,18 +1014,26 @@ async function initSiteAccessGate(){
 
         if(inputHash !== SITE_ACCESS.passwordHash){
           error.textContent = 'パスワードが正しくありません。';
+
           input.value = '';
+          input.type = 'password';
+
+          if(toggle){
+            toggle.textContent = 'SHOW';
+            toggle.classList.remove('is-visible');
+            toggle.setAttribute('aria-pressed', 'false');
+            toggle.setAttribute('aria-label', 'パスワードを表示');
+          }
+
           input.focus();
 
           submit.disabled = false;
           submit.textContent = 'ENTER';
+
           return;
         }
 
-        /*
-          同じタブ内でだけ認証状態を保存。
-          ブラウザ／タブを閉じれば基本的に消える。
-        */
+        /* 正しいハッシュを同タブ内に保存 */
         try {
           sessionStorage.setItem(
             'portfolioAccessHash',
@@ -999,10 +1041,6 @@ async function initSiteAccessGate(){
           );
         } catch(e){}
 
-        /*
-          正しいパスワードが入った時だけ、
-          ここでresolveされてオープニングへ進む。
-        */
         closeGate(true);
 
       } catch(err){

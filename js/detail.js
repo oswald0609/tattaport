@@ -93,12 +93,8 @@ async function initSiteAccessGate(){
   const form = document.getElementById('siteAccessForm');
   const input = document.getElementById('siteAccessPassword');
   const error = document.getElementById('siteAccessError');
+  const toggle = document.querySelector('.site-access-toggle');
 
-  /*
-    Promiseを返すことで、
-    正しいパスワードを入力するまで
-    後続のサイト処理を進めない
-  */
   return new Promise(resolve => {
     if(!gate || !form || !input){
       resolve();
@@ -106,6 +102,25 @@ async function initSiteAccessGate(){
     }
 
     let isClosed = false;
+
+    /* SHOW / HIDE ボタン */
+    if(toggle){
+      toggle.addEventListener('click', () => {
+        const isVisible = input.type === 'text';
+
+        input.type = isVisible ? 'password' : 'text';
+
+        toggle.textContent = isVisible ? 'SHOW' : 'HIDE';
+        toggle.classList.toggle('is-visible', !isVisible);
+        toggle.setAttribute('aria-pressed', String(!isVisible));
+        toggle.setAttribute(
+          'aria-label',
+          isVisible ? 'パスワードを表示' : 'パスワードを隠す'
+        );
+
+        input.focus();
+      });
+    }
 
     const closeGate = (withAnimation = true) => {
       if(isClosed) return;
@@ -127,19 +142,14 @@ async function initSiteAccessGate(){
       }
     };
 
-    /*
-      CMSでパスワード保護をOFFにしている場合、
-      すぐにゲートを閉じてサイトへ進む
-    */
+    /* パスワード無効時 */
     if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
+      document.documentElement.classList.remove('access-session-hint');
       closeGate(false);
       return;
     }
 
-    /*
-      同じブラウザタブで認証済みなら、
-      再入力なしでサイトへ進む
-    */
+    /* 認証済みならゲートを表示せず通す */
     try {
       const savedHash = sessionStorage.getItem('portfolioAccessHash');
 
@@ -149,6 +159,13 @@ async function initSiteAccessGate(){
       }
     } catch(e){}
 
+    /*
+      未認証またはパスワード変更済みの場合。
+      head側の表示ヒントを解除して、ゲートを表示する。
+    */
+    document.documentElement.classList.remove('access-session-hint');
+    gate.classList.remove('is-hidden');
+    gate.style.display = 'flex';
     gate.setAttribute('aria-hidden', 'false');
 
     setTimeout(() => input.focus(), 80);
@@ -177,6 +194,15 @@ async function initSiteAccessGate(){
           error.textContent = 'パスワードが正しくありません。';
 
           input.value = '';
+          input.type = 'password';
+
+          if(toggle){
+            toggle.textContent = 'SHOW';
+            toggle.classList.remove('is-visible');
+            toggle.setAttribute('aria-pressed', 'false');
+            toggle.setAttribute('aria-label', 'パスワードを表示');
+          }
+
           input.focus();
 
           submit.disabled = false;
@@ -192,7 +218,6 @@ async function initSiteAccessGate(){
           );
         } catch(e){}
 
-        /* 正しいパスワードならここで初めて先へ進む */
         closeGate(true);
 
       } catch(err){
