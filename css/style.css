@@ -20,22 +20,23 @@
 }
 
 html{
-  /* 横スクロール禁止は html 側で行う
-     （body:overflow-x:hidden は iOS の position:fixed ズレの原因） */
-  overflow-x:hidden;
   overflow-y:scroll;
   height:100%;
   scroll-behavior:auto;
   overscroll-behavior-y:none;
+
+  /* スクロール位置の自動補正でカクつくのを防ぐ */
+  overflow-anchor:none;
 }
 
 body{
   background:transparent;
   color:var(--text);
   font-family:var(--ff-jp);
-  overflow-x:clip;
+  overflow-x:hidden;
   cursor:none;
   position:relative;
+  overflow-anchor:none;
 }
 
 section{
