@@ -1,3 +1,37 @@
+/* ─── ビューポート高さ固定（iOS Safari アドレスバー対策） ─── */
+const htmlRoot = document.documentElement;
+let lastViewportWidth = window.innerWidth;
+
+function setAppHeight(force){
+  /* 幅が変わらない限り更新しない＝アドレスバー伸縮でレイアウトを動かさない */
+  if(!force && Math.abs(window.innerWidth - lastViewportWidth) <= 1) return;
+
+  lastViewportWidth = window.innerWidth;
+  htmlRoot.style.setProperty('--app-height', window.innerHeight + 'px');
+}
+
+setAppHeight(true);
+
+window.addEventListener('resize', () => setAppHeight(false));
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => setAppHeight(true), 300);
+});
+
+/* ─── ページスクロールのロック / 解除 ─── */
+function lockPageScroll(){
+  htmlRoot.classList.add('access-locked');
+}
+
+function unlockPageScroll(){
+  htmlRoot.classList.remove('access-locked');
+
+  /* 解除直後に必ずページ最上部へ */
+  window.scrollTo(0, 0);
+  htmlRoot.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
+
 /* ─── ローダー制御 ─── */
 const loader = document.getElementById('loader');
 let isLoading = true;
@@ -909,6 +943,7 @@ async function initSiteAccessGate(){
 
   return new Promise(resolve => {
     if(!gate || !form || !input){
+      unlockPageScroll();
       resolve();
       return;
     }
@@ -930,7 +965,7 @@ async function initSiteAccessGate(){
           isVisible ? 'パスワードを表示' : 'パスワードを隠す'
         );
 
-        input.focus();
+        input.focus({ preventScroll:true });
       });
     }
 
@@ -944,6 +979,15 @@ async function initSiteAccessGate(){
 
       const finish = () => {
         gate.style.display = 'none';
+
+        /* キーボードを確実に閉じてからロック解除＆最上部へ */
+        try{ input.blur(); }catch(e){}
+
+        unlockPageScroll();
+
+        /* キーボードで高さが変わる端末向けに再計測 */
+        setTimeout(() => setAppHeight(true), 350);
+
         resolve();
       };
 
@@ -954,21 +998,14 @@ async function initSiteAccessGate(){
       }
     };
 
-    /*
-      CMSでパスワード保護がOFFの場合はそのまま通す。
-      session表示ヒントも削除しておく。
-    */
+    /* CMSでパスワード保護がOFFの場合 */
     if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
       document.documentElement.classList.remove('access-session-hint');
       closeGate(false);
       return;
     }
 
-    /*
-      同タブで認証済みなら、ゲートを表示せずに進む。
-      head内のスクリプトで既に一旦ゲートを隠しているため、
-      再読み込み時にもパスワード画面がちらつかない。
-    */
+    /* 同タブで認証済みならゲートを表示せずに進む */
     try {
       const savedHash = sessionStorage.getItem('portfolioAccessHash');
 
@@ -978,18 +1015,17 @@ async function initSiteAccessGate(){
       }
     } catch(e){}
 
-    /*
-      sessionStorage内の値が古い、
-      または認証されていない場合はパスワード画面を見せる。
-      例：CMSでパスワード変更後に再読み込みした場合。
-    */
+    /* ここからパスワード画面を表示 */
     document.documentElement.classList.remove('access-session-hint');
+
+    lockPageScroll();
+
     gate.classList.remove('is-hidden');
     gate.style.display = 'flex';
     gate.setAttribute('aria-hidden', 'false');
 
     setTimeout(() => {
-      input.focus();
+      input.focus({ preventScroll:true });
     }, 80);
 
     form.addEventListener('submit', async e => {
@@ -1002,7 +1038,7 @@ async function initSiteAccessGate(){
 
       if(!password){
         error.textContent = 'パスワードを入力してください。';
-        input.focus();
+        input.focus({ preventScroll:true });
         return;
       }
 
@@ -1025,7 +1061,7 @@ async function initSiteAccessGate(){
             toggle.setAttribute('aria-label', 'パスワードを表示');
           }
 
-          input.focus();
+          input.focus({ preventScroll:true });
 
           submit.disabled = false;
           submit.textContent = 'ENTER';

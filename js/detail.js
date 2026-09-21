@@ -88,6 +88,13 @@ async function sha256(value){
     .join('');
 }
 
+function unlockPageScroll(){
+  document.documentElement.classList.remove('access-locked');
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 async function initSiteAccessGate(){
   const gate = document.getElementById('siteAccessGate');
   const form = document.getElementById('siteAccessForm');
@@ -97,6 +104,7 @@ async function initSiteAccessGate(){
 
   return new Promise(resolve => {
     if(!gate || !form || !input){
+      unlockPageScroll();
       resolve();
       return;
     }
@@ -118,7 +126,7 @@ async function initSiteAccessGate(){
           isVisible ? 'パスワードを表示' : 'パスワードを隠す'
         );
 
-        input.focus();
+        input.focus({ preventScroll:true });
       });
     }
 
@@ -132,6 +140,11 @@ async function initSiteAccessGate(){
 
       const finish = () => {
         gate.style.display = 'none';
+
+        try{ input.blur(); }catch(e){}
+
+        unlockPageScroll();
+
         resolve();
       };
 
@@ -159,16 +172,15 @@ async function initSiteAccessGate(){
       }
     } catch(e){}
 
-    /*
-      未認証またはパスワード変更済みの場合。
-      head側の表示ヒントを解除して、ゲートを表示する。
-    */
+    /* 未認証またはパスワード変更済みの場合 */
     document.documentElement.classList.remove('access-session-hint');
+    document.documentElement.classList.add('access-locked');
+
     gate.classList.remove('is-hidden');
     gate.style.display = 'flex';
     gate.setAttribute('aria-hidden', 'false');
 
-    setTimeout(() => input.focus(), 80);
+    setTimeout(() => input.focus({ preventScroll:true }), 80);
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -180,7 +192,7 @@ async function initSiteAccessGate(){
 
       if(!password){
         error.textContent = 'パスワードを入力してください。';
-        input.focus();
+        input.focus({ preventScroll:true });
         return;
       }
 
@@ -203,7 +215,7 @@ async function initSiteAccessGate(){
             toggle.setAttribute('aria-label', 'パスワードを表示');
           }
 
-          input.focus();
+          input.focus({ preventScroll:true });
 
           submit.disabled = false;
           submit.textContent = 'ENTER';
