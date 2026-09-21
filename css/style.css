@@ -573,7 +573,7 @@ body.loaded .scroll-ind{
 .works-sub{
   font-family:var(--ff-jp);
   font-weight:400;
-  font: size 14px;
+  font-size:14px;
   letter-spacing:.08em;
   color:var(--text);
   text-align:center;
@@ -2224,4 +2224,11 @@ html.access-locked body{
 .site-access-gate{
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
+
+  /* 内容が画面より高いとき上が切れないようにする */
+  align-items:flex-start;
+}
+
+.site-access-gate .site-access-card{
+  margin:auto;
 }
