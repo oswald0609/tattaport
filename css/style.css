@@ -14,9 +14,6 @@
   --eio:cubic-bezier(0.65,0,0.35,1);
   --ph:linear-gradient(135deg,#1e2323 0%,#181919 40%,#1a1e1e 100%);
   --safe-x:calc((3.5rem + 64px) * 1.5);
-
-  /* 追加：JSで実ビューポート高さを入れる（iOSアドレスバー対策） */
-  --app-height:100dvh;
 }
 
 html{
@@ -24,9 +21,6 @@ html{
   height:100%;
   scroll-behavior:auto;
   overscroll-behavior-y:none;
-
-  /* スクロール位置の自動補正でカクつくのを防ぐ */
-  overflow-anchor:none;
 }
 
 body{
@@ -36,12 +30,11 @@ body{
   overflow-x:hidden;
   cursor:none;
   position:relative;
-  overflow-anchor:none;
 }
 
 section{
-  height:100vh;               /* 旧ブラウザ用フォールバック */
-  height:var(--app-height);   /* 100dvh をやめてJS固定値に */
+  height:100vh;
+  height:100dvh;
   position:relative;
   overflow:hidden;
   z-index:1;
@@ -191,7 +184,7 @@ section{
 .nav-logo{
   position:absolute;
   left:calc(var(--safe-x) / 2);
-  top:calc(var(--app-height) / 2);
+  top:50dvh;
   transform:translate(-50%,-50%);
   width:48px;
   height:48px;
@@ -224,7 +217,7 @@ section{
 .hamburger{
   position:absolute;
   right:calc(var(--safe-x) / 2);
-  top:calc(var(--app-height) / 2);
+  top:50dvh;
   transform:translate(50%,-50%);
   cursor:pointer;
   background:none;
@@ -268,7 +261,7 @@ section{
 .top-nav{
   position:absolute;
   right:13vw;
-  top:calc(var(--app-height) / 2);
+  top:50dvh;
   transform:translateY(-50%);
   z-index:50;
   display:flex;
@@ -371,7 +364,7 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 .top-content{
   position:absolute;
   left:var(--safe-x);
-  top:calc(var(--app-height) / 2);
+  top:50dvh;
   transform:translateY(-50%);
   z-index:2;
 }
@@ -557,7 +550,7 @@ body.loaded .scroll-ind{
   flex-direction:column;
   align-items:center;
   justify-content:space-between;
-  padding:calc(var(--app-height) * .16) 0;
+  padding:16dvh 0 16dvh;
 }
 
 .works-upper{
@@ -1122,7 +1115,7 @@ body.in-contact .contact-email-btn{
   visibility:hidden;
   transition:opacity .45s ease,visibility .45s;
   overflow:hidden;
-  min-height:var(--app-height);
+  min-height:100dvh;
 }
 
 #works-all.open{
@@ -1353,27 +1346,32 @@ body.in-contact .contact-email-btn{
     left:0;
     right:0;
     bottom:auto;
+    transform:none;
     display:flex;
     align-items:center;
     justify-content:space-between;
-
-    /* セーフエリア分を上乗せ */
-    padding:
-      calc(1.2rem + env(safe-area-inset-top,0px))
-      calc(1.5rem + env(safe-area-inset-right,0px))
-      1.2rem
-      calc(1.5rem + env(safe-area-inset-left,0px));
-
+    padding:calc(1.2rem + env(safe-area-inset-top,0px)) 1.5rem 1.2rem;
     height:auto;
     z-index:501;
     opacity:1;
     visibility:visible;
+  }
 
-    /* iOSでスクロール中にfixedが上へズレるのを防ぐ */
-    transform:translateZ(0);
-    -webkit-transform:translateZ(0);
-    backface-visibility:hidden;
+  /*
+    JSが動く端末では fixed をやめ、
+    「absolute ＋ 毎フレーム translateY(scrollY)」で自前固定する。
+    iOSのfixed追従遅れ（ロゴ・ハンバーガーの食い込み）を根本から防ぐ。
+  */
+  html.nav-pinned .nav-fixed{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    transform:translate3d(0,0,0);
+    -webkit-transform:translate3d(0,0,0);
     will-change:transform;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
   }
 
   .nav-logo{
@@ -1462,7 +1460,7 @@ body.in-contact .contact-email-btn{
 
   .top-content{
     left:10vw;
-    top:calc(var(--app-height) / 2);
+    top:50dvh;
     transform:translateY(-50%);
   }
 
@@ -1512,14 +1510,14 @@ body.in-contact .contact-email-btn{
   }
 
   .works-upper{
-    padding-top:calc(var(--app-height) * .22);
+    padding-top:22dvh;
   }
 
   .works-viewall{
     font-size:13px;
     padding:16px 56px;
     letter-spacing:.20em;
-    margin-bottom:calc(var(--app-height) * .18);
+    margin-bottom:18dvh;
   }
 
   .profile-sp-title,
@@ -1545,7 +1543,7 @@ body.in-contact .contact-email-btn{
   .profile-sp-hero{
     display:flex;
     flex-shrink:0;
-    height:calc(var(--app-height) * .38);
+    height:38dvh;
     position:relative;
     overflow:visible;
   }
@@ -1633,7 +1631,7 @@ body.in-contact .contact-email-btn{
   .skill-inner{
     display:flex;
     flex-direction:column;
-    min-height:var(--app-height);
+    min-height:100dvh;
     justify-content:center;
     padding-top:0;
   }
