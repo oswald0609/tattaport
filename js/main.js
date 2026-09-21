@@ -1,96 +1,101 @@
-/* ─── ビューポート制御（iOS Safari 対策） ─── */
+/* ─── SPナビの自前固定（iOSのfixed追従遅れ対策） ─── */
 const htmlRoot = document.documentElement;
 const vvp = window.visualViewport || null;
 
-let lastViewportWidth = window.innerWidth;
+let navEl = null;
+let navPinRAF = 0;
+let navPinUntil = 0;
 
-function setAppHeight(force){
-  /* 幅が変わらない限り更新しない＝アドレスバー伸縮でレイアウトを動かさない */
-  if(!force && Math.abs(window.innerWidth - lastViewportWidth) <= 1) return;
-
-  lastViewportWidth = window.innerWidth;
-  htmlRoot.style.setProperty('--app-height', window.innerHeight + 'px');
-
-  requestAnimationFrame(ensureBottomSpace);
+function isSPView(){
+  return window.innerWidth <= 900;
 }
 
-/*
-  iOS Safari は
-  「レイアウトビューポート（position:fixed とスクロール上限の基準）」が
-  「実際に見えている高さ（innerHeight）」より大きい。
+/* SPのときだけ absolute 固定モードへ切り替える */
+function updateNavPinMode(){
+  if(!navEl) navEl = document.getElementById('navFixed');
 
-  そのためページ末尾までスクロールしきれず
-   ・固定ナビ（ロゴ／ハンバーガー）が画面上に食い込む
-   ・最終セクションのフッターがツールバーに隠れる
-  という症状が出る。
-
-  足りないスクロール量を実測し、その分だけ body の下に余白を足して解消する。
-  （PCでは gap が 0 になるので何も起きない）
-*/
-function ensureBottomSpace(){
-  if(htmlRoot.classList.contains('access-locked')) return;
-  if(!document.body) return;
-
-  const sections = [...document.querySelectorAll('section')];
-  if(!sections.length) return;
-
-  document.body.style.paddingBottom = '0px';
-
-  const lastTop = sections[sections.length - 1].offsetTop;
-  const maxScroll = htmlRoot.scrollHeight - htmlRoot.clientHeight;
-  const gap = Math.max(0, Math.ceil(lastTop - maxScroll));
-
-  document.body.style.paddingBottom = gap + 'px';
+  if(isSPView()){
+    htmlRoot.classList.add('nav-pinned');
+    pinNavOnce();
+  }else{
+    htmlRoot.classList.remove('nav-pinned');
+    if(navEl) navEl.style.transform = '';
+  }
 }
 
-/* 固定ナビを「実際に見えている領域」の上端へ追従させる */
-function syncFixedNavOffset(){
-  const nav = document.getElementById('navFixed');
-  if(!nav) return;
+/* ナビを「いま見えている画面の上端」に合わせる */
+function pinNavOnce(){
+  if(!navEl) navEl = document.getElementById('navFixed');
+  if(!navEl) return;
 
-  if(!vvp || window.innerWidth > 900){
-    nav.style.transform = '';
+  if(!htmlRoot.classList.contains('nav-pinned')){
+    navEl.style.transform = '';
     return;
   }
 
-  const offset = Math.max(0, Math.round(vvp.offsetTop || 0));
-  nav.style.transform = `translate3d(0,${offset}px,0)`;
+  const scrollY = window.pageYOffset || htmlRoot.scrollTop || 0;
+  const vOffset = vvp ? (vvp.offsetTop || 0) : 0;
+
+  navEl.style.transform =
+    'translate3d(0,' + Math.round(scrollY + vOffset) + 'px,0)';
 }
 
-if(vvp){
-  vvp.addEventListener('scroll', syncFixedNavOffset);
-  vvp.addEventListener('resize', syncFixedNavOffset);
+/* スクロール中は毎フレーム追従させる（止まったら自動停止） */
+function pinNavFor(duration = 400){
+  navPinUntil = performance.now() + duration;
+
+  if(navPinRAF) return;
+
+  const loop = () => {
+    pinNavOnce();
+
+    if(performance.now() < navPinUntil){
+      navPinRAF = requestAnimationFrame(loop);
+    }else{
+      navPinRAF = 0;
+      pinNavOnce();
+    }
+  };
+
+  navPinRAF = requestAnimationFrame(loop);
 }
 
-window.addEventListener('scroll', syncFixedNavOffset, { passive:true });
-
-setAppHeight(true);
+window.addEventListener('scroll',    () => pinNavFor(400), { passive:true });
+window.addEventListener('touchmove', () => pinNavFor(500), { passive:true });
+window.addEventListener('touchend',  () => pinNavFor(700), { passive:true });
 
 window.addEventListener('resize', () => {
-  setAppHeight(false);
-  ensureBottomSpace();
-  syncFixedNavOffset();
+  updateNavPinMode();
+  pinNavFor(600);
 });
 
 window.addEventListener('orientationchange', () => {
   setTimeout(() => {
-    setAppHeight(true);
-    ensureBottomSpace();
-    syncFixedNavOffset();
+    updateNavPinMode();
+    pinNavFor(800);
   }, 300);
 });
+
+if(vvp){
+  vvp.addEventListener('scroll', () => pinNavFor(400));
+  vvp.addEventListener('resize', () => pinNavFor(600));
+}
+
+updateNavPinMode();
+document.addEventListener('DOMContentLoaded', updateNavPinMode);
 
 /* ─── ページ最上部へ強制的に戻す ─── */
 function hardScrollTop(){
   window.scrollTo(0, 0);
   htmlRoot.scrollTop = 0;
   document.body.scrollTop = 0;
+  pinNavOnce();
 }
 
 let forceTopUntil = 0;
 let forcingTop = false;
 
-/* ローダー表示中はずっと最上部を維持する（キーボード由来のズレも打ち消す） */
+/* ローダー表示中は最上部を維持し続ける（キーボード由来のズレも打ち消す） */
 function forceScrollTop(duration = 1200){
   forceTopUntil = performance.now() + duration;
 
@@ -99,7 +104,6 @@ function forceScrollTop(duration = 1200){
 
   (function loop(){
     hardScrollTop();
-    syncFixedNavOffset();
 
     if(performance.now() < forceTopUntil){
       requestAnimationFrame(loop);
@@ -118,7 +122,7 @@ function unlockPageScroll(){
   htmlRoot.classList.remove('access-locked');
 
   hardScrollTop();
-  forceScrollTop(1600);
+  forceScrollTop(1500);
 }
 
 /* タッチ端末では自動フォーカスしない（キーボードで表示位置がズレるため） */
@@ -189,7 +193,7 @@ async function startOpeningSequence(){
   document.body.style.overflow = 'hidden';
 
   /* オープニング中は最上部を維持し続ける */
-  forceScrollTop(1800);
+  forceScrollTop(2000);
 
   /*
     ローダーはパスワード画面の背面で既に表示済み。
@@ -229,17 +233,12 @@ async function startOpeningSequence(){
   document.body.style.overflow = '';
 
   /* 解除直後の位置ズレを打ち消す */
-  setAppHeight(true);
-  ensureBottomSpace();
+  updateNavPinMode();
   hardScrollTop();
-  syncFixedNavOffset();
 
   /* 端末によってはバーの高さ確定が遅れるので、少し後にもう一度 */
-  setTimeout(() => {
-    ensureBottomSpace();
-    hardScrollTop();
-    syncFixedNavOffset();
-  }, 200);
+  setTimeout(hardScrollTop, 120);
+  setTimeout(hardScrollTop, 400);
 }
 
 /* ─── カスタムカーソル ─── */
@@ -384,8 +383,8 @@ function snapTo(y, dur = SNAP_DUR){
 
     htmlEl.scrollTop = startY + distance * eie(progress);
 
-    /* スクロール中も固定ナビを見えている領域に合わせ続ける */
-    syncFixedNavOffset();
+    /* 同一フレーム内でナビ位置も更新＝1フレームもズレない */
+    pinNavOnce();
 
     if(progress < 1){
       requestAnimationFrame(step);
@@ -393,11 +392,10 @@ function snapTo(y, dur = SNAP_DUR){
       htmlEl.scrollTop = y;
       snapping = false;
 
-      syncFixedNavOffset();
+      pinNavOnce();
 
-      /* iOSはスクロール停止後にビューポートが確定するので追い打ちで補正 */
-      setTimeout(syncFixedNavOffset, 60);
-      setTimeout(syncFixedNavOffset, 260);
+      /* iOSはスクロール停止後にバー高さが確定するので追い打ちで補正 */
+      pinNavFor(800);
     }
   })(performance.now());
 }
@@ -1098,7 +1096,7 @@ async function initSiteAccessGate(){
       gate.classList.add('is-hidden');
       gate.setAttribute('aria-hidden', 'true');
 
-      const finish = () => {
+       const finish = () => {
         gate.style.display = 'none';
 
         /* キーボードを確実に閉じてからロック解除＆最上部へ */
@@ -1106,13 +1104,13 @@ async function initSiteAccessGate(){
 
         unlockPageScroll();
 
-        /* キーボードが閉じ切ってから高さを再計測して余白を再計算 */
+        /* キーボードが閉じ切るタイミングで再度最上部へ */
         setTimeout(() => {
-          setAppHeight(true);
-          ensureBottomSpace();
+          updateNavPinMode();
           hardScrollTop();
-          syncFixedNavOffset();
         }, 400);
+
+        setTimeout(hardScrollTop, 800);
 
         resolve();
       };
@@ -1631,17 +1629,16 @@ function renderProfileSlideshow(){
   renderProfileSlideshow();
   applyWorksBg();
 
-  /* レイアウト確定後にスクロール範囲を補正 */
-  ensureBottomSpace();
-  syncFixedNavOffset();
+  /* レイアウト確定後にナビ位置を合わせる */
+  updateNavPinMode();
 
   /* 最後にオープニングアニメーションを開始 */
   await startOpeningSequence();
 
   /* 画像読み込み完了で高さが変わる場合に備えて最終補正 */
   window.addEventListener('load', () => {
-    ensureBottomSpace();
-    syncFixedNavOffset();
+    updateNavPinMode();
+    pinNavFor(600);
   });
 })();
 
