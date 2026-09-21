@@ -7,11 +7,25 @@
 
 <!-- 認証済みタブでは、読み込み直後のパスワード画面ちらつきを防ぐ -->
 <script>
-try{
-  if(sessionStorage.getItem('portfolioAccessHash')){
-    document.documentElement.classList.add('access-session-hint');
+(function(){
+  /* リロード時にブラウザが前回のスクロール位置へ戻すのを止める */
+  try{
+    if('scrollRestoration' in history){
+      history.scrollRestoration = 'manual';
+    }
+  }catch(e){}
+
+  try{
+    if(sessionStorage.getItem('portfolioAccessHash')){
+      document.documentElement.classList.add('access-session-hint');
+    }else{
+      /* パスワード画面が出る間は背面スクロールを禁止 */
+      document.documentElement.classList.add('access-locked');
+    }
+  }catch(e){
+    document.documentElement.classList.add('access-locked');
   }
-}catch(e){}
+})();
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
