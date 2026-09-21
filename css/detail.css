@@ -289,7 +289,10 @@ body{background:transparent;color:var(--text);font-family:var(--ff-jp);min-heigh
   background:transparent;
   color:var(--text);
   font-family:var(--ff-sm);
-  font-size:15px;
+
+  /* iPhoneで入力欄へのフォーカス時に自動拡大されるのを防ぐ */
+  font-size:16px;
+
   letter-spacing:.08em;
   transition:border-color .2s;
 }

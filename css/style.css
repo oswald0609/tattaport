@@ -1357,23 +1357,6 @@ body.in-contact .contact-email-btn{
     visibility:visible;
   }
 
-  /*
-    JSが動く端末では fixed をやめ、
-    「absolute ＋ 毎フレーム translateY(scrollY)」で自前固定する。
-    iOSのfixed追従遅れ（ロゴ・ハンバーガーの食い込み）を根本から防ぐ。
-  */
-  html.nav-pinned .nav-fixed{
-    position:absolute;
-    top:0;
-    left:0;
-    right:0;
-    transform:translate3d(0,0,0);
-    -webkit-transform:translate3d(0,0,0);
-    will-change:transform;
-    backface-visibility:hidden;
-    -webkit-backface-visibility:hidden;
-  }
-
   .nav-logo{
     all:unset;
     display:flex;
@@ -2089,7 +2072,10 @@ body.loaded .top-title-line:nth-child(2) .top-title-image.has-art{
   background:transparent;
   color:var(--text);
   font-family:var(--ff-sm);
-  font-size:15px;
+
+  /* iPhoneで入力欄へのフォーカス時に自動拡大されるのを防ぐ */
+  font-size:16px;
+
   letter-spacing:.08em;
   transition:border-color .2s;
 }
