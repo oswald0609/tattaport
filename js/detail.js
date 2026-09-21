@@ -1,3 +1,6 @@
+/* JSが正常に読み込めたことを示すフラグ（HTML側の保険用） */
+window.__portfolioJsReady = true;
+
 /* ─── カスタムカーソル ─── */
 const cur = document.getElementById('cur');
 let mx=0,my=0;
@@ -180,7 +183,10 @@ async function initSiteAccessGate(){
     gate.style.display = 'flex';
     gate.setAttribute('aria-hidden', 'false');
 
-    setTimeout(() => input.focus({ preventScroll:true }), 80);
+    /* SPは自動フォーカスしない（キーボードで表示位置がズレるため） */
+    if(!window.matchMedia('(hover:none)').matches){
+      setTimeout(() => input.focus({ preventScroll:true }), 80);
+    }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();

@@ -1,3 +1,6 @@
+/* JSが正常に読み込めたことを示すフラグ（HTML側の保険用） */
+window.__portfolioJsReady = true;
+
 /* ─── SPナビの自前固定（iOSのfixed追従遅れ対策） ─── */
 const htmlRoot = document.documentElement;
 const vvp = window.visualViewport || null;
@@ -447,6 +450,9 @@ htmlEl.addEventListener('touchstart', e => {
 });
 
 htmlEl.addEventListener('touchmove', e => {
+  /* パスワード画面の中だけは自由にスクロールさせる */
+  if(e.target.closest && e.target.closest('.site-access-gate')) return;
+
   if(isLoading){
     e.preventDefault();
     return;
@@ -1615,8 +1621,13 @@ function renderProfileSlideshow(){
 
 /* ─── 初期化 ─── */
 (async () => {
-  /* data.json / CMSの設定を読み込む */
-  await loadSiteData();
+  /* データ取得に失敗してもゲートで固まらないようにする */
+  try {
+    await loadSiteData();
+  } catch(e){
+    console.error(e);
+    SITE_ACCESS = { enabled:false, passwordHash:'' };
+  }
 
   /*
     パスワード認証を待つ。
