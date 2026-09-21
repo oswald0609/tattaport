@@ -14,26 +14,33 @@
   --eio:cubic-bezier(0.65,0,0.35,1);
   --ph:linear-gradient(135deg,#1e2323 0%,#181919 40%,#1a1e1e 100%);
   --safe-x:calc((3.5rem + 64px) * 1.5);
+
+  /* 追加：JSで実ビューポート高さを入れる（iOSアドレスバー対策） */
+  --app-height:100dvh;
 }
 
 html{
+  /* 横スクロール禁止は html 側で行う
+     （body:overflow-x:hidden は iOS の position:fixed ズレの原因） */
+  overflow-x:hidden;
   overflow-y:scroll;
   height:100%;
   scroll-behavior:auto;
+  overscroll-behavior-y:none;
 }
 
 body{
   background:transparent;
   color:var(--text);
   font-family:var(--ff-jp);
-  overflow-x:hidden;
+  overflow-x:clip;
   cursor:none;
   position:relative;
 }
 
 section{
-  height:100vh;
-  height:100dvh;
+  height:100vh;               /* 旧ブラウザ用フォールバック */
+  height:var(--app-height);   /* 100dvh をやめてJS固定値に */
   position:relative;
   overflow:hidden;
   z-index:1;
@@ -183,7 +190,7 @@ section{
 .nav-logo{
   position:absolute;
   left:calc(var(--safe-x) / 2);
-  top:50dvh;
+  top:calc(var(--app-height) / 2);
   transform:translate(-50%,-50%);
   width:48px;
   height:48px;
@@ -216,7 +223,7 @@ section{
 .hamburger{
   position:absolute;
   right:calc(var(--safe-x) / 2);
-  top:50dvh;
+  top:calc(var(--app-height) / 2);
   transform:translate(50%,-50%);
   cursor:pointer;
   background:none;
@@ -260,7 +267,7 @@ section{
 .top-nav{
   position:absolute;
   right:13vw;
-  top:50dvh;
+  top:calc(var(--app-height) / 2);
   transform:translateY(-50%);
   z-index:50;
   display:flex;
@@ -363,7 +370,7 @@ body.loaded .top-nav a:nth-child(4){animation-delay:.68s}
 .top-content{
   position:absolute;
   left:var(--safe-x);
-  top:50dvh;
+  top:calc(var(--app-height) / 2);
   transform:translateY(-50%);
   z-index:2;
 }
@@ -549,7 +556,7 @@ body.loaded .scroll-ind{
   flex-direction:column;
   align-items:center;
   justify-content:space-between;
-  padding:16dvh 0 16dvh;
+  padding:calc(var(--app-height) * .16) 0;
 }
 
 .works-upper{
@@ -1114,7 +1121,7 @@ body.in-contact .contact-email-btn{
   visibility:hidden;
   transition:opacity .45s ease,visibility .45s;
   overflow:hidden;
-  min-height:100dvh;
+  min-height:var(--app-height);
 }
 
 #works-all.open{
@@ -1345,15 +1352,27 @@ body.in-contact .contact-email-btn{
     left:0;
     right:0;
     bottom:auto;
-    transform:none;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:1.2rem 1.5rem;
+
+    /* セーフエリア分を上乗せ */
+    padding:
+      calc(1.2rem + env(safe-area-inset-top,0px))
+      calc(1.5rem + env(safe-area-inset-right,0px))
+      1.2rem
+      calc(1.5rem + env(safe-area-inset-left,0px));
+
     height:auto;
     z-index:501;
     opacity:1;
     visibility:visible;
+
+    /* iOSでスクロール中にfixedが上へズレるのを防ぐ */
+    transform:translateZ(0);
+    -webkit-transform:translateZ(0);
+    backface-visibility:hidden;
+    will-change:transform;
   }
 
   .nav-logo{
@@ -1442,7 +1461,7 @@ body.in-contact .contact-email-btn{
 
   .top-content{
     left:10vw;
-    top:50dvh;
+    top:calc(var(--app-height) / 2);
     transform:translateY(-50%);
   }
 
@@ -1492,14 +1511,14 @@ body.in-contact .contact-email-btn{
   }
 
   .works-upper{
-    padding-top:22dvh;
+    padding-top:calc(var(--app-height) * .22);
   }
 
   .works-viewall{
     font-size:13px;
     padding:16px 56px;
     letter-spacing:.20em;
-    margin-bottom:18dvh;
+    margin-bottom:calc(var(--app-height) * .18);
   }
 
   .profile-sp-title,
@@ -1525,7 +1544,7 @@ body.in-contact .contact-email-btn{
   .profile-sp-hero{
     display:flex;
     flex-shrink:0;
-    height:38dvh;
+    height:calc(var(--app-height) * .38);
     position:relative;
     overflow:visible;
   }
@@ -1613,7 +1632,7 @@ body.in-contact .contact-email-btn{
   .skill-inner{
     display:flex;
     flex-direction:column;
-    min-height:100dvh;
+    min-height:var(--app-height);
     justify-content:center;
     padding-top:0;
   }
@@ -1791,7 +1810,8 @@ body.in-contact .contact-email-btn{
   .contact-footer{
     flex-direction:column;
     gap:.8rem;
-    padding:1rem 5vw 1rem;
+    /* Safariの下部ツールバー／セーフエリアに潜らないようにする */
+    padding:1rem 5vw calc(1.2rem + env(safe-area-inset-bottom,0px));
   }
 
   .cf-links{
@@ -1808,7 +1828,7 @@ body.in-contact .contact-email-btn{
     width:20px;
     height:20px;
     margin-top:.2rem;
-    margin-bottom:.05rem;
+    margin-bottom:0;
   }
 
   .wa-back{
@@ -2182,4 +2202,27 @@ html.access-session-hint .site-access-gate{
 
 .site-access-gate .site-access-submit{
   cursor:pointer;
+}
+
+/* =========================================
+   SITE ACCESS：ゲート表示中は背面を完全ロック
+   ========================================= */
+html.access-locked,
+html.access-locked body{
+  height:100%;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+
+/* iOSでも確実に止めるため body 自体を固定する */
+html.access-locked body{
+  position:fixed;
+  inset:0;
+  width:100%;
+}
+
+/* キーボード表示時のためにゲート内だけはスクロール可 */
+.site-access-gate{
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
