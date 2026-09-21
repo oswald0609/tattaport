@@ -1,88 +1,28 @@
 /* JSが正常に読み込めたことを示すフラグ（HTML側の保険用） */
 window.__portfolioJsReady = true;
 
-/* ─── SPナビの自前固定（iOSのfixed追従遅れ対策） ─── */
+/* ─── ナビの固定はCSSの position:fixed に統一 ─── */
 const htmlRoot = document.documentElement;
-const vvp = window.visualViewport || null;
 
-let navEl = null;
-let navPinRAF = 0;
-let navPinUntil = 0;
-
-function isSPView(){
-  return window.innerWidth <= 900;
-}
-
-/* SPのときだけ absolute 固定モードへ切り替える */
 function updateNavPinMode(){
-  if(!navEl) navEl = document.getElementById('navFixed');
+  /* 以前の absolute 固定モードを解除 */
+  htmlRoot.classList.remove('nav-pinned');
 
-  if(isSPView()){
-    htmlRoot.classList.add('nav-pinned');
-    pinNavOnce();
-  }else{
-    htmlRoot.classList.remove('nav-pinned');
-    if(navEl) navEl.style.transform = '';
-  }
+  const nav = document.getElementById('navFixed');
+  if(!nav) return;
+
+  /* JSによる位置補正を除去 */
+  nav.style.removeProperty('transform');
+  nav.style.removeProperty('-webkit-transform');
 }
 
-/* ナビを「いま見えている画面の上端」に合わせる */
-function pinNavOnce(){
-  if(!navEl) navEl = document.getElementById('navFixed');
-  if(!navEl) return;
+/*
+  既存コード内の呼び出しを壊さないため、関数名だけ残す。
+  スクロール中にナビの座標を書き換える処理は行わない。
+*/
+function pinNavOnce(){}
 
-  if(!htmlRoot.classList.contains('nav-pinned')){
-    navEl.style.transform = '';
-    return;
-  }
-
-  const scrollY = window.pageYOffset || htmlRoot.scrollTop || 0;
-  const vOffset = vvp ? (vvp.offsetTop || 0) : 0;
-
-  navEl.style.transform =
-    'translate3d(0,' + Math.round(scrollY + vOffset) + 'px,0)';
-}
-
-/* スクロール中は毎フレーム追従させる（止まったら自動停止） */
-function pinNavFor(duration = 400){
-  navPinUntil = performance.now() + duration;
-
-  if(navPinRAF) return;
-
-  const loop = () => {
-    pinNavOnce();
-
-    if(performance.now() < navPinUntil){
-      navPinRAF = requestAnimationFrame(loop);
-    }else{
-      navPinRAF = 0;
-      pinNavOnce();
-    }
-  };
-
-  navPinRAF = requestAnimationFrame(loop);
-}
-
-window.addEventListener('scroll',    () => pinNavFor(400), { passive:true });
-window.addEventListener('touchmove', () => pinNavFor(500), { passive:true });
-window.addEventListener('touchend',  () => pinNavFor(700), { passive:true });
-
-window.addEventListener('resize', () => {
-  updateNavPinMode();
-  pinNavFor(600);
-});
-
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => {
-    updateNavPinMode();
-    pinNavFor(800);
-  }, 300);
-});
-
-if(vvp){
-  vvp.addEventListener('scroll', () => pinNavFor(400));
-  vvp.addEventListener('resize', () => pinNavFor(600));
-}
+function pinNavFor(){}
 
 updateNavPinMode();
 document.addEventListener('DOMContentLoaded', updateNavPinMode);
