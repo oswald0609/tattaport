@@ -1,0 +1,265 @@
+/* 共通スタイル（index.html / detail.html 両方で読み込む）。各ページのCSSより後に読み込むこと */
+
+/* CURSOR */
+.cursor {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.2s var(--eoe),
+    height 0.2s var(--eoe),
+    background 0.2s,
+    opacity 0.2s;
+}
+
+.cursor.expanded {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@media (hover: none) {
+  .cursor {
+    display: none;
+  }
+  body {
+    cursor: auto;
+  }
+}
+
+/* DOTS BACKGROUND */
+#dotsCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* =========================================
+   SITE ACCESS GATE
+   簡易パスワード画面
+   ========================================= */
+
+.site-access-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  background: #181919;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.45s var(--eoe),
+    visibility 0.45s;
+  cursor: default;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
+}
+
+.site-access-gate.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.site-access-card {
+  width: min(420px, 100%);
+  text-align: center;
+}
+
+.site-access-eyebrow {
+  margin-bottom: 1.1rem;
+  color: var(--accent);
+  font-family: var(--ff-sm);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+}
+
+.site-access-title {
+  margin-bottom: 1.1rem;
+  color: var(--text);
+  font-family: var(--ff-disp);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+}
+
+.site-access-text {
+  margin-bottom: 2rem;
+  color: var(--text-mid);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.site-access-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-dim);
+  font-family: var(--ff-sm);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-align: left;
+}
+
+.site-access-input {
+  display: block;
+  width: 100%;
+  height: 52px;
+  padding: 0 15px;
+  border: 1px solid rgba(225, 226, 226, 0.3);
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--ff-sm);
+
+  /* iPhoneで入力欄へのフォーカス時に自動拡大されるのを防ぐ */
+  font-size: 16px;
+
+  letter-spacing: 0.08em;
+  transition: border-color 0.2s;
+}
+
+.site-access-input:focus {
+  border-color: var(--accent);
+}
+
+.site-access-input::placeholder {
+  color: rgba(225, 226, 226, 0.26);
+}
+
+.site-access-error {
+  min-height: 1.5em;
+  margin-top: 0.7rem;
+  color: #f04650;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.site-access-submit {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 0.6rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+  font-family: var(--ff-sm);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.site-access-submit:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+.site-access-submit:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* =========================================
+   SITE ACCESS：認証済み時のちらつき防止
+   ========================================= */
+
+/* sessionStorageに認証情報がある場合、HTML読込直後からゲートを隠す */
+html.access-session-hint .site-access-gate {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* =========================================
+   SITE ACCESS：パスワード表示切替
+   ========================================= */
+
+.site-access-password-wrap {
+  position: relative;
+}
+
+.site-access-password-wrap .site-access-input {
+  padding-right: 72px;
+}
+
+.site-access-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 62px;
+  height: 100%;
+  transform: translateY(-50%);
+  border: 0;
+  border-left: 1px solid rgba(225, 226, 226, 0.18);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--ff-sm);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.site-access-toggle:hover {
+  background: rgba(80, 240, 210, 0.08);
+  color: var(--accent);
+}
+
+.site-access-toggle.is-visible {
+  color: var(--accent);
+}
+
+/* =========================================
+   SITE ACCESS：パスワード画面上では通常カーソルを表示
+   ========================================= */
+
+.site-access-gate .site-access-input {
+  cursor: text;
+}
+
+.site-access-gate .site-access-submit {
+  cursor: pointer;
+}
+
+/* =========================================
+   SITE ACCESS：ゲート表示中は背面を完全ロック
+   ========================================= */
+html.access-locked,
+html.access-locked body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* iOSでも確実に止めるため body 自体を固定する */
+html.access-locked body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+}
+
+/* キーボード表示時のためにゲート内だけはスクロール可 */
+
+.site-access-gate .site-access-card {
+  margin: auto;
+}
