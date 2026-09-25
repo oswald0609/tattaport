@@ -35,7 +35,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@200;300;400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/detail.css?v=sp-fix-01">
+<link rel="stylesheet" href="css/detail.css?v=cleanup-01">
+<link rel="stylesheet" href="css/common.css?v=cleanup-01">
 </head>
 <body>
 
@@ -44,39 +45,31 @@
   <form class="site-access-card" id="siteAccessForm">
     <p class="site-access-eyebrow">PORTFOLIO</p>
     <h1 class="site-access-title">SHOTA INOUE</h1>
-    <p class="site-access-text">
-      パスワードを入力してください。
-    </p>
+    <p class="site-access-text">パスワードを入力してください。</p>
 
-    <label class="site-access-label" for="siteAccessPassword">
-      
-    </label>
+    <label class="site-access-label" for="siteAccessPassword"></label>
 
     <div class="site-access-password-wrap">
-     <input
-       class="site-access-input"
-       id="siteAccessPassword"
-       type="password"
-       autocomplete="current-password"
-       placeholder="Password"
-       required
-     >
-   
-     <button
-       class="site-access-toggle"
-       type="button"
-       aria-label="パスワードを表示"
-       aria-pressed="false"
-     >
-       表示
-     </button>
-   </div>
+      <input
+        class="site-access-input"
+        id="siteAccessPassword"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Password"
+        required
+      >
+
+      <button
+        class="site-access-toggle"
+        type="button"
+        aria-label="パスワードを表示"
+        aria-pressed="false"
+      >表示</button>
+    </div>
 
     <p class="site-access-error" id="siteAccessError" aria-live="polite"></p>
 
-    <button class="site-access-submit" type="submit">
-      ENTER
-    </button>
+    <button class="site-access-submit" type="submit">ENTER</button>
   </form>
 </div>
 
@@ -164,6 +157,7 @@
 
 </div>
 
-<script src="js/detail.js"></script>
+<script src="js/common.js?v=cleanup-01"></script>
+<script src="js/detail.js?v=cleanup-01"></script>
 </body>
 </html>
