@@ -1,675 +1,356 @@
+/* ============================================================
+   detail.js — detail.html（作品詳細ページ）
+   共通処理は common.js（Portfolio）にあります。
+   ============================================================ */
+
 /* JSが正常に読み込めたことを示すフラグ（HTML側の保険用） */
 window.__portfolioJsReady = true;
 
-/* ─── カスタムカーソル ─── */
-const cur = document.getElementById('cur');
-let mx=0,my=0;
-document.addEventListener('mousemove', e => {
-  mx=e.clientX; my=e.clientY;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-});
-document.querySelectorAll('a,button,.nav-logo').forEach(el => {
-  el.addEventListener('mouseenter', () => cur.classList.add('expanded'));
-  el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
-});
-
-/* ─── ハンバーガーメニュー ─── */
-const ham = document.getElementById('ham');
-const mob = document.getElementById('mobMenu');
-ham.addEventListener('click', () => {
-  const o = mob.classList.toggle('open');
-  ham.classList.toggle('open', o);
-});
-document.querySelectorAll('.mob-menu a').forEach(a => {
-  a.addEventListener('click', () => {
-    mob.classList.remove('open');
-    ham.classList.remove('open');
-  });
-});
-
-/* ─── スクロールリビール ─── */
-const rvObs = new IntersectionObserver((entries, obs) => {
-  entries.forEach((e, i) => {
-    if(e.isIntersecting){
-      setTimeout(() => e.target.classList.add('vis'), i * 80);
-      obs.unobserve(e.target);
-    }
-  });
-}, {threshold:.15});
-document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
-
-/* ─── URLパラメータ + データ取得 ─── */
 const params = new URLSearchParams(window.location.search);
-const id = params.get('id');
-let SITE_ACCESS = {
-  enabled:false,
-  passwordHash:''
-};
+const workId = params.get('id');
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+/* ─── 共通の動き ─── */
+Portfolio.initCursor('a,button,.nav-logo');
 
-/* ─── IndexedDB ヘルパー（CMS / main.js と同じ DB を参照） ─── */
-const _DET_IDB_NAME  = 'portfolioCMS';
-const _DET_IDB_VER   = 1;
-const _DET_IDB_STORE = 'store';
-let _detDb = null;
-function _detOpenDB(){
-  if(_detDb) return Promise.resolve(_detDb);
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(_DET_IDB_NAME, _DET_IDB_VER);
-    req.onupgradeneeded = e => e.target.result.createObjectStore(_DET_IDB_STORE);
-    req.onsuccess = e => { _detDb = e.target.result; resolve(_detDb); };
-    req.onerror   = e => reject(e.target.error);
-  });
-}
-async function _detIdbGet(key){
-  try {
-    const db = await _detOpenDB();
-    return await new Promise((resolve, reject) => {
-      const req = db.transaction(_DET_IDB_STORE, 'readonly').objectStore(_DET_IDB_STORE).get(key);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror   = e => reject(e.target.error);
-    });
-  } catch(e){ return null; }
-}
+const closeMenu = Portfolio.initHamburger();
 
-function normalizeSiteAccess(data){
-  return {
-    enabled: !!(data && data.enabled),
-    passwordHash: (data && data.passwordHash) ? data.passwordHash : ''
+document.querySelectorAll('.mob-menu a').forEach(link => {
+  link.addEventListener('click', closeMenu);
+});
+
+const revealObserver = Portfolio.initScrollReveal();
+
+/* ============================================================
+   データ読込
+   ============================================================ */
+
+const DATA_FIELDS = ['works', 'logo', 'siteAccess'];
+
+/**
+ * 詳細ページに必要なデータを読み込む。優先順位:
+ *   本番:     data.json → IndexedDB → localStorage
+ *   プレビュー: IndexedDB → localStorage（CMSが保存した最新データ）
+ * 作品データが見つからない間は、次の保存先へ進む。
+ */
+async function loadPageData() {
+  const data = {
+    works: [],
+    logo: { src: '' },
+    siteAccess: { enabled: false, passwordHash: '' }
   };
-}
 
-async function sha256(value){
-  const bytes = new TextEncoder().encode(value);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+  const merge = stored => {
+    if (stored.works) data.works = stored.works;
+    if (stored.logo) data.logo = stored.logo;
 
-  return [...new Uint8Array(hashBuffer)]
-    .map(value => value.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function unlockPageScroll(){
-  document.documentElement.classList.remove('access-locked');
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-}
-
-async function initSiteAccessGate(){
-  const gate = document.getElementById('siteAccessGate');
-  const form = document.getElementById('siteAccessForm');
-  const input = document.getElementById('siteAccessPassword');
-  const error = document.getElementById('siteAccessError');
-  const toggle = document.querySelector('.site-access-toggle');
-
-  return new Promise(resolve => {
-    if(!gate || !form || !input){
-      unlockPageScroll();
-      resolve();
-      return;
+    if ('siteAccess' in stored) {
+      data.siteAccess = Portfolio.normalizeSiteAccess(stored.siteAccess);
     }
+  };
 
-    let isClosed = false;
+  const hasNoWorks = () => !data.works.length;
 
-    /* SHOW / HIDE ボタン */
-    if(toggle){
-      toggle.addEventListener('click', () => {
-        const isVisible = input.type === 'text';
+  if (!Portfolio.isPreviewMode()) {
+    const json = await Portfolio.fetchSiteJson();
 
-        input.type = isVisible ? 'password' : 'text';
-
-        toggle.textContent = isVisible ? '表示' : '非表示';
-        toggle.classList.toggle('is-visible', !isVisible);
-        toggle.setAttribute('aria-pressed', String(!isVisible));
-        toggle.setAttribute(
-          'aria-label',
-          isVisible ? 'パスワードを表示' : 'パスワードを隠す'
-        );
-
-        input.focus({ preventScroll:true });
-      });
-    }
-
-    const closeGate = (withAnimation = true) => {
-      if(isClosed) return;
-
-      isClosed = true;
-
-      gate.classList.add('is-hidden');
-      gate.setAttribute('aria-hidden', 'true');
-
-      const finish = () => {
-        gate.style.display = 'none';
-
-        try{ input.blur(); }catch(e){}
-
-        unlockPageScroll();
-
-        resolve();
-      };
-
-      if(withAnimation){
-        setTimeout(finish, 450);
-      } else {
-        finish();
-      }
-    };
-
-    /* パスワード無効時 */
-    if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
-      document.documentElement.classList.remove('access-session-hint');
-      closeGate(false);
-      return;
-    }
-
-    /* 認証済みならゲートを表示せず通す */
-    try {
-      const savedHash = sessionStorage.getItem('portfolioAccessHash');
-
-      if(savedHash === SITE_ACCESS.passwordHash){
-        closeGate(false);
-        return;
-      }
-    } catch(e){}
-
-    /* 未認証またはパスワード変更済みの場合 */
-    document.documentElement.classList.remove('access-session-hint');
-    document.documentElement.classList.add('access-locked');
-
-    gate.classList.remove('is-hidden');
-    gate.style.display = 'flex';
-    gate.setAttribute('aria-hidden', 'false');
-
-    /* SPは自動フォーカスしない（キーボードで表示位置がズレるため） */
-    if(!window.matchMedia('(hover:none)').matches){
-      setTimeout(() => input.focus({ preventScroll:true }), 80);
-    }
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const submit = form.querySelector('.site-access-submit');
-      const password = input.value;
-
-      error.textContent = '';
-
-      if(!password){
-        error.textContent = 'パスワードを入力してください。';
-        input.focus({ preventScroll:true });
-        return;
-      }
-
-      try {
-        submit.disabled = true;
-        submit.textContent = 'CHECKING...';
-
-        const inputHash = await sha256(password);
-
-        if(inputHash !== SITE_ACCESS.passwordHash){
-          error.textContent = 'パスワードが正しくありません。';
-
-          input.value = '';
-          input.type = 'password';
-
-          if(toggle){
-            toggle.textContent = '表示';
-            toggle.classList.remove('is-visible');
-            toggle.setAttribute('aria-pressed', 'false');
-            toggle.setAttribute('aria-label', 'パスワードを表示');
-          }
-
-          input.focus({ preventScroll:true });
-
-          submit.disabled = false;
-          submit.textContent = 'ENTER';
-
-          return;
-        }
-
-        try {
-          sessionStorage.setItem(
-            'portfolioAccessHash',
-            SITE_ACCESS.passwordHash
-          );
-        } catch(e){}
-
-        closeGate(true);
-
-      } catch(err){
-        console.error(err);
-
-        error.textContent =
-          '認証処理に失敗しました。ページを再読み込みしてください。';
-
-        submit.disabled = false;
-        submit.textContent = 'ENTER';
-      }
-    });
-  });
-}
-
-async function loadAndRender(){
-  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
-  let WORKS_DATA = [];
-  let SITE_LOGO = { src: '' };
-
-  if(isPreview){
-    try {
-      /* IndexedDB から読む（CMS が保存した最新データ） */
-      const w = await _detIdbGet('worksData'); if(w) WORKS_DATA = w;
-      const l = await _detIdbGet('logoData');  if(l) SITE_LOGO  = l;
-      const a = await _detIdbGet('siteAccessData');
-
-      SITE_ACCESS = normalizeSiteAccess(a);
-    } catch(e){}
-    /* IDB にデータが無ければ localStorage にフォールバック */
-    if(!WORKS_DATA.length){
-      try {
-        const raw  = localStorage.getItem('worksData'); if(raw)  WORKS_DATA = JSON.parse(raw);
-        const lRaw = localStorage.getItem('logoData');  if(lRaw) SITE_LOGO  = JSON.parse(lRaw);
-        const aRaw = localStorage.getItem('siteAccessData');
-        
-        if(aRaw){
-          SITE_ACCESS = normalizeSiteAccess(JSON.parse(aRaw));
-        }
-      } catch(e){}
-    }
-  } else {
-    try {
-      const res = await fetch('data.json', { cache: 'no-cache' });
-      if(res.ok){
-        const json = await res.json();
-        if(json.works) WORKS_DATA = json.works;
-        if(json.logo) SITE_LOGO = json.logo;
-        
-        SITE_ACCESS = normalizeSiteAccess(json.siteAccess);
-      }
-    } catch(e){}
-    if(WORKS_DATA.length === 0){
-      try {
-        const w = await _detIdbGet('worksData'); if(w) WORKS_DATA = w;
-        const l = await _detIdbGet('logoData');  if(l) SITE_LOGO  = l;
-        const a = await _detIdbGet('siteAccessData');
-        
-        SITE_ACCESS = normalizeSiteAccess(a);
-      } catch(e){}
-    }
-    if(WORKS_DATA.length === 0){
-      try {
-        const stored = localStorage.getItem('worksData');
-        if(stored) WORKS_DATA = JSON.parse(stored);
-
-        const lRaw = localStorage.getItem('logoData');
-        if(lRaw) SITE_LOGO = JSON.parse(lRaw);
-
-        const aRaw = localStorage.getItem('siteAccessData');
-
-        if(aRaw){
-          SITE_ACCESS = normalizeSiteAccess(JSON.parse(aRaw));
-        }
-      } catch(e){}
+    if (json) {
+      merge({ works: json.works, logo: json.logo, siteAccess: json.siteAccess });
     }
   }
-  /* パスワード認証が完了するまで詳細内容を表示しない */
-  await initSiteAccessGate();
 
-  /* ロゴ適用 */
-  if(SITE_LOGO && SITE_LOGO.src){
-    const src = SITE_LOGO.src;
-    document.querySelectorAll('.nav-logo, .footer-logo').forEach(el => {
-      el.style.backgroundImage = `url("${src}")`;
-      el.style.backgroundSize = 'contain';
-      el.style.backgroundPosition = 'center';
-      el.style.backgroundRepeat = 'no-repeat';
-      el.style.backgroundColor = 'transparent';
-      el.classList.add('has-logo');
-    });
-    let link = document.querySelector('link[rel="icon"]');
-    if(!link){
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }
-    link.href = src;
+  if (Portfolio.isPreviewMode() || hasNoWorks()) {
+    merge(await Portfolio.readFromIndexedDB(DATA_FIELDS));
   }
 
-  const flatList = [];
-  WORKS_DATA.forEach(g => g.items.forEach(it => flatList.push(it)));
-  const item = flatList.find(it => it.id === id);
-  if(!item) return;
+  if (hasNoWorks()) {
+    merge(Portfolio.readFromLocalStorage(DATA_FIELDS));
+  }
 
-  /* タイトル/本文 */
+  return data;
+}
+
+/* ============================================================
+   画面への反映
+   ============================================================ */
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+/* ─── タイトル・本文 ─── */
+function renderHero(item) {
   document.getElementById('heroTitle').textContent = item.title || '';
   document.getElementById('heroLead').textContent = item.lead || item.desc || '';
   document.title = `${item.title} — SHOTA INOUE`;
+}
 
-  /* DATA */
-  const dataListEl = document.querySelector('.data-list');
-  if(dataListEl){
-    let rows = [];
-    if(item.dataList && Array.isArray(item.dataList)){
-      rows = item.dataList
-        .filter(r => r.label && r.value)
-        .map(r => [r.label, r.value]);
-    } else {
-      const meta = item.meta || {};
-      rows = [
-        ['Client', meta.client],
-        ['Year', meta.year],
-        ['Art Direction', meta.artDirection],
-        ['Design', meta.design],
-        ['Direction', meta.direction],
-        ['Tools', meta.tools],
-      ].filter(r => r[1]);
-    }
-    if(rows.length){
-      dataListEl.innerHTML = rows.map(([l,v]) =>
-        `<div><span class="lbl">${escapeHtml(l)}</span>${escapeHtml(v)}</div>`
-      ).join('');
-    }
+/* ─── Client / Year などの一覧 ─── */
+function renderDataList(item) {
+  const dataList = document.querySelector('.data-list');
+
+  if (!dataList) return;
+
+  let rows;
+
+  if (item.dataList && Array.isArray(item.dataList)) {
+    rows = item.dataList
+      .filter(row => row.label && row.value)
+      .map(row => [row.label, row.value]);
+  } else {
+    const meta = item.meta || {};
+
+    rows = [
+      ['Client', meta.client],
+      ['Year', meta.year],
+      ['Art Direction', meta.artDirection],
+      ['Design', meta.design],
+      ['Direction', meta.direction],
+      ['Tools', meta.tools]
+    ].filter(row => row[1]);
   }
 
-  /* 画像 */
-  const imagesRoot = document.querySelector('.images');
-  if(imagesRoot && item.images && item.images.length){
-    imagesRoot.innerHTML = '';
+  if (!rows.length) return;
 
-    /* Scrollは連続性ではなくブロックIDでまとめる（隣同士でも別ブロックにできる） */
-    const blocks = [];
-    let i = 0;
-    while(i < item.images.length){
-      const img = item.images[i];
-      if(img.scrollGroup){
-        const groupId = img.scrollGroupId || null;
-        const group = [];
-        while(i < item.images.length && item.images[i].scrollGroup && (groupId ? item.images[i].scrollGroupId === groupId : !item.images[i].scrollGroupId)){
-          group.push(item.images[i]);
-          i++;
-        }
-        blocks.push({ type: 'scroll', images: group, cols: Math.max(1, Math.min(3, img.scrollCols || 1)) });
-      } else {
-        blocks.push({ type: 'grid', img, cols: img.cols || 1 });
+  dataList.innerHTML = rows
+    .map(([label, value]) =>
+      `<div><span class="lbl">${escapeHtml(label)}</span>${escapeHtml(value)}</div>`
+    )
+    .join('');
+}
+
+/* ─── 画像・動画 ─── */
+
+/** 画像／動画1点の要素を作る */
+function createMedia(image) {
+  const isVideo = (image.type || '').startsWith('video/');
+  let media;
+
+  if (isVideo) {
+    media = document.createElement('video');
+    media.src = image.src;
+    media.muted = true;
+    media.loop = true;
+    media.playsInline = true;
+    media.autoplay = true;
+    media.controls = true;
+  } else {
+    media = document.createElement('img');
+    media.src = image.src;
+    media.alt = '';
+  }
+
+  media.style.cssText = 'width:100%;height:auto;display:block';
+
+  return media;
+}
+
+/**
+ * 画像を表示ブロックに分ける。
+ *   scroll: 横スクロール（scrollGroup）。連続していても scrollGroupId が違えば別ブロック
+ *   grid:   通常の1枚（cols 列で並べる）
+ */
+function groupImageBlocks(images) {
+  const blocks = [];
+  let i = 0;
+
+  while (i < images.length) {
+    const image = images[i];
+
+    if (image.scrollGroup) {
+      const groupId = image.scrollGroupId || null;
+      const group = [];
+
+      while (
+        i < images.length &&
+        images[i].scrollGroup &&
+        (groupId ? images[i].scrollGroupId === groupId : !images[i].scrollGroupId)
+      ) {
+        group.push(images[i]);
         i++;
       }
+
+      blocks.push({
+        type: 'scroll',
+        images: group,
+        cols: Math.max(1, Math.min(3, image.scrollCols || 1))
+      });
+    } else {
+      blocks.push({ type: 'grid', image, cols: image.cols || 1 });
+      i++;
     }
-
-    /* グリッドブロックは cols でまとめる */
-    let row = null;
-    let currentCols = null;
-
-    const flushRow = () => { row = null; currentCols = null; };
-
-    blocks.forEach(block => {
-      if(block.type === 'scroll'){
-        const cols = block.cols;
-        if(currentCols !== cols || (row && row.children.length >= cols)){
-          row = document.createElement('div');
-          row.className = `img-row cols-${cols} rv`;
-          imagesRoot.appendChild(row);
-          currentCols = cols;
-        }
-        const wrapper = document.createElement('div');
-        wrapper.className = 'scroll-row rv';
-        const track = document.createElement('div');
-        track.className = 'scroll-row-track';
-
-        block.images.forEach(img => {
-          const cell = document.createElement('div');
-          const mediaType = img.type || '';
-          const isVideo = mediaType.startsWith('video/');
-          let mediaEl;
-          if(isVideo){
-            mediaEl = document.createElement('video');
-            mediaEl.src = img.src;
-            mediaEl.muted = true; mediaEl.loop = true; mediaEl.playsInline = true;
-            mediaEl.autoplay = true; mediaEl.controls = true;
-            mediaEl.style.cssText = 'width:100%;height:auto;display:block';
-          } else {
-            mediaEl = document.createElement('img');
-            mediaEl.src = img.src; mediaEl.alt = '';
-            mediaEl.style.cssText = 'width:100%;height:auto;display:block';
-          }
-          cell.appendChild(mediaEl);
-          track.appendChild(cell);
-        });
-
-        wrapper.appendChild(track);
-
-        /* 矢印ボタン（2枚以上のとき） */
-        if(block.images.length > 1){
-          const prev = document.createElement('button');
-          prev.className = 'scroll-row-btn prev'; prev.setAttribute('aria-label','前へ');
-          const next = document.createElement('button');
-          next.className = 'scroll-row-btn next'; next.setAttribute('aria-label','次へ');
-          wrapper.appendChild(prev);
-          wrapper.appendChild(next);
-
-          /* ドットインジケーター */
-          const dotsWrap = document.createElement('div');
-          dotsWrap.className = 'scroll-row-dots';
-          block.images.forEach((_, di) => {
-            const dot = document.createElement('button');
-            dot.className = 'scroll-row-dot' + (di === 0 ? ' active' : '');
-            dot.setAttribute('aria-label', `${di+1}枚目`);
-            dotsWrap.appendChild(dot);
-          });
-          wrapper.appendChild(dotsWrap);
-
-          /* スクロール同期 */
-          const dots = dotsWrap.querySelectorAll('.scroll-row-dot');
-          const totalItems = block.images.length;
-          let currentIdx = 0;
-
-          const goTo = (idx) => {
-            currentIdx = Math.max(0, Math.min(totalItems - 1, idx));
-            const itemW = track.scrollWidth / totalItems;
-            track.scrollTo({ left: itemW * currentIdx, behavior: 'smooth' });
-            dots.forEach((d, di) => d.classList.toggle('active', di === currentIdx));
-          };
-
-          prev.addEventListener('click', () => goTo(currentIdx - 1));
-          next.addEventListener('click', () => goTo(currentIdx + 1));
-          dots.forEach((dot, di) => dot.addEventListener('click', () => goTo(di)));
-
-          /* スクロール位置 → ドット更新 */
-          track.addEventListener('scroll', () => {
-            const itemW = track.scrollWidth / totalItems;
-            const idx = Math.round(track.scrollLeft / itemW);
-            if(idx !== currentIdx){
-              currentIdx = idx;
-              dots.forEach((d, di) => d.classList.toggle('active', di === currentIdx));
-            }
-          }, { passive: true });
-        }
-
-        row.appendChild(wrapper);
-
-      } else {
-        /* 通常グリッド */
-        const img = block.img;
-        const cols = block.cols;
-        if(currentCols !== cols || (row && row.children.length >= cols)){
-          row = document.createElement('div');
-          row.className = `img-row cols-${cols} rv`;
-          imagesRoot.appendChild(row);
-          currentCols = cols;
-        }
-        const cell = document.createElement('div');
-        const mediaType = img.type || '';
-        const isVideo = mediaType.startsWith('video/');
-        let mediaEl;
-        if(isVideo){
-          mediaEl = document.createElement('video');
-          mediaEl.src = img.src; mediaEl.muted = true; mediaEl.loop = true;
-          mediaEl.playsInline = true; mediaEl.autoplay = true; mediaEl.controls = true;
-          mediaEl.style.cssText = 'width:100%;height:auto;display:block';
-        } else {
-          mediaEl = document.createElement('img');
-          mediaEl.src = img.src; mediaEl.alt = '';
-          mediaEl.style.cssText = 'width:100%;height:auto;display:block';
-        }
-        cell.style.cssText = 'position:relative';
-        cell.appendChild(mediaEl);
-        row.appendChild(cell);
-      }
-    });
-
-    /* 2列・3列で不足する行は、各ブロックの幅を保って中央寄せ */
-    imagesRoot.querySelectorAll('.img-row.cols-2, .img-row.cols-3').forEach(rowEl => {
-      const cols = rowEl.classList.contains('cols-2') ? 2 : 3;
-      if(rowEl.children.length < cols) rowEl.classList.add('incomplete');
-    });
-
-    /* 新規ロード分のスクロールリビールを再観測 */
-    document.querySelectorAll('.images .rv').forEach(el => rvObs.observe(el));
-  } else {
-    /* 画像が1枚もない場合は .images セクション全体を非表示 */
-    if(imagesRoot) imagesRoot.style.display = 'none';
   }
+
+  return blocks;
 }
 
-loadAndRender();
+/** 横スクロールのカルーセル（2枚以上なら矢印・ドット付き） */
+function createScrollRow(images) {
+  const wrapper = document.createElement('div');
+  const track = document.createElement('div');
 
-/* preview モード時: Back リンクに preview=1 を付与して
-   index.html に戻っても preview 状態を維持する */
-if(params.get('preview') === '1'){
+  wrapper.className = 'scroll-row rv';
+  track.className = 'scroll-row-track';
+
+  images.forEach(image => {
+    const cell = document.createElement('div');
+
+    cell.appendChild(createMedia(image));
+    track.appendChild(cell);
+  });
+
+  wrapper.appendChild(track);
+
+  if (images.length > 1) {
+    attachCarouselControls(wrapper, track, images.length);
+  }
+
+  return wrapper;
+}
+
+/** 前へ／次へボタンとドットを付け、スクロール位置と同期させる */
+function attachCarouselControls(wrapper, track, total) {
+  const prev = document.createElement('button');
+  const next = document.createElement('button');
+
+  prev.className = 'scroll-row-btn prev';
+  prev.setAttribute('aria-label', '前へ');
+  next.className = 'scroll-row-btn next';
+  next.setAttribute('aria-label', '次へ');
+
+  const dotsWrap = document.createElement('div');
+
+  dotsWrap.className = 'scroll-row-dots';
+
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+
+    dot.className = 'scroll-row-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `${i + 1}枚目`);
+    dotsWrap.appendChild(dot);
+  }
+
+  wrapper.appendChild(prev);
+  wrapper.appendChild(next);
+  wrapper.appendChild(dotsWrap);
+
+  const dots = dotsWrap.querySelectorAll('.scroll-row-dot');
+  let current = 0;
+
+  const setCurrent = index => {
+    current = index;
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === current));
+  };
+
+  const goTo = index => {
+    const target = Math.max(0, Math.min(total - 1, index));
+    const itemWidth = track.scrollWidth / total;
+
+    track.scrollTo({ left: itemWidth * target, behavior: 'smooth' });
+    setCurrent(target);
+  };
+
+  prev.addEventListener('click', () => goTo(current - 1));
+  next.addEventListener('click', () => goTo(current + 1));
+  dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+  /* スクロール位置 → ドット更新 */
+  track.addEventListener('scroll', () => {
+    const index = Math.round(track.scrollLeft / (track.scrollWidth / total));
+
+    if (index !== current) setCurrent(index);
+  }, { passive: true });
+}
+
+function renderImages(item) {
+  const imagesRoot = document.querySelector('.images');
+
+  if (!imagesRoot) return;
+
+  /* 画像が1枚もない場合は .images セクション全体を非表示 */
+  if (!item.images || !item.images.length) {
+    imagesRoot.style.display = 'none';
+    return;
+  }
+
+  imagesRoot.innerHTML = '';
+
+  /* 同じ列数の連続ブロックは、列数に達するまで同じ行に入れる */
+  let row = null;
+  let currentCols = null;
+
+  const rowFor = cols => {
+    if (currentCols !== cols || (row && row.children.length >= cols)) {
+      row = document.createElement('div');
+      row.className = `img-row cols-${cols} rv`;
+      imagesRoot.appendChild(row);
+      currentCols = cols;
+    }
+
+    return row;
+  };
+
+  groupImageBlocks(item.images).forEach(block => {
+    const target = rowFor(block.cols);
+
+    if (block.type === 'scroll') {
+      target.appendChild(createScrollRow(block.images));
+      return;
+    }
+
+    const cell = document.createElement('div');
+
+    cell.style.cssText = 'position:relative';
+    cell.appendChild(createMedia(block.image));
+    target.appendChild(cell);
+  });
+
+  /* 2列・3列で不足する行は、各ブロックの幅を保って中央寄せ */
+  imagesRoot.querySelectorAll('.img-row.cols-2, .img-row.cols-3').forEach(rowEl => {
+    const cols = rowEl.classList.contains('cols-2') ? 2 : 3;
+
+    if (rowEl.children.length < cols) rowEl.classList.add('incomplete');
+  });
+
+  /* 新規に作った分のスクロールリビールを観測 */
+  document.querySelectorAll('.images .rv').forEach(el => revealObserver.observe(el));
+}
+
+/* ============================================================
+   初期化
+   ============================================================ */
+
+async function init() {
+  const data = await loadPageData();
+
+  /* パスワード認証が完了するまで詳細内容を表示しない */
+  await Portfolio.initAccessGate({ siteAccess: data.siteAccess });
+
+  Portfolio.applyLogo(data.logo, '.nav-logo, .footer-logo');
+
+  const item = data.works
+    .flatMap(group => group.items)
+    .find(work => work.id === workId);
+
+  if (!item) return;
+
+  renderHero(item);
+  renderDataList(item);
+  renderImages(item);
+}
+
+init();
+
+/* プレビュー時は Back リンクにも preview=1 を付け、index.html に戻ってもプレビュー状態を保つ */
+if (params.get('preview') === '1') {
   const backLink = document.getElementById('backLink');
-  if(backLink) backLink.href = 'index.html?works=1&preview=1';
+
+  if (backLink) backLink.href = 'index.html?works=1&preview=1';
 }
 
-/* ─── 背景ドットエフェクト ─── */
-(() => {
-  const canvas = document.getElementById('dotsCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d', { alpha: false });
-
-  const SPACING = 14;
-  const BASE_RADIUS = 0.9;
-  const MAX_RADIUS = 5.0;
-  const INFLUENCE = 120;
-  const EASE = 0.12;
-  const IDLE_DECAY = 0.85;
-  const STOP_DELAY = 750;
-
-  const BG_COLOR = '#181919';
-  const DOT_COLOR = '#1e2323';
-  const ACCENT_COLOR = '#3a3b3b';
-
-  let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-  let W = 0, H = 0;
-  let stopTimer = null;
-
-  const pointer = { x:-9999, y:-9999, tx:-9999, ty:-9999, strength:0, targetStrength:0 };
-
-  function resize(){
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function resetStopTimer(){
-    pointer.targetStrength = 1;
-    clearTimeout(stopTimer);
-    stopTimer = setTimeout(() => { pointer.targetStrength = 0; }, STOP_DELAY);
-  }
-
-  window.addEventListener('mousemove', e => {
-    pointer.tx = e.clientX; pointer.ty = e.clientY;
-    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
-    resetStopTimer();
-  });
-  window.addEventListener('mouseleave', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
-  window.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    pointer.tx = t.clientX; pointer.ty = t.clientY;
-    if(pointer.x < -9000){ pointer.x = pointer.tx; pointer.y = pointer.ty; }
-    resetStopTimer();
-  }, { passive: true });
-  window.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    pointer.tx = t.clientX; pointer.ty = t.clientY;
-    resetStopTimer();
-  }, { passive: true });
-  window.addEventListener('touchend', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
-
-  let isTouchDev = window.matchMedia('(hover:none)').matches;
-  window.addEventListener('resize', () => {
-    isTouchDev = window.matchMedia('(hover:none)').matches;
-  });
-
-  function frame(){
-    if(pointer.tx > -9000){
-      if(isTouchDev){
-        pointer.x = pointer.tx;
-        pointer.y = pointer.ty;
-      } else {
-        pointer.x += (pointer.tx - pointer.x) * EASE;
-        pointer.y += (pointer.ty - pointer.y) * EASE;
-      }
-    }
-    if(pointer.targetStrength > pointer.strength){
-      pointer.strength += (pointer.targetStrength - pointer.strength) * 0.1;
-    }else{
-      pointer.strength *= IDLE_DECAY;
-      if(pointer.strength < 0.001) pointer.strength = 0;
-    }
-
-    ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, W, H);
-
-    const px = pointer.x, py = pointer.y;
-    const s = pointer.strength;
-    const inflSq = INFLUENCE * INFLUENCE;
-
-    ctx.fillStyle = DOT_COLOR;
-    ctx.beginPath();
-    let row = 0;
-    for(let y = SPACING/2; y < H; y += SPACING){
-      const offset = (row % 2) ? SPACING/2 : 0;
-      for(let x = SPACING/2 + offset; x < W; x += SPACING){
-        const dx = x - px, dy = y - py;
-        if(s > 0.01 && (dx*dx + dy*dy) < inflSq) continue;
-        ctx.moveTo(x + BASE_RADIUS, y);
-        ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
-      }
-      row++;
-    }
-    ctx.fill();
-
-    if(s > 0.01){
-      let row2 = 0;
-      for(let y = SPACING/2; y < H; y += SPACING){
-        const offset = (row2 % 2) ? SPACING/2 : 0;
-        for(let x = SPACING/2 + offset; x < W; x += SPACING){
-          const dx = x - px, dy = y - py;
-          const distSq = dx*dx + dy*dy;
-          if(distSq >= inflSq) continue;
-          const dist = Math.sqrt(distSq);
-          let t = 1 - dist / INFLUENCE;
-          t = t * t * (3 - 2 * t) * s;
-          const r = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * t;
-          ctx.fillStyle = (t > 0.6) ? ACCENT_COLOR : DOT_COLOR;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        row2++;
-      }
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
+Portfolio.initDotsBackground();

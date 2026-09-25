@@ -1,162 +1,718 @@
+/* ============================================================
+   main.js — index.html（トップページ）
+   共通処理は common.js（Portfolio）にあります。
+   ============================================================ */
+
 /* JSが正常に読み込めたことを示すフラグ（HTML側の保険用） */
 window.__portfolioJsReady = true;
 
-/* ─── ナビの固定はCSSの position:fixed に統一 ─── */
-const htmlRoot = document.documentElement;
+/* ─── 要素・定数 ─── */
+const root = document.documentElement;
+const loader = document.getElementById('loader');
+const navFixed = document.getElementById('navFixed');
+const topSection = document.getElementById('top');
+const worksAll = document.getElementById('works-all');
 
-function updateNavPinMode(){
-  /* 以前の absolute 固定モードを解除 */
-  htmlRoot.classList.remove('nav-pinned');
+const isMobile = () => window.innerWidth <= 900;
+const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
 
-  const nav = document.getElementById('navFixed');
-  if(!nav) return;
+let isLoading = true;
+let openingStarted = false;
 
-  /* JSによる位置補正を除去 */
-  nav.style.removeProperty('transform');
-  nav.style.removeProperty('-webkit-transform');
+/* ============================================================
+   サイトデータ
+   ============================================================ */
+
+const DUMMY_DESC = 'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。';
+
+/* data.json も CMS のデータも無いときに表示するダミー */
+const DEFAULT_WORKS_DATA = [
+  {
+    cat: 'Branding',
+    items: [
+      { id: 'sotoya-rebrand', tag: 'Branding', title: 'SOTOYA リブランディング CI 開発', desc: DUMMY_DESC },
+      { id: 'sotoya-logo', tag: 'Branding', title: 'SOTOYA LOGO', desc: DUMMY_DESC },
+      { id: 'sotoya-web', tag: 'Branding / Web', title: 'SOTOYA WEB SITE', desc: DUMMY_DESC },
+      { id: 'sotoya-tools', tag: 'Branding', title: 'SOTOYA コーポレートツール', desc: DUMMY_DESC },
+      { id: 'ec-flame', tag: 'Branding / EC', title: 'EC SITE flame', desc: DUMMY_DESC }
+    ]
+  },
+  {
+    cat: 'Web',
+    items: [
+      { id: 'nasta-hp', tag: 'Web', title: 'Nasta HP', desc: DUMMY_DESC },
+      { id: 'nasta-post', tag: 'Web', title: 'Nasta Box +POST WEB SITE', desc: DUMMY_DESC },
+      { id: 'nasta-light', tag: 'Web', title: 'Nasta Box LIGHT WEB SITE', desc: DUMMY_DESC },
+      { id: 'nasta-amazon', tag: 'Web / EC', title: 'Nasta Interphone 2 Amazon page', desc: DUMMY_DESC },
+      { id: 'nasta-sns', tag: 'SNS', title: 'Nasta SNS クリエイティブ', desc: DUMMY_DESC }
+    ]
+  },
+  {
+    cat: 'POP / Print media',
+    items: [
+      { id: 'pamphlet', tag: 'Print', title: 'カテゴリ別 製品一覧パンフレット', desc: DUMMY_DESC },
+      { id: 'flyer-poster', tag: 'Print', title: '各種販促チラシ・ポスター', desc: DUMMY_DESC }
+    ]
+  },
+  {
+    cat: 'UI / UX',
+    items: [
+      { id: 'box-admin', tag: 'UI/UX', title: '宅配ボックス管理者用 WEB システム', desc: DUMMY_DESC },
+      { id: 'nasta-app', tag: 'UI/UX', title: 'Nasta Box APP', desc: DUMMY_DESC }
+    ]
+  },
+  {
+    cat: 'Other',
+    items: [
+      { id: 'nasta-mvv', tag: 'Project', title: 'Nasta MVV Project', desc: DUMMY_DESC },
+      { id: 'illusts', tag: 'Illustration', title: 'ILLUSTs', desc: DUMMY_DESC }
+    ]
+  }
+];
+
+/* 現在のサイトデータ（読み込めたものだけ上書きされる） */
+const siteData = {
+  works: DEFAULT_WORKS_DATA,
+  profile: { images: [] },
+  logo: { src: '' },
+  homeBg: null,                                            /* WORKS背景の画像 */
+  topTitle: { shota: { src: '', type: '' }, inoue: { src: '', type: '' } }, /* TOPの作字SVG */
+  siteAccess: { enabled: false, passwordHash: '' }         /* 閲覧パスワード */
+};
+
+const SITE_DATA_FIELDS = ['works', 'profile', 'logo', 'homeBg', 'topTitle', 'siteAccess'];
+
+/** 読み込んだデータを siteData へ反映（存在する項目だけ上書き） */
+function mergeSiteData(data) {
+  if (data.works) siteData.works = data.works;
+  if (data.profile) siteData.profile = data.profile;
+  if (data.logo) siteData.logo = data.logo;
+  if (data.homeBg) siteData.homeBg = data.homeBg;
+  if (data.topTitle) siteData.topTitle = data.topTitle;
+
+  if ('siteAccess' in data) {
+    siteData.siteAccess = Portfolio.normalizeSiteAccess(data.siteAccess);
+  }
+}
+
+/**
+ * データの読込。優先順位:
+ *   本番:     data.json → IndexedDB → localStorage
+ *   プレビュー: IndexedDB → localStorage（CMSが保存した最新データ）
+ */
+async function loadSiteData() {
+  if (!Portfolio.isPreviewMode()) {
+    const json = await Portfolio.fetchSiteJson();
+
+    if (json) {
+      mergeSiteData({ ...json, siteAccess: json.siteAccess });
+      applyLogo();
+      applyTopTitle();
+      return;
+    }
+  }
+
+  mergeSiteData(await Portfolio.readFromIndexedDB(SITE_DATA_FIELDS));
+
+  if (siteData.works === DEFAULT_WORKS_DATA) {
+    mergeSiteData(Portfolio.readFromLocalStorage(SITE_DATA_FIELDS));
+  }
+
+  applyLogo();
+  applyTopTitle();
+}
+
+/* ============================================================
+   画面への反映
+   ============================================================ */
+
+/* ─── ロゴ ─── */
+function applyLogo() {
+  Portfolio.applyLogo(siteData.logo, '.nav-logo, .footer-logo, .ld-logo-box');
+}
+
+/* ─── TOPの作字SVG（未登録なら従来テキストを表示） ─── */
+function applyTopTitle() {
+  const titleImages = [
+    { key: 'shota', imageId: 'topTitleShota' },
+    { key: 'inoue', imageId: 'topTitleInoue' }
+  ];
+
+  titleImages.forEach(({ key, imageId }) => {
+    const image = document.getElementById(imageId);
+
+    if (!image) return;
+
+    const line = image.closest('.top-title-line');
+    const fallback = line ? line.querySelector('.top-title-fallback') : null;
+    const asset = siteData.topTitle && siteData.topTitle[key];
+
+    if (asset && asset.src) {
+      image.src = asset.src;
+      image.classList.add('has-art');
+
+      if (fallback) {
+        fallback.classList.add('is-hidden');
+        fallback.setAttribute('aria-hidden', 'true');
+      }
+    } else {
+      image.removeAttribute('src');
+      image.classList.remove('has-art');
+
+      if (fallback) {
+        fallback.classList.remove('is-hidden');
+        fallback.removeAttribute('aria-hidden');
+      }
+    }
+  });
+}
+
+/* ─── WORKS背景（流れる画像。CMSのHome背景 → 各作品の1枚目 の順で使う） ─── */
+function applyWorksBg() {
+  let sources = [];
+
+  if (siteData.homeBg && siteData.homeBg.images && siteData.homeBg.images.length) {
+    sources = siteData.homeBg.images.map(item => item.src);
+  } else {
+    siteData.works.forEach(group => {
+      group.items.forEach(item => {
+        if (item.images && item.images[0]) {
+          sources.push(item.images[0].src);
+        }
+      });
+    });
+  }
+
+  if (sources.length === 0) return;
+
+  /* 3段のうち上下段は偶数番・奇数番だけにして、段ごとに並びを変える */
+  const rowSources = sources.length > 1
+    ? [
+        sources.filter((_, index) => index % 2 === 0),
+        sources,
+        sources.filter((_, index) => index % 2 === 1)
+      ]
+    : [sources, sources, sources];
+
+  document.querySelectorAll('.works-bg-row').forEach((row, rowIndex) => {
+    const set = rowSources[rowIndex] && rowSources[rowIndex].length
+      ? rowSources[rowIndex]
+      : sources;
+
+    row.querySelectorAll('.works-bg-cell').forEach((cell, index) => {
+      cell.style.backgroundImage = `url("${set[index % set.length]}")`;
+      cell.style.backgroundSize = 'cover';
+      cell.style.backgroundPosition = 'center';
+      cell.classList.add('has-img');
+    });
+  });
+}
+
+/* ─── WORKS一覧（カテゴリ別カード） ─── */
+function renderWorksList() {
+  const grid = document.getElementById('waGridContainer');
+
+  grid.innerHTML = '';
+
+  siteData.works.forEach(group => {
+    const category = document.createElement('div');
+
+    category.className = 'wa-category';
+    category.innerHTML = `
+      <div class="wa-cat-label wa-fade">${group.cat}</div>
+      <div class="wa-grid"></div>
+    `;
+
+    const cardGrid = category.querySelector('.wa-grid');
+
+    group.items.forEach(item => cardGrid.appendChild(createWorkCard(item)));
+    grid.appendChild(category);
+  });
+
+  /* スクロールでカードをフェードイン */
+  const fadeObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      entry.target.classList.add('in');
+      observer.unobserve(entry.target);
+    });
+  }, {
+    root: document.querySelector('.wa-body'),
+    threshold: .12
+  });
+
+  document.querySelectorAll('.wa-fade').forEach(el => fadeObserver.observe(el));
+
+  bindWorkCardClicks();
+}
+
+function createWorkCard(item) {
+  const card = document.createElement('div');
+
+  card.className = 'wa-card wa-fade';
+  card.dataset.id = item.id;
+
+  const thumb = item.images && item.images[0];
+  const thumbSrc = thumb ? thumb.src : null;
+  const isVideo = ((thumb && thumb.type) || '').startsWith('video/');
+  const mediaStyle = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+
+  let mediaHtml = '<div class="wa-card-img-ph"></div>';
+
+  if (thumbSrc) {
+    mediaHtml = isVideo
+      ? `<video src="${thumbSrc}" muted loop playsinline autoplay style="${mediaStyle}"></video>`
+      : `<img src="${thumbSrc}" alt="" style="${mediaStyle}">`;
+  }
+
+  card.innerHTML = `
+    <div class="wa-card-img">${mediaHtml}</div>
+    <div class="wa-card-body">
+      <div class="wa-card-title">${item.title}</div>
+      <div class="wa-card-desc">${item.desc || ''}</div>
+    </div>
+    <div class="wa-card-arrow"></div>
+  `;
+
+  return card;
 }
 
 /*
-  既存コード内の呼び出しを壊さないため、関数名だけ残す。
-  スクロール中にナビの座標を書き換える処理は行わない。
+  カードのクリック:
+    PC（ホバーできる）  … すぐ詳細ページへ
+    タッチ端末          … 1回目で内容を表示、2回目で詳細ページへ
 */
-function pinNavOnce(){}
+function bindWorkCardClicks() {
+  const isHoverPC = () =>
+    window.matchMedia('(hover:hover) and (min-width:901px)').matches;
 
-function pinNavFor(){}
+  const previewQuery = Portfolio.isPreviewMode() ? '&preview=1' : '';
 
-updateNavPinMode();
-document.addEventListener('DOMContentLoaded', updateNavPinMode);
+  document.querySelectorAll('.wa-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const detailUrl = `detail.html?id=${card.dataset.id}${previewQuery}`;
 
-/* ─── ページ最上部へ強制的に戻す ─── */
-function hardScrollTop(){
-  window.scrollTo(0, 0);
-  htmlRoot.scrollTop = 0;
-  document.body.scrollTop = 0;
-  pinNavOnce();
+      if (isHoverPC() || card.classList.contains('active')) {
+        window.location.href = detailUrl;
+        return;
+      }
+
+      document
+        .querySelectorAll('.wa-card.active')
+        .forEach(activeCard => activeCard.classList.remove('active'));
+
+      card.classList.add('active');
+    });
+  });
 }
 
+/* ─── PROFILE画像のスライドショー（PC用・SP用の両方へ） ─── */
+function renderProfileSlideshow() {
+  const images = siteData.profile.images || [];
+
+  if (images.length === 0) return;
+
+  const targets = ['profileBgPC', 'profileBgSP']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  targets.forEach(target => {
+    target.classList.add('has-slides');
+    target.querySelectorAll('.profile-slide').forEach(el => el.remove());
+
+    images.forEach((image, index) => {
+      const slide = document.createElement('div');
+
+      slide.className = 'profile-slide' + (index === 0 ? ' active' : '');
+      slide.style.backgroundImage = `url("${image.src}")`;
+
+      target.appendChild(slide);
+    });
+  });
+
+  if (images.length < 2) return;
+
+  let current = 0;
+
+  setInterval(() => {
+    current = (current + 1) % images.length;
+
+    targets.forEach(target => {
+      target.querySelectorAll('.profile-slide').forEach((slide, index) => {
+        slide.classList.toggle('active', index === current);
+      });
+    });
+  }, 4000);
+}
+
+/* ============================================================
+   スクロール制御
+   ============================================================ */
+
+/* ─── 最上部への強制固定（ローダー表示中・キーボード由来のズレ対策） ─── */
 let forceTopUntil = 0;
 let forcingTop = false;
 
-/* ローダー表示中は最上部を維持し続ける（キーボード由来のズレも打ち消す） */
-function forceScrollTop(duration = 1200){
+function forceScrollTop(duration = 1200) {
   forceTopUntil = performance.now() + duration;
 
-  if(forcingTop) return;
+  if (forcingTop) return;
+
   forcingTop = true;
 
-  (function loop(){
-    hardScrollTop();
+  (function loop() {
+    Portfolio.scrollToTop();
 
-    if(performance.now() < forceTopUntil){
+    if (performance.now() < forceTopUntil) {
       requestAnimationFrame(loop);
-    }else{
+    } else {
       forcingTop = false;
     }
   })();
 }
 
-/* ─── ページスクロールのロック / 解除 ─── */
-function lockPageScroll(){
-  htmlRoot.classList.add('access-locked');
+/* ─── セクション単位のスナップスクロール ─── */
+const SNAP_DURATION = 820;
+
+/* easeInOutExpo */
+const ease = t => {
+  if (t === 0) return 0;
+  if (t === 1) return 1;
+
+  return t < .5
+    ? Math.pow(2, 20 * t - 10) / 2
+    : (2 - Math.pow(2, -20 * t + 10)) / 2;
+};
+
+/** 現在位置から見て、次（dir>0）／前（dir<0）のセクション位置 */
+function nearestSectionTop(scrollTop, dir) {
+  const sections = [...document.querySelectorAll('section')];
+
+  if (dir > 0) {
+    for (const section of sections) {
+      if (section.offsetTop > scrollTop + 60) return section.offsetTop;
+    }
+
+    return sections[sections.length - 1].offsetTop;
+  }
+
+  for (let i = sections.length - 1; i >= 0; i--) {
+    if (sections[i].offsetTop < scrollTop - 60) return sections[i].offsetTop;
+  }
+
+  return 0;
 }
 
-function unlockPageScroll(){
-  htmlRoot.classList.remove('access-locked');
+let snapping = false;
 
-  hardScrollTop();
-  forceScrollTop(1500);
+function snapTo(y, duration = SNAP_DURATION) {
+  if (snapping) return;
+
+  snapping = true;
+
+  const startY = root.scrollTop;
+  const distance = y - startY;
+
+  if (Math.abs(distance) < 4) {
+    snapping = false;
+    return;
+  }
+
+  const startTime = performance.now();
+
+  (function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+
+    root.scrollTop = startY + distance * ease(progress);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      root.scrollTop = y;
+      snapping = false;
+    }
+  })(performance.now());
 }
 
-/* タッチ端末では自動フォーカスしない（キーボードで表示位置がズレるため） */
-function isTouchUA(){
-  return window.matchMedia('(hover:none)').matches;
+/** スナップ操作を受け付けない状態か（ローダー中・WORKS一覧表示中など） */
+const isSnapDisabled = () => isLoading || worksAll.classList.contains('open');
+
+function initSnapScroll() {
+  /* ホイール */
+  let wheelAmount = 0;
+  let wheelTimer = null;
+
+  root.addEventListener('wheel', e => {
+    if (worksAll.classList.contains('open')) return;
+
+    e.preventDefault();
+
+    if (snapping) return;
+
+    wheelAmount += e.deltaY;
+
+    clearTimeout(wheelTimer);
+
+    wheelTimer = setTimeout(() => {
+      if (Math.abs(wheelAmount) < 18) {
+        wheelAmount = 0;
+        return;
+      }
+
+      const direction = wheelAmount > 0 ? 1 : -1;
+
+      wheelAmount = 0;
+
+      snapTo(nearestSectionTop(root.scrollTop, direction));
+    }, 3);
+  }, { passive: false });
+
+  /* タッチ */
+  let touchStartY = 0;
+  let touchStartScroll = 0;
+
+  root.addEventListener('touchstart', e => {
+    if (isSnapDisabled() || !Portfolio.isTouchDevice()) return;
+
+    touchStartY = e.touches[0].clientY;
+    touchStartScroll = root.scrollTop;
+  }, { passive: false });
+
+  root.addEventListener('touchmove', e => {
+    /* パスワード画面の中だけは自由にスクロールさせる */
+    if (e.target.closest && e.target.closest('.site-access-gate')) return;
+
+    if (isLoading) {
+      e.preventDefault();
+      return;
+    }
+
+    if (worksAll.classList.contains('open')) return;
+    if (!Portfolio.isTouchDevice()) return;
+
+    e.preventDefault();
+  }, { passive: false });
+
+  root.addEventListener('touchend', e => {
+    if (isSnapDisabled() || !Portfolio.isTouchDevice() || snapping) return;
+
+    const deltaY = touchStartY - e.changedTouches[0].clientY;
+
+    if (Math.abs(deltaY) < 30) return;
+
+    snapTo(nearestSectionTop(touchStartScroll, deltaY > 0 ? 1 : -1));
+  }, { passive: true });
 }
 
+/** #anchor リンクのクリックでスナップスクロールする */
+function bindAnchorLinks(selector, { beforeScroll, delay = 0 } = {}) {
+  document.querySelectorAll(selector).forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
 
+      if (!href || !href.startsWith('#')) return;
 
-/* ─── ローダー制御 ─── */
-const loader = document.getElementById('loader');
-let isLoading = true;
-const skipOpening = new URLSearchParams(window.location.search).get('works') === '1';
-let openingStarted = false;
+      e.preventDefault();
+
+      if (beforeScroll) beforeScroll();
+
+      const target = document.querySelector(href);
+
+      if (!target) return;
+
+      if (delay) {
+        setTimeout(() => snapTo(target.offsetTop), delay);
+      } else {
+        snapTo(target.offsetTop);
+      }
+    });
+  });
+}
+
+/* ============================================================
+   ナビ・メニュー・WORKS一覧オーバーレイ
+   ============================================================ */
+
+/* ─── ナビの表示切替 ─── */
+function initNavVisibility() {
+  /* PC: TOPが半分以上見えている間はナビを隠す */
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.target.id !== 'top' || isMobile()) return;
+      if (worksAll.classList.contains('open')) return;
+
+      if (e.isIntersecting && e.intersectionRatio > 0.5) {
+        navFixed.classList.remove('show');
+      } else {
+        navFixed.classList.add('show');
+      }
+    });
+  }, { threshold: [0, .5, 1] }).observe(topSection);
+
+  /* SP: 常に表示 */
+  if (isMobile()) navFixed.classList.add('show');
+
+  window.addEventListener('resize', () => {
+    if (isMobile()) navFixed.classList.add('show');
+  });
+
+  /* CONTACTが見えている間、メールボタンを出すための目印 */
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      document.body.classList.toggle(
+        'in-contact',
+        e.isIntersecting && e.intersectionRatio > 0.3
+      );
+    });
+  }, { threshold: [0, .3, 1] }).observe(document.getElementById('contact'));
+}
+
+/* ─── WORKS一覧オーバーレイ ─── */
+function openWorksAll() {
+  worksAll.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  if (!isMobile()) navFixed.classList.add('show');
+}
+
+function closeWorksAll() {
+  worksAll.classList.remove('open');
+  document.body.style.overflow = '';
+  document.body.classList.remove('works-open');
+}
+
+function initWorksOverlay() {
+  document.getElementById('viewAllBtn').addEventListener('click', e => {
+    e.preventDefault();
+    openWorksAll();
+  });
+
+  document.getElementById('waBack').addEventListener('click', e => {
+    e.preventDefault();
+
+    closeWorksAll();
+
+    const worksSection = document.getElementById('works');
+
+    if (worksSection) snapTo(worksSection.offsetTop);
+
+    if (!isMobile()) navFixed.classList.add('show');
+  });
+
+  /* カード以外をクリックしたら、タッチ端末の選択状態を解除 */
+  document.querySelector('.wa-body').addEventListener('click', e => {
+    if (e.target.closest('.wa-card')) return;
+
+    document
+      .querySelectorAll('.wa-card.active')
+      .forEach(card => card.classList.remove('active'));
+  });
+
+  /* 詳細ページの「Back to WORKS」から戻ってきたとき（?works=1）は一覧を開いた状態にする */
+  if (skipOpening) {
+    openWorksAll();
+    root.classList.remove('skip-opening');
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+/* ─── ナビロゴ・メニュー ─── */
+function initNavControls() {
+  const closeMenu = Portfolio.initHamburger();
+
+  document.getElementById('navLogoBtn').addEventListener('click', () => {
+    if (worksAll.classList.contains('open')) {
+      closeWorksAll();
+
+      if (!isMobile()) navFixed.classList.remove('show');
+    }
+
+    snapTo(topSection.offsetTop);
+  });
+
+  bindAnchorLinks('.top-nav a, .cf-links a');
+  bindAnchorLinks('.mob-link', { beforeScroll: closeMenu, delay: 60 });
+}
+
+/* ============================================================
+   演出
+   ============================================================ */
+
+/* ─── オープニング（ローダー） ─── */
+
+/** ローダーを消して本編を表示状態にする */
+function hideLoader() {
+  loader.style.display = 'none';
+  document.body.classList.add('loaded');
+  isLoading = false;
+}
 
 /*
   ローダーは最初から表示状態で、パスワード画面の裏に待機させる。
   パスワード画面が消える瞬間に、ドット背景が一瞬見えるのを防ぐ。
 */
-if(skipOpening){
-  loader.style.display = 'none';
-  document.body.classList.add('loaded');
-  isLoading = false;
-} else {
-  /* パスワード画面の背面でローダー背景だけを表示 */
+function prepareLoader() {
+  if (skipOpening) {
+    hideLoader();
+    return;
+  }
+
+  /* パスワード画面の背面でローダー背景だけを表示（ロゴは認証後に出す） */
   loader.style.display = 'flex';
   loader.style.visibility = 'visible';
   loader.style.opacity = '1';
 
-  const loaderLogo = loader.querySelector('.ld-logo-box');
+  const logo = loader.querySelector('.ld-logo-box');
 
-  if(loaderLogo){
-    /* 認証前はロゴだけ隠す */
-    loaderLogo.style.visibility = 'hidden';
-    loaderLogo.style.animation = 'none';
+  if (logo) {
+    logo.style.visibility = 'hidden';
+    logo.style.animation = 'none';
   }
 }
 
-/* 指定ミリ秒待つための関数 */
-function wait(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-/*
-  パスワード認証後に実行するオープニング
-*/
-async function startOpeningSequence(){
-  if(openingStarted) return;
+/* パスワード認証後に実行するオープニング */
+async function startOpeningSequence() {
+  if (openingStarted) return;
 
   openingStarted = true;
 
   /* Works一覧へ直接アクセスした場合はオープニングなし */
-  if(skipOpening){
-    loader.style.display = 'none';
-    document.body.classList.add('loaded');
-    isLoading = false;
+  if (skipOpening) {
+    hideLoader();
     return;
   }
 
   /* ページの読み込み完了を待つ */
-  if(document.readyState !== 'complete'){
+  if (document.readyState !== 'complete') {
     await new Promise(resolve => {
-      window.addEventListener('load', resolve, { once:true });
+      window.addEventListener('load', resolve, { once: true });
     });
   }
 
-  document.documentElement.style.overflow = 'hidden';
+  root.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 
   /* オープニング中は最上部を維持し続ける */
   forceScrollTop(2000);
 
-  /*
-    ローダーはパスワード画面の背面で既に表示済み。
-    ここでロゴだけを表示・再アニメーションする。
-  */
+  /* ここでロゴだけを表示し、アニメーションを最初から再生する */
   loader.style.display = 'flex';
   loader.style.visibility = 'visible';
   loader.style.opacity = '1';
   loader.classList.remove('done');
 
-  const loaderLogo = loader.querySelector('.ld-logo-box');
+  const logo = loader.querySelector('.ld-logo-box');
 
-  if(loaderLogo){
-    loaderLogo.style.visibility = 'visible';
-    loaderLogo.style.animation = 'none';
+  if (logo) {
+    logo.style.visibility = 'visible';
+    logo.style.animation = 'none';
 
-    /* 強制的に再描画してアニメーションを最初から実行 */
-    void loaderLogo.offsetWidth;
+    void logo.offsetWidth; /* 強制再描画 */
 
-    loaderLogo.style.animation = '';
+    logo.style.animation = '';
   }
 
   /* ロゴを見せる時間 */
@@ -165,376 +721,69 @@ async function startOpeningSequence(){
   loader.classList.add('done');
   document.body.classList.add('loaded');
 
-  /* ローダーフェードアウト完了を待つ */
+  /* ローダーのフェードアウト完了を待つ */
   await wait(500);
 
   loader.style.display = 'none';
-
   isLoading = false;
 
-  document.documentElement.style.overflow = '';
+  root.style.overflow = '';
   document.body.style.overflow = '';
 
-  /* 解除直後の位置ズレを打ち消す */
-  updateNavPinMode();
-  hardScrollTop();
-
-  /* 端末によってはバーの高さ確定が遅れるので、少し後にもう一度 */
-  setTimeout(hardScrollTop, 120);
-  setTimeout(hardScrollTop, 400);
+  /* 解除直後の位置ズレを打ち消す。端末によってはバーの高さ確定が遅れるので、少し後にもう一度 */
+  Portfolio.scrollToTop();
+  setTimeout(Portfolio.scrollToTop, 120);
+  setTimeout(Portfolio.scrollToTop, 400);
 }
 
-/* ─── カスタムカーソル ─── */
-const cur = document.getElementById('cur');
+/* ─── PROFILEの「遊び心」テキスト（クリックで色が変わり、火花が飛ぶ） ─── */
+function initPlayful() {
+  const playful = document.getElementById('playful');
 
-let mx = 0;
-let my = 0;
+  if (!playful) return;
 
-document.addEventListener('mousemove', e => {
-  mx = e.clientX;
-  my = e.clientY;
-  cur.style.left = mx + 'px';
-  cur.style.top = my + 'px';
-});
+  const SPARK_CHARS = ['✦', '✧', '＊', '✦', '◦', '✺'];
+  const COLORS = ['#196ed2', '#f04650', '#f0eb50', '#e6f0e1', '#50f0d2'];
 
-document.querySelectorAll('a,button,.wa-card,.nav-logo,.playful').forEach(el => {
-  el.addEventListener('mouseenter', () => cur.classList.add('expanded'));
-  el.addEventListener('mouseleave', () => cur.classList.remove('expanded'));
-});
+  let colorIndex = -1;
 
-/* ─── ナビ制御 ─── */
-const navFixed = document.getElementById('navFixed');
-const topSec = document.getElementById('top');
+  function spawnSpark(rect, color) {
+    const spark = document.createElement('span');
 
-const getSecs = () => [...document.querySelectorAll('section')];
-const isMobile = () => window.innerWidth <= 900;
+    spark.className = 'spark';
+    spark.textContent = SPARK_CHARS[Math.floor(Math.random() * SPARK_CHARS.length)];
+    spark.style.color = color;
 
-new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.target.id === 'top' && !isMobile()){
-      if(worksAll.classList.contains('open')) return;
+    spark.style.left = (rect.left + Math.random() * rect.width) + 'px';
+    spark.style.top = (rect.top + Math.random() * rect.height) + 'px';
 
-      if(e.isIntersecting && e.intersectionRatio > 0.5){
-        navFixed.classList.remove('show');
-      } else {
-        navFixed.classList.add('show');
-      }
-    }
-  });
-}, {
-  threshold:[0,.5,1]
-}).observe(topSec);
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 30 + Math.random() * 60;
 
-if(isMobile()) navFixed.classList.add('show');
+    spark.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+    spark.style.setProperty('--dy', (Math.sin(angle) * distance - 30) + 'px');
+    spark.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+    spark.style.fontSize = (10 + Math.random() * 8) + 'px';
+    spark.style.transform = 'translate(-50%,-50%) scale(.4)';
 
-window.addEventListener('resize', () => {
-  if(isMobile()) navFixed.classList.add('show');
-});
+    document.body.appendChild(spark);
 
-new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    document.body.classList.toggle(
-      'in-contact',
-      e.isIntersecting && e.intersectionRatio > 0.3
-    );
-  });
-}, {
-  threshold:[0,.3,1]
-}).observe(document.getElementById('contact'));
-
-/* ─── ハンバーガーメニュー ─── */
-const ham = document.getElementById('ham');
-const mob = document.getElementById('mobMenu');
-
-ham.addEventListener('click', () => {
-  const isOpen = mob.classList.toggle('open');
-  ham.classList.toggle('open', isOpen);
-});
-
-function closeMob(){
-  mob.classList.remove('open');
-  ham.classList.remove('open');
-}
-
-document.getElementById('navLogoBtn').addEventListener('click', () => {
-  if(worksAll && worksAll.classList.contains('open')){
-    worksAll.classList.remove('open');
-    document.body.style.overflow = '';
-    document.body.classList.remove('works-open');
-
-    if(!isMobile()){
-      navFixed.classList.remove('show');
-    }
+    requestAnimationFrame(() => spark.classList.add('fly'));
+    setTimeout(() => spark.remove(), 1200);
   }
 
-  snapTo(topSec.offsetTop);
-});
+  playful.addEventListener('click', () => {
+    colorIndex = (colorIndex + 1) % COLORS.length;
 
-/* ─── スクロールスナップ ─── */
-const htmlEl = document.documentElement;
-const SNAP_DUR = 820;
+    const color = COLORS[colorIndex];
 
-const eie = t => {
-  if(t === 0) return 0;
-  if(t === 1) return 1;
-  return t < .5
-    ? Math.pow(2,20 * t - 10) / 2
-    : (2 - Math.pow(2,-20 * t + 10)) / 2;
-};
-
-function nearest(scrollTop, dir){
-  const sections = getSecs();
-
-  if(dir > 0){
-    for(const sec of sections){
-      if(sec.offsetTop > scrollTop + 60){
-        return sec.offsetTop;
-      }
-    }
-
-    return sections[sections.length - 1].offsetTop;
-  }
-
-  for(let i = sections.length - 1; i >= 0; i--){
-    if(sections[i].offsetTop < scrollTop - 60){
-      return sections[i].offsetTop;
-    }
-  }
-
-  return 0;
-}
-
-let snapping = false;
-
-function snapTo(y, dur = SNAP_DUR){
-  if(snapping) return;
-
-  snapping = true;
-
-  const startY = htmlEl.scrollTop;
-  const distance = y - startY;
-
-  if(Math.abs(distance) < 4){
-    snapping = false;
-    return;
-  }
-
-  const startTime = performance.now();
-
-  (function step(now){
-    const progress = Math.min((now - startTime) / dur, 1);
-
-    htmlEl.scrollTop = startY + distance * eie(progress);
-
-    /* 同一フレーム内でナビ位置も更新＝1フレームもズレない */
-    pinNavOnce();
-
-    if(progress < 1){
-      requestAnimationFrame(step);
-    } else {
-      htmlEl.scrollTop = y;
-      snapping = false;
-
-      pinNavOnce();
-
-      /* iOSはスクロール停止後にバー高さが確定するので追い打ちで補正 */
-      pinNavFor(800);
-    }
-  })(performance.now());
-}
-
-let wheelAmount = 0;
-let wheelTimer = null;
-
-htmlEl.addEventListener('wheel', e => {
-  if(worksAll.classList.contains('open')) return;
-
-  e.preventDefault();
-
-  if(snapping) return;
-
-  wheelAmount += e.deltaY;
-
-  clearTimeout(wheelTimer);
-
-  wheelTimer = setTimeout(() => {
-    if(Math.abs(wheelAmount) < 18){
-      wheelAmount = 0;
-      return;
-    }
-
-    const direction = wheelAmount > 0 ? 1 : -1;
-
-    wheelAmount = 0;
-
-    snapTo(nearest(htmlEl.scrollTop, direction));
-  }, 3);
-}, {
-  passive:false
-});
-
-let touchStartY = 0;
-let touchStartScroll = 0;
-
-const isTouchDevice = () => window.matchMedia('(hover:none)').matches;
-
-htmlEl.addEventListener('touchstart', e => {
-  if(isLoading) return;
-  if(worksAll.classList.contains('open')) return;
-  if(!isTouchDevice()) return;
-
-  touchStartY = e.touches[0].clientY;
-  touchStartScroll = htmlEl.scrollTop;
-}, {
-  passive:false
-});
-
-htmlEl.addEventListener('touchmove', e => {
-  /* パスワード画面の中だけは自由にスクロールさせる */
-  if(e.target.closest && e.target.closest('.site-access-gate')) return;
-
-  if(isLoading){
-    e.preventDefault();
-    return;
-  }
-
-  if(worksAll.classList.contains('open')) return;
-  if(!isTouchDevice()) return;
-
-  e.preventDefault();
-}, {
-  passive:false
-});
-
-htmlEl.addEventListener('touchend', e => {
-  if(isLoading) return;
-  if(worksAll.classList.contains('open')) return;
-  if(!isTouchDevice()) return;
-  if(snapping) return;
-
-  const deltaY = touchStartY - e.changedTouches[0].clientY;
-
-  if(Math.abs(deltaY) < 30) return;
-
-  snapTo(nearest(touchStartScroll, deltaY > 0 ? 1 : -1));
-}, {
-  passive:true
-});
-
-document.querySelectorAll('.top-nav a, .cf-links a').forEach(a => {
-  a.addEventListener('click', e => {
-    const href = a.getAttribute('href');
-
-    if(!href || !href.startsWith('#')) return;
-
-    e.preventDefault();
-
-    const target = document.querySelector(href);
-
-    if(target){
-      snapTo(target.offsetTop);
-    }
-  });
-});
-
-document.querySelectorAll('.mob-link').forEach(a => {
-  a.addEventListener('click', e => {
-    const href = a.getAttribute('href');
-
-    if(!href || !href.startsWith('#')) return;
-
-    e.preventDefault();
-
-    closeMob();
-
-    const target = document.querySelector(href);
-
-    if(target){
-      setTimeout(() => snapTo(target.offsetTop), 60);
-    }
-  });
-});
-
-/* ─── WORKS一覧オーバーレイ ─── */
-const worksAll = document.getElementById('works-all');
-
-function openWorksAll(){
-  worksAll.classList.add('open');
-  document.body.style.overflow = 'hidden';
-
-  if(!isMobile()){
-    navFixed.classList.add('show');
-  }
-}
-
-document.getElementById('viewAllBtn').addEventListener('click', e => {
-  e.preventDefault();
-  openWorksAll();
-});
-
-document.getElementById('waBack').addEventListener('click', e => {
-  e.preventDefault();
-
-  worksAll.classList.remove('open');
-  document.body.style.overflow = '';
-  document.body.classList.remove('works-open');
-
-  const worksSec = document.getElementById('works');
-
-  if(worksSec){
-    snapTo(worksSec.offsetTop);
-  }
-
-  if(!isMobile()){
-    navFixed.classList.add('show');
-  }
-});
-
-if(skipOpening){
-  openWorksAll();
-  document.documentElement.classList.remove('skip-opening');
-  history.replaceState(null, '', location.pathname);
-}
-
-/* ─── スクロールリビール ─── */
-const rvObs = new IntersectionObserver((entries, observer) => {
-  entries.forEach((entry, index) => {
-    if(entry.isIntersecting){
-      setTimeout(() => {
-        entry.target.classList.add('vis');
-      }, index * 80);
-
-      observer.unobserve(entry.target);
-    }
-  });
-}, {
-  threshold:.15
-});
-
-document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
-
-/* ─── Playfulテキスト ─── */
-const playful = document.getElementById('playful');
-
-if(playful){
-  const sparkChars = ['✦','✧','＊','✦','◦','✺'];
-  const playfulColors = ['#196ed2','#f04650','#f0eb50','#e6f0e1','#50f0d2'];
-
-  let playfulIndex = -1;
-
-  const burst = () => {
-    playfulIndex = (playfulIndex + 1) % playfulColors.length;
-
-    const color = playfulColors[playfulIndex];
-
-    document.documentElement.style.setProperty('--accent', color);
-
+    /* サイト全体のアクセント色も切り替える */
+    root.style.setProperty('--accent', color);
     playful.style.setProperty('--playful-c', color);
 
+    /* ぷるっと揺れるアニメーションを再生し直す */
     playful.classList.remove('poked');
-
     void playful.offsetWidth;
-
     playful.classList.add('poked');
 
     setTimeout(() => {
@@ -549,1054 +798,56 @@ if(playful){
     const rect = playful.getBoundingClientRect();
     const count = 8 + Math.floor(Math.random() * 3);
 
-    for(let i = 0; i < count; i++){
-      const spark = document.createElement('span');
-
-      spark.className = 'spark';
-      spark.textContent = sparkChars[Math.floor(Math.random() * sparkChars.length)];
-      spark.style.color = color;
-
-      const x = rect.left + Math.random() * rect.width;
-      const y = rect.top + Math.random() * rect.height;
-
-      spark.style.left = x + 'px';
-      spark.style.top = y + 'px';
-
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 30 + Math.random() * 60;
-
-      spark.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
-      spark.style.setProperty('--dy', (Math.sin(angle) * distance - 30) + 'px');
-      spark.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
-      spark.style.fontSize = (10 + Math.random() * 8) + 'px';
-
-      spark.style.transform = 'translate(-50%,-50%) scale(.4)';
-
-      document.body.appendChild(spark);
-
-      requestAnimationFrame(() => {
-        spark.classList.add('fly');
-      });
-
-      setTimeout(() => spark.remove(), 1200);
-    }
-  };
-
-  playful.addEventListener('click', burst);
-}
-
-/* ─── 背景ドットエフェクト ─── */
-(() => {
-  const canvas = document.getElementById('dotsCanvas');
-
-  if(!canvas) return;
-
-  const ctx = canvas.getContext('2d', {
-    alpha:false
-  });
-
-  const SPACING = 14;
-  const BASE_RADIUS = .9;
-  const MAX_RADIUS = 5;
-  const INFLUENCE = 120;
-  const EASE = .12;
-  const IDLE_DECAY = .85;
-  const STOP_DELAY = 750;
-
-  const BG_COLOR = '#181919';
-  const DOT_COLOR = '#1e2323';
-  const ACCENT_COLOR = '#3a3b3b';
-
-  let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-
-  let width = 0;
-  let height = 0;
-  let stopTimer = null;
-
-  const pointer = {
-    x:-9999,
-    y:-9999,
-    tx:-9999,
-    ty:-9999,
-    strength:0,
-    targetStrength:0
-  };
-
-  function resize(){
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(height * dpr);
-
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  resize();
-
-  window.addEventListener('resize', resize);
-
-  function resetStopTimer(){
-    pointer.targetStrength = 1;
-
-    clearTimeout(stopTimer);
-
-    stopTimer = setTimeout(() => {
-      pointer.targetStrength = 0;
-    }, STOP_DELAY);
-  }
-
-  window.addEventListener('mousemove', e => {
-    pointer.tx = e.clientX;
-    pointer.ty = e.clientY;
-
-    if(pointer.x < -9000){
-      pointer.x = pointer.tx;
-      pointer.y = pointer.ty;
-    }
-
-    resetStopTimer();
-  });
-
-  window.addEventListener('mouseleave', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
-
-  window.addEventListener('touchstart', e => {
-    const touch = e.touches[0];
-
-    pointer.tx = touch.clientX;
-    pointer.ty = touch.clientY;
-
-    if(pointer.x < -9000){
-      pointer.x = pointer.tx;
-      pointer.y = pointer.ty;
-    }
-
-    resetStopTimer();
-  }, {
-    passive:true
-  });
-
-  window.addEventListener('touchmove', e => {
-    const touch = e.touches[0];
-
-    pointer.tx = touch.clientX;
-    pointer.ty = touch.clientY;
-
-    resetStopTimer();
-  }, {
-    passive:true
-  });
-
-  window.addEventListener('touchend', () => {
-    pointer.targetStrength = 0;
-    clearTimeout(stopTimer);
-  });
-
-  let isTouchDev = window.matchMedia('(hover:none)').matches;
-
-  window.addEventListener('resize', () => {
-    isTouchDev = window.matchMedia('(hover:none)').matches;
-  });
-
-  function frame(){
-    if(pointer.tx > -9000){
-      if(isTouchDev){
-        pointer.x = pointer.tx;
-        pointer.y = pointer.ty;
-      } else {
-        pointer.x += (pointer.tx - pointer.x) * EASE;
-        pointer.y += (pointer.ty - pointer.y) * EASE;
-      }
-    }
-
-    if(pointer.targetStrength > pointer.strength){
-      pointer.strength += (pointer.targetStrength - pointer.strength) * .1;
-    } else {
-      pointer.strength *= IDLE_DECAY;
-
-      if(pointer.strength < .001){
-        pointer.strength = 0;
-      }
-    }
-
-    ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0,0,width,height);
-
-    const px = pointer.x;
-    const py = pointer.y;
-    const strength = pointer.strength;
-    const influenceSq = INFLUENCE * INFLUENCE;
-
-    ctx.fillStyle = DOT_COLOR;
-    ctx.beginPath();
-
-    let row = 0;
-
-    for(let y = SPACING / 2; y < height; y += SPACING){
-      const offset = row % 2 ? SPACING / 2 : 0;
-
-      for(let x = SPACING / 2 + offset; x < width; x += SPACING){
-        const dx = x - px;
-        const dy = y - py;
-
-        if(strength > .01 && (dx * dx + dy * dy) < influenceSq) continue;
-
-        ctx.moveTo(x + BASE_RADIUS, y);
-        ctx.arc(x,y,BASE_RADIUS,0,Math.PI * 2);
-      }
-
-      row++;
-    }
-
-    ctx.fill();
-
-    if(strength > .01){
-      let row2 = 0;
-
-      for(let y = SPACING / 2; y < height; y += SPACING){
-        const offset = row2 % 2 ? SPACING / 2 : 0;
-
-        for(let x = SPACING / 2 + offset; x < width; x += SPACING){
-          const dx = x - px;
-          const dy = y - py;
-          const distSq = dx * dx + dy * dy;
-
-          if(distSq >= influenceSq) continue;
-
-          const distance = Math.sqrt(distSq);
-
-          let t = 1 - distance / INFLUENCE;
-
-          t = t * t * (3 - 2 * t) * strength;
-
-          const radius = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * t;
-
-          ctx.fillStyle = t > .6 ? ACCENT_COLOR : DOT_COLOR;
-
-          ctx.beginPath();
-          ctx.arc(x,y,radius,0,Math.PI * 2);
-          ctx.fill();
-        }
-
-        row2++;
-      }
-    }
-
-    requestAnimationFrame(frame);
-  }
-
-  requestAnimationFrame(frame);
-})();
-
-/* ─── データ管理 ─── */
-const DEFAULT_WORKS_DATA = [
-  {
-    cat:'Branding',
-    items:[
-      {
-        id:'sotoya-rebrand',
-        tag:'Branding',
-        title:'SOTOYA リブランディング CI 開発',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'sotoya-logo',
-        tag:'Branding',
-        title:'SOTOYA LOGO',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'sotoya-web',
-        tag:'Branding / Web',
-        title:'SOTOYA WEB SITE',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'sotoya-tools',
-        tag:'Branding',
-        title:'SOTOYA コーポレートツール',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'ec-flame',
-        tag:'Branding / EC',
-        title:'EC SITE flame',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      }
-    ]
-  },
-  {
-    cat:'Web',
-    items:[
-      {
-        id:'nasta-hp',
-        tag:'Web',
-        title:'Nasta HP',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'nasta-post',
-        tag:'Web',
-        title:'Nasta Box +POST WEB SITE',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'nasta-light',
-        tag:'Web',
-        title:'Nasta Box LIGHT WEB SITE',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'nasta-amazon',
-        tag:'Web / EC',
-        title:'Nasta Interphone 2 Amazon page',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'nasta-sns',
-        tag:'SNS',
-        title:'Nasta SNS クリエイティブ',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      }
-    ]
-  },
-  {
-    cat:'POP / Print media',
-    items:[
-      {
-        id:'pamphlet',
-        tag:'Print',
-        title:'カテゴリ別 製品一覧パンフレット',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'flyer-poster',
-        tag:'Print',
-        title:'各種販促チラシ・ポスター',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      }
-    ]
-  },
-  {
-    cat:'UI / UX',
-    items:[
-      {
-        id:'box-admin',
-        tag:'UI/UX',
-        title:'宅配ボックス管理者用 WEB システム',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'nasta-app',
-        tag:'UI/UX',
-        title:'Nasta Box APP',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      }
-    ]
-  },
-  {
-    cat:'Other',
-    items:[
-      {
-        id:'nasta-mvv',
-        tag:'Project',
-        title:'Nasta MVV Project',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      },
-      {
-        id:'illusts',
-        tag:'Illustration',
-        title:'ILLUSTs',
-        desc:'コンテンツこの文章はダミーです。文字の大きさ、量、字間、行間を確認するために入れています。'
-      }
-    ]
-  }
-];
-
-let WORKS_DATA = DEFAULT_WORKS_DATA;
-let SITE_PROFILE = { images: [] };
-let SITE_LOGO = { src: '' };
-
-/* CMS管理：TOPの作字SVG */
-let SITE_TOP_TITLE = {
-  shota: {
-    src:'',
-    type:''
-  },
-  inoue: {
-    src:'',
-    type:''
-  }
-};
-
-/* CMS管理：サイト閲覧パスワード */
-let SITE_ACCESS = {
-  enabled:false,
-  passwordHash:''
-};
-
-/* ─── IndexedDB ヘルパー ─── */
-const _MAIN_IDB_NAME = 'portfolioCMS';
-const _MAIN_IDB_VER = 1;
-const _MAIN_IDB_STORE = 'store';
-
-let _mainDb = null;
-
-function _mainOpenDB(){
-  if(_mainDb) return Promise.resolve(_mainDb);
-
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(_MAIN_IDB_NAME, _MAIN_IDB_VER);
-
-    request.onupgradeneeded = e => {
-      e.target.result.createObjectStore(_MAIN_IDB_STORE);
-    };
-
-    request.onsuccess = e => {
-      _mainDb = e.target.result;
-      resolve(_mainDb);
-    };
-
-    request.onerror = e => reject(e.target.error);
-  });
-}
-
-async function _mainIdbGet(key){
-  try {
-    const db = await _mainOpenDB();
-
-    return await new Promise((resolve, reject) => {
-      const request = db
-        .transaction(_MAIN_IDB_STORE, 'readonly')
-        .objectStore(_MAIN_IDB_STORE)
-        .get(key);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = e => reject(e.target.error);
-    });
-  } catch(e){
-    return null;
-  }
-}
-
-/* ─── SITE ACCESS ─── */
-function normalizeSiteAccess(data){
-  return {
-    enabled: !!(data && data.enabled),
-    passwordHash: (data && data.passwordHash) ? data.passwordHash : ''
-  };
-}
-
-async function sha256(value){
-  const bytes = new TextEncoder().encode(value);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-
-  return [...new Uint8Array(hashBuffer)]
-    .map(value => value.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-async function initSiteAccessGate(){
-  const gate = document.getElementById('siteAccessGate');
-  const form = document.getElementById('siteAccessForm');
-  const input = document.getElementById('siteAccessPassword');
-  const error = document.getElementById('siteAccessError');
-  const toggle = document.querySelector('.site-access-toggle');
-
-  return new Promise(resolve => {
-    if(!gate || !form || !input){
-      unlockPageScroll();
-      resolve();
-      return;
-    }
-
-    let isClosed = false;
-
-    /* SHOW / HIDE ボタン */
-    if(toggle){
-      toggle.addEventListener('click', () => {
-        const isVisible = input.type === 'text';
-
-        input.type = isVisible ? 'password' : 'text';
-
-        toggle.textContent = isVisible ? '表示' : '非表示';
-        toggle.classList.toggle('is-visible', !isVisible);
-        toggle.setAttribute('aria-pressed', String(!isVisible));
-        toggle.setAttribute(
-          'aria-label',
-          isVisible ? 'パスワードを表示' : 'パスワードを隠す'
-        );
-
-        input.focus({ preventScroll:true });
-      });
-    }
-
-    const closeGate = (withAnimation = true) => {
-      if(isClosed) return;
-
-      isClosed = true;
-
-      gate.classList.add('is-hidden');
-      gate.setAttribute('aria-hidden', 'true');
-
-       const finish = () => {
-        gate.style.display = 'none';
-
-        /* キーボードを確実に閉じてからロック解除＆最上部へ */
-        try{ input.blur(); }catch(e){}
-
-        unlockPageScroll();
-
-        /* キーボードが閉じ切るタイミングで再度最上部へ */
-        setTimeout(() => {
-          updateNavPinMode();
-          hardScrollTop();
-        }, 400);
-
-        setTimeout(hardScrollTop, 800);
-
-        resolve();
-      };
-
-      if(withAnimation){
-        setTimeout(finish, 450);
-      } else {
-        finish();
-      }
-    };
-
-    /* CMSでパスワード保護がOFFの場合 */
-    if(!SITE_ACCESS.enabled || !SITE_ACCESS.passwordHash){
-      document.documentElement.classList.remove('access-session-hint');
-      closeGate(false);
-      return;
-    }
-
-    /* 同タブで認証済みならゲートを表示せずに進む */
-    try {
-      const savedHash = sessionStorage.getItem('portfolioAccessHash');
-
-      if(savedHash === SITE_ACCESS.passwordHash){
-        closeGate(false);
-        return;
-      }
-    } catch(e){}
-
-    /* ここからパスワード画面を表示 */
-    document.documentElement.classList.remove('access-session-hint');
-
-    lockPageScroll();
-
-    gate.classList.remove('is-hidden');
-    gate.style.display = 'flex';
-    gate.setAttribute('aria-hidden', 'false');
-
-     /* SPは自動フォーカスしない（キーボードで表示位置がズレるため） */
-    if(!isTouchUA()){
-      setTimeout(() => {
-        input.focus({ preventScroll:true });
-      }, 80);
-    }
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const submit = form.querySelector('.site-access-submit');
-      const password = input.value;
-
-      error.textContent = '';
-
-      if(!password){
-        error.textContent = 'パスワードを入力してください。';
-        input.focus({ preventScroll:true });
-        return;
-      }
-
-      try {
-        submit.disabled = true;
-        submit.textContent = 'CHECKING...';
-
-        const inputHash = await sha256(password);
-
-        if(inputHash !== SITE_ACCESS.passwordHash){
-          error.textContent = 'パスワードが正しくありません。';
-
-          input.value = '';
-          input.type = 'password';
-
-          if(toggle){
-            toggle.textContent = '表示';
-            toggle.classList.remove('is-visible');
-            toggle.setAttribute('aria-pressed', 'false');
-            toggle.setAttribute('aria-label', 'パスワードを表示');
-          }
-
-          input.focus({ preventScroll:true });
-
-          submit.disabled = false;
-          submit.textContent = 'ENTER';
-
-          return;
-        }
-
-        /* 正しいハッシュを同タブ内に保存 */
-        try {
-          sessionStorage.setItem(
-            'portfolioAccessHash',
-            SITE_ACCESS.passwordHash
-          );
-        } catch(e){}
-
-        closeGate(true);
-
-      } catch(err){
-        console.error(err);
-
-        error.textContent =
-          '認証処理に失敗しました。ページを再読み込みしてください。';
-
-        submit.disabled = false;
-        submit.textContent = 'ENTER';
-      }
-    });
-  });
-}
-
-/* ─── CMS / data.json データ読込 ─── */
-async function loadSiteData(){
-  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
-
-  /* CMS Preview */
-  if(isPreview){
-    try {
-      const works = await _mainIdbGet('worksData');
-      const profile = await _mainIdbGet('profileData');
-      const logo = await _mainIdbGet('logoData');
-      const homeBg = await _mainIdbGet('homeBgData');
-      const topTitle = await _mainIdbGet('topTitleData');
-      const siteAccess = await _mainIdbGet('siteAccessData');
-
-      if(works) WORKS_DATA = works;
-      if(profile) SITE_PROFILE = profile;
-      if(logo) SITE_LOGO = logo;
-      if(homeBg) window._SITE_HOMEBG = homeBg;
-      if(topTitle) SITE_TOP_TITLE = topTitle;
-
-      SITE_ACCESS = normalizeSiteAccess(siteAccess);
-    } catch(e){}
-
-    if(!WORKS_DATA || WORKS_DATA === DEFAULT_WORKS_DATA){
-      try {
-        const worksRaw = localStorage.getItem('worksData');
-        const profileRaw = localStorage.getItem('profileData');
-        const logoRaw = localStorage.getItem('logoData');
-        const homeBgRaw = localStorage.getItem('homeBgData');
-        const topTitleRaw = localStorage.getItem('topTitleData');
-        const siteAccessRaw = localStorage.getItem('siteAccessData');
-
-        if(worksRaw) WORKS_DATA = JSON.parse(worksRaw);
-        if(profileRaw) SITE_PROFILE = JSON.parse(profileRaw);
-        if(logoRaw) SITE_LOGO = JSON.parse(logoRaw);
-        if(homeBgRaw) window._SITE_HOMEBG = JSON.parse(homeBgRaw);
-        if(topTitleRaw) SITE_TOP_TITLE = JSON.parse(topTitleRaw);
-
-        if(siteAccessRaw){
-          SITE_ACCESS = normalizeSiteAccess(JSON.parse(siteAccessRaw));
-        }
-      } catch(e){}
-    }
-
-    applyLogo();
-    applyTopTitle();
-
-    return;
-  }
-
-  /* 本番：data.json */
-  try {
-    const response = await fetch('data.json', {
-      cache:'no-cache'
-    });
-
-    if(response.ok){
-      const json = await response.json();
-
-      if(json.works) WORKS_DATA = json.works;
-      if(json.profile) SITE_PROFILE = json.profile;
-      if(json.logo) SITE_LOGO = json.logo;
-      if(json.homeBg) window._SITE_HOMEBG = json.homeBg;
-      if(json.topTitle) SITE_TOP_TITLE = json.topTitle;
-
-      SITE_ACCESS = normalizeSiteAccess(json.siteAccess);
-
-      applyLogo();
-      applyTopTitle();
-
-      return;
-    }
-  } catch(e){}
-
-  /* data.jsonがない場合：IndexedDB */
-  try {
-    const works = await _mainIdbGet('worksData');
-    const profile = await _mainIdbGet('profileData');
-    const logo = await _mainIdbGet('logoData');
-    const homeBg = await _mainIdbGet('homeBgData');
-    const topTitle = await _mainIdbGet('topTitleData');
-    const siteAccess = await _mainIdbGet('siteAccessData');
-
-    if(works) WORKS_DATA = works;
-    if(profile) SITE_PROFILE = profile;
-    if(logo) SITE_LOGO = logo;
-    if(homeBg) window._SITE_HOMEBG = homeBg;
-    if(topTitle) SITE_TOP_TITLE = topTitle;
-
-    SITE_ACCESS = normalizeSiteAccess(siteAccess);
-  } catch(e){}
-
-  /* IndexedDBがない場合：localStorage */
-  if(!WORKS_DATA || WORKS_DATA === DEFAULT_WORKS_DATA){
-    try {
-      const worksRaw = localStorage.getItem('worksData');
-      const profileRaw = localStorage.getItem('profileData');
-      const logoRaw = localStorage.getItem('logoData');
-      const homeBgRaw = localStorage.getItem('homeBgData');
-      const topTitleRaw = localStorage.getItem('topTitleData');
-      const siteAccessRaw = localStorage.getItem('siteAccessData');
-
-      if(worksRaw) WORKS_DATA = JSON.parse(worksRaw);
-      if(profileRaw) SITE_PROFILE = JSON.parse(profileRaw);
-      if(logoRaw) SITE_LOGO = JSON.parse(logoRaw);
-      if(homeBgRaw) window._SITE_HOMEBG = JSON.parse(homeBgRaw);
-      if(topTitleRaw) SITE_TOP_TITLE = JSON.parse(topTitleRaw);
-
-      if(siteAccessRaw){
-        SITE_ACCESS = normalizeSiteAccess(JSON.parse(siteAccessRaw));
-      }
-    } catch(e){}
-  }
-
-  applyLogo();
-  applyTopTitle();
-}
-
-/* ─── ロゴ適用 ─── */
-function applyLogo(){
-  if(!SITE_LOGO || !SITE_LOGO.src) return;
-
-  const src = SITE_LOGO.src;
-
-  document.querySelectorAll('.nav-logo, .footer-logo, .ld-logo-box').forEach(el => {
-    el.style.backgroundImage = `url("${src}")`;
-    el.style.backgroundSize = 'contain';
-    el.style.backgroundPosition = 'center';
-    el.style.backgroundRepeat = 'no-repeat';
-    el.style.backgroundColor = 'transparent';
-    el.classList.add('has-logo');
-  });
-
-  let link = document.querySelector('link[rel="icon"]');
-
-  if(!link){
-    link = document.createElement('link');
-    link.rel = 'icon';
-    document.head.appendChild(link);
-  }
-
-  link.href = src;
-}
-
-/* ─── TOP作字 SVG 適用 ─── */
-function applyTopTitle(){
-  const titleAssets = [
-    {
-      key:'shota',
-      imageId:'topTitleShota'
-    },
-    {
-      key:'inoue',
-      imageId:'topTitleInoue'
-    }
-  ];
-
-  titleAssets.forEach(({ key, imageId }) => {
-    const image = document.getElementById(imageId);
-
-    if(!image) return;
-
-    const line = image.closest('.top-title-line');
-
-    const fallback = line
-      ? line.querySelector('.top-title-fallback')
-      : null;
-
-    const asset = SITE_TOP_TITLE && SITE_TOP_TITLE[key];
-
-    /* CMSに画像が登録済み */
-    if(asset && asset.src){
-      image.src = asset.src;
-      image.classList.add('has-art');
-
-      if(fallback){
-        fallback.classList.add('is-hidden');
-        fallback.setAttribute('aria-hidden', 'true');
-      }
-    }
-
-    /* 未登録時は既存テキストを表示 */
-    else {
-      image.removeAttribute('src');
-      image.classList.remove('has-art');
-
-      if(fallback){
-        fallback.classList.remove('is-hidden');
-        fallback.removeAttribute('aria-hidden');
-      }
+    for (let i = 0; i < count; i++) {
+      spawnSpark(rect, color);
     }
   });
 }
 
-/* ─── WORKS背景 ─── */
-function applyWorksBg(){
-  let sources = [];
+/* ============================================================
+   初期化
+   ============================================================ */
 
-  if(
-    window._SITE_HOMEBG &&
-    window._SITE_HOMEBG.images &&
-    window._SITE_HOMEBG.images.length
-  ){
-    sources = window._SITE_HOMEBG.images.map(item => item.src);
-  } else {
-    WORKS_DATA.forEach(group => {
-      group.items.forEach(item => {
-        if(item.images && item.images[0]){
-          sources.push(item.images[0].src);
-        }
-      });
-    });
-  }
+prepareLoader();
 
-  if(sources.length === 0) return;
+Portfolio.initCursor('a,button,.wa-card,.nav-logo,.playful');
+Portfolio.initScrollReveal();
+Portfolio.initDotsBackground();
 
-  const rows = document.querySelectorAll('.works-bg-row');
+initNavVisibility();
+initNavControls();
+initSnapScroll();
+initWorksOverlay();
+initPlayful();
 
-  const rowSources = sources.length > 1
-    ? [
-        sources.filter((_, index) => index % 2 === 0),
-        sources,
-        sources.filter((_, index) => index % 2 === 1)
-      ]
-    : [
-        sources,
-        sources,
-        sources
-      ];
-
-  rows.forEach((row, rowIndex) => {
-    const set = rowSources[rowIndex] && rowSources[rowIndex].length
-      ? rowSources[rowIndex]
-      : sources;
-
-    row.querySelectorAll('.works-bg-cell').forEach((cell, index) => {
-      const src = set[index % set.length];
-
-      cell.style.backgroundImage = `url("${src}")`;
-      cell.style.backgroundSize = 'cover';
-      cell.style.backgroundPosition = 'center';
-
-      cell.classList.add('has-img');
-    });
-  });
-}
-
-/* ─── WORKS一覧 ─── */
-function renderWorksList(){
-  const waGrid = document.getElementById('waGridContainer');
-
-  waGrid.innerHTML = '';
-
-  WORKS_DATA.forEach(group => {
-    const category = document.createElement('div');
-
-    category.className = 'wa-category';
-
-    category.innerHTML = `
-      <div class="wa-cat-label wa-fade">${group.cat}</div>
-      <div class="wa-grid"></div>
-    `;
-
-    const grid = category.querySelector('.wa-grid');
-
-    group.items.forEach(item => {
-      const card = document.createElement('div');
-
-      card.className = 'wa-card wa-fade';
-      card.dataset.id = item.id;
-
-      const thumbSrc = item.images && item.images[0]
-        ? item.images[0].src
-        : null;
-
-      const thumbType = item.images && item.images[0]
-        ? item.images[0].type || ''
-        : '';
-
-      const isVideo = thumbType.startsWith('video/');
-
-      const imageHtml = thumbSrc
-        ? (
-            isVideo
-              ? `<video src="${thumbSrc}" muted loop playsinline autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>`
-              : `<img src="${thumbSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
-          )
-        : `<div class="wa-card-img-ph"></div>`;
-
-      card.innerHTML = `
-        <div class="wa-card-img">${imageHtml}</div>
-        <div class="wa-card-body">
-          <div class="wa-card-title">${item.title}</div>
-          <div class="wa-card-desc">${item.desc || ''}</div>
-        </div>
-        <div class="wa-card-arrow"></div>
-      `;
-
-      grid.appendChild(card);
-    });
-
-    waGrid.appendChild(category);
-  });
-
-  const fadeObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('in');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, {
-    root:document.querySelector('.wa-body'),
-    threshold:.12
-  });
-
-  document.querySelectorAll('.wa-fade').forEach(el => fadeObserver.observe(el));
-
-  const isHoverPC = () => {
-    return window.matchMedia('(hover:hover) and (min-width:901px)').matches;
-  };
-
-  const isPreviewMode = new URLSearchParams(window.location.search).get('preview') === '1';
-
-  document.querySelectorAll('.wa-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const id = card.dataset.id;
-
-      const detailUrl = `detail.html?id=${id}${isPreviewMode ? '&preview=1' : ''}`;
-
-      if(isHoverPC()){
-        window.location.href = detailUrl;
-        return;
-      }
-
-      if(card.classList.contains('active')){
-        window.location.href = detailUrl;
-      } else {
-        document
-          .querySelectorAll('.wa-card.active')
-          .forEach(activeCard => activeCard.classList.remove('active'));
-
-        card.classList.add('active');
-      }
-    });
-  });
-}
-
-/* ─── PROFILEスライド ─── */
-function renderProfileSlideshow(){
-  const images = SITE_PROFILE.images || [];
-
-  if(images.length === 0) return;
-
-  const targets = [
-    'profileBgPC',
-    'profileBgSP'
-  ]
-    .map(id => document.getElementById(id))
-    .filter(Boolean);
-
-  targets.forEach(target => {
-    target.classList.add('has-slides');
-
-    target.querySelectorAll('.profile-slide').forEach(el => el.remove());
-
-    images.forEach((image, index) => {
-      const slide = document.createElement('div');
-
-      slide.className = 'profile-slide' + (index === 0 ? ' active' : '');
-
-      slide.style.backgroundImage = `url("${image.src}")`;
-
-      target.appendChild(slide);
-    });
-  });
-
-  if(images.length > 1){
-    let index = 0;
-
-    setInterval(() => {
-      index = (index + 1) % images.length;
-
-      targets.forEach(target => {
-        const slides = target.querySelectorAll('.profile-slide');
-
-        slides.forEach((slide, slideIndex) => {
-          slide.classList.toggle('active', slideIndex === index);
-        });
-      });
-    }, 4000);
-  }
-}
-
-/* ─── 初期化 ─── */
 (async () => {
   /* データ取得に失敗してもゲートで固まらないようにする */
   try {
     await loadSiteData();
-  } catch(e){
+  } catch (e) {
     console.error(e);
-    SITE_ACCESS = { enabled:false, passwordHash:'' };
+    siteData.siteAccess = { enabled: false, passwordHash: '' };
   }
 
-  /*
-    パスワード認証を待つ。
-    正しいパスワードを入れるまで、この次へ進まない。
-  */
-  await initSiteAccessGate();
+  /* 正しいパスワードを入れるまで、ここから先へ進まない */
+  await Portfolio.initAccessGate({
+    siteAccess: siteData.siteAccess,
+
+    /* ゲート解除の直後は最上部に固定し続ける */
+    onUnlock: () => forceScrollTop(1500),
+
+    /* キーボードが閉じ切るタイミングで再度最上部へ */
+    onClosed: () => {
+      setTimeout(Portfolio.scrollToTop, 400);
+      setTimeout(Portfolio.scrollToTop, 800);
+    }
+  });
 
   /* パスワード通過後にページ内容を構築 */
   renderWorksList();
   renderProfileSlideshow();
   applyWorksBg();
 
-  /* レイアウト確定後にナビ位置を合わせる */
-  updateNavPinMode();
-
   /* 最後にオープニングアニメーションを開始 */
   await startOpeningSequence();
-
-  /* 画像読み込み完了で高さが変わる場合に備えて最終補正 */
-  window.addEventListener('load', () => {
-    updateNavPinMode();
-    pinNavFor(600);
-  });
 })();
-
-document.querySelector('.wa-body').addEventListener('click', e => {
-  if(!e.target.closest('.wa-card')){
-    document
-      .querySelectorAll('.wa-card.active')
-      .forEach(card => card.classList.remove('active'));
-  }
-});
